@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.env
+tests/e2e/outputs/*.png
+tests/e2e/outputs/*.jpg
+tests/e2e/outputs/*.webp

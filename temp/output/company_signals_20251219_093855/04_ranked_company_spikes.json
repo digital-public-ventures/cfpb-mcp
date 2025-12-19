@@ -1,0 +1,300 @@
+{
+  "date_filters": {
+    "date_received_max": "2025-12-01",
+    "date_received_min": "2023-12-01"
+  },
+  "ranking": "last bucket vs baseline z-score",
+  "results": [
+    {
+      "company": "Experian Information Solutions Inc.",
+      "company_doc_count": 2104526,
+      "computed": {
+        "last_bucket": {
+          "count": 7328.0,
+          "label": "2025-12-01T00:00:00.000Z"
+        },
+        "prev_bucket": {
+          "count": 143205.0,
+          "label": "2025-11-01T00:00:00.000Z"
+        },
+        "signals": {
+          "last_vs_baseline": {
+            "baseline_mean": 125430.75,
+            "baseline_sd": 19753.830491108012,
+            "baseline_window": 8,
+            "min_baseline_mean": 25.0,
+            "ratio": 0.05842267546036359,
+            "z": -5.978726508418849
+          },
+          "last_vs_prev": {
+            "abs": -135877.0,
+            "pct": -0.9488286023532698
+          }
+        }
+      },
+      "status_code": 200
+    },
+    {
+      "company": "TRANSUNION INTERMEDIATE HOLDINGS, INC.",
+      "company_doc_count": 2315718,
+      "computed": {
+        "last_bucket": {
+          "count": 7164.0,
+          "label": "2025-12-01T00:00:00.000Z"
+        },
+        "prev_bucket": {
+          "count": 175566.0,
+          "label": "2025-11-01T00:00:00.000Z"
+        },
+        "signals": {
+          "last_vs_baseline": {
+            "baseline_mean": 143359.125,
+            "baseline_sd": 22770.838220580663,
+            "baseline_window": 8,
+            "min_baseline_mean": 25.0,
+            "ratio": 0.049972403221629595,
+            "z": -5.981120399727076
+          },
+          "last_vs_prev": {
+            "abs": -168402.0,
+            "pct": -0.9591948327124842
+          }
+        }
+      },
+      "status_code": 200
+    },
+    {
+      "company": "Resurgent Capital Services L.P.",
+      "company_doc_count": 35185,
+      "computed": {
+        "last_bucket": {
+          "count": 61.0,
+          "label": "2025-12-01T00:00:00.000Z"
+        },
+        "prev_bucket": {
+          "count": 2342.0,
+          "label": "2025-11-01T00:00:00.000Z"
+        },
+        "signals": {
+          "last_vs_baseline": {
+            "baseline_mean": 1926.75,
+            "baseline_sd": 281.77283149982463,
+            "baseline_window": 8,
+            "min_baseline_mean": 25.0,
+            "ratio": 0.03165953029713248,
+            "z": -6.621468755766687
+          },
+          "last_vs_prev": {
+            "abs": -2281.0,
+            "pct": -0.9739538855678906
+          }
+        }
+      },
+      "status_code": 200
+    },
+    {
+      "company": "CBC Companies, Inc.",
+      "company_doc_count": 35963,
+      "computed": {
+        "last_bucket": {
+          "count": 122.0,
+          "label": "2025-12-01T00:00:00.000Z"
+        },
+        "prev_bucket": {
+          "count": 2412.0,
+          "label": "2025-11-01T00:00:00.000Z"
+        },
+        "signals": {
+          "last_vs_baseline": {
+            "baseline_mean": 2484.0,
+            "baseline_sd": 353.6463124163948,
+            "baseline_window": 8,
+            "min_baseline_mean": 25.0,
+            "ratio": 0.04911433172302738,
+            "z": -6.678989479236825
+          },
+          "last_vs_prev": {
+            "abs": -2290.0,
+            "pct": -0.9494195688225538
+          }
+        }
+      },
+      "status_code": 200
+    },
+    {
+      "company": "EQUIFAX, INC.",
+      "company_doc_count": 2313354,
+      "computed": {
+        "last_bucket": {
+          "count": 6436.0,
+          "label": "2025-12-01T00:00:00.000Z"
+        },
+        "prev_bucket": {
+          "count": 157929.0,
+          "label": "2025-11-01T00:00:00.000Z"
+        },
+        "signals": {
+          "last_vs_baseline": {
+            "baseline_mean": 148856.0,
+            "baseline_sd": 16265.336894319598,
+            "baseline_window": 8,
+            "min_baseline_mean": 25.0,
+            "ratio": 0.043236416402429194,
+            "z": -8.75604366053665
+          },
+          "last_vs_prev": {
+            "abs": -151493.0,
+            "pct": -0.959247509957006
+          }
+        }
+      },
+      "status_code": 200
+    },
+    {
+      "company": "WELLS FARGO & COMPANY",
+      "company_doc_count": 33672,
+      "computed": {
+        "last_bucket": {
+          "count": 72.0,
+          "label": "2025-12-01T00:00:00.000Z"
+        },
+        "prev_bucket": {
+          "count": 1616.0,
+          "label": "2025-11-01T00:00:00.000Z"
+        },
+        "signals": {
+          "last_vs_baseline": {
+            "baseline_mean": 1577.75,
+            "baseline_sd": 146.69672311073813,
+            "baseline_window": 8,
+            "min_baseline_mean": 25.0,
+            "ratio": 0.04563460624306766,
+            "z": -10.264373791521862
+          },
+          "last_vs_prev": {
+            "abs": -1544.0,
+            "pct": -0.9554455445544554
+          }
+        }
+      },
+      "status_code": 200
+    },
+    {
+      "company": "Block, Inc.",
+      "company_doc_count": 50435,
+      "computed": {
+        "last_bucket": {
+          "count": 44.0,
+          "label": "2025-12-01T00:00:00.000Z"
+        },
+        "prev_bucket": {
+          "count": 1112.0,
+          "label": "2025-11-01T00:00:00.000Z"
+        },
+        "signals": {
+          "last_vs_baseline": {
+            "baseline_mean": 1220.25,
+            "baseline_sd": 109.5089689738438,
+            "baseline_window": 8,
+            "min_baseline_mean": 25.0,
+            "ratio": 0.03605818479819709,
+            "z": -10.74112934330472
+          },
+          "last_vs_prev": {
+            "abs": -1068.0,
+            "pct": -0.960431654676259
+          }
+        }
+      },
+      "status_code": 200
+    },
+    {
+      "company": "CITIBANK, N.A.",
+      "company_doc_count": 33027,
+      "computed": {
+        "last_bucket": {
+          "count": 73.0,
+          "label": "2025-12-01T00:00:00.000Z"
+        },
+        "prev_bucket": {
+          "count": 1690.0,
+          "label": "2025-11-01T00:00:00.000Z"
+        },
+        "signals": {
+          "last_vs_baseline": {
+            "baseline_mean": 1591.125,
+            "baseline_sd": 117.90606127640041,
+            "baseline_window": 8,
+            "min_baseline_mean": 25.0,
+            "ratio": 0.04587948778380077,
+            "z": -12.875716342022034
+          },
+          "last_vs_prev": {
+            "abs": -1617.0,
+            "pct": -0.9568047337278106
+          }
+        }
+      },
+      "status_code": 200
+    },
+    {
+      "company": "JPMORGAN CHASE & CO.",
+      "company_doc_count": 42756,
+      "computed": {
+        "last_bucket": {
+          "count": 73.0,
+          "label": "2025-12-01T00:00:00.000Z"
+        },
+        "prev_bucket": {
+          "count": 2006.0,
+          "label": "2025-11-01T00:00:00.000Z"
+        },
+        "signals": {
+          "last_vs_baseline": {
+            "baseline_mean": 1967.875,
+            "baseline_sd": 144.71986486213385,
+            "baseline_window": 8,
+            "min_baseline_mean": 25.0,
+            "ratio": 0.03709585212475386,
+            "z": -13.093399456979432
+          },
+          "last_vs_prev": {
+            "abs": -1933.0,
+            "pct": -0.9636091724825524
+          }
+        }
+      },
+      "status_code": 200
+    },
+    {
+      "company": "CAPITAL ONE FINANCIAL CORPORATION",
+      "company_doc_count": 53622,
+      "computed": {
+        "last_bucket": {
+          "count": 110.0,
+          "label": "2025-12-01T00:00:00.000Z"
+        },
+        "prev_bucket": {
+          "count": 2469.0,
+          "label": "2025-11-01T00:00:00.000Z"
+        },
+        "signals": {
+          "last_vs_baseline": {
+            "baseline_mean": 2393.375,
+            "baseline_sd": 128.25191449420385,
+            "baseline_window": 8,
+            "min_baseline_mean": 25.0,
+            "ratio": 0.04596020264271165,
+            "z": -17.803827794735913
+          },
+          "last_vs_prev": {
+            "abs": -2359.0,
+            "pct": -0.9554475496152288
+          }
+        }
+      },
+      "status_code": 200
+    }
+  ],
+  "top_companies_basis": "search aggregations.company.company.buckets"
+}

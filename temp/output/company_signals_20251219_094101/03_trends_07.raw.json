@@ -1,0 +1,5035 @@
+{
+  "company": "CBC Companies, Inc.",
+  "company_doc_count": 35963,
+  "params": {
+    "company": [
+      "CBC Companies, Inc."
+    ],
+    "date_received_max": "2025-12-01",
+    "date_received_min": "2023-12-01",
+    "lens": "overview",
+    "trend_depth": 12,
+    "trend_interval": "month"
+  },
+  "payload": {
+    "_meta": {
+      "date_max": "2025-12-18T12:00:00-05:00",
+      "date_min": "2011-12-01T12:00:00-05:00"
+    },
+    "_shards": {
+      "failed": 0,
+      "skipped": 0,
+      "successful": 5,
+      "total": 5
+    },
+    "aggregations": {
+      "dateRangeArea": {
+        "dateRangeArea": {
+          "buckets": [
+            {
+              "doc_count": 344,
+              "key": 1701388800000,
+              "key_as_string": "2023-12-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 322,
+              "key": 1704067200000,
+              "key_as_string": "2024-01-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 402,
+              "key": 1706745600000,
+              "key_as_string": "2024-02-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 409,
+              "key": 1709251200000,
+              "key_as_string": "2024-03-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 440,
+              "key": 1711929600000,
+              "key_as_string": "2024-04-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 433,
+              "key": 1714521600000,
+              "key_as_string": "2024-05-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 421,
+              "key": 1717200000000,
+              "key_as_string": "2024-06-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 536,
+              "key": 1719792000000,
+              "key_as_string": "2024-07-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 528,
+              "key": 1722470400000,
+              "key_as_string": "2024-08-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 550,
+              "key": 1725148800000,
+              "key_as_string": "2024-09-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 766,
+              "key": 1727740800000,
+              "key_as_string": "2024-10-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 911,
+              "key": 1730419200000,
+              "key_as_string": "2024-11-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 1233,
+              "key": 1733011200000,
+              "key_as_string": "2024-12-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 3354,
+              "key": 1735689600000,
+              "key_as_string": "2025-01-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 3154,
+              "key": 1738368000000,
+              "key_as_string": "2025-02-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 2166,
+              "key": 1740787200000,
+              "key_as_string": "2025-03-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 1931,
+              "key": 1743465600000,
+              "key_as_string": "2025-04-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 2419,
+              "key": 1746057600000,
+              "key_as_string": "2025-05-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 2654,
+              "key": 1748736000000,
+              "key_as_string": "2025-06-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 3135,
+              "key": 1751328000000,
+              "key_as_string": "2025-07-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 2690,
+              "key": 1754006400000,
+              "key_as_string": "2025-08-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 2251,
+              "key": 1756684800000,
+              "key_as_string": "2025-09-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 2380,
+              "key": 1759276800000,
+              "key_as_string": "2025-10-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 2412,
+              "key": 1761955200000,
+              "key_as_string": "2025-11-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 122,
+              "key": 1764547200000,
+              "key_as_string": "2025-12-01T00:00:00.000Z"
+            }
+          ]
+        },
+        "doc_count": 35963
+      },
+      "dateRangeBrush": {
+        "dateRangeBrush": {
+          "buckets": [
+            {
+              "doc_count": 2,
+              "key": 1585699200000,
+              "key_as_string": "2020-04-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 20,
+              "key": 1588291200000,
+              "key_as_string": "2020-05-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 41,
+              "key": 1590969600000,
+              "key_as_string": "2020-06-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 54,
+              "key": 1593561600000,
+              "key_as_string": "2020-07-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 40,
+              "key": 1596240000000,
+              "key_as_string": "2020-08-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 37,
+              "key": 1598918400000,
+              "key_as_string": "2020-09-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 131,
+              "key": 1601510400000,
+              "key_as_string": "2020-10-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 205,
+              "key": 1604188800000,
+              "key_as_string": "2020-11-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 90,
+              "key": 1606780800000,
+              "key_as_string": "2020-12-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 58,
+              "key": 1609459200000,
+              "key_as_string": "2021-01-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 45,
+              "key": 1612137600000,
+              "key_as_string": "2021-02-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 37,
+              "key": 1614556800000,
+              "key_as_string": "2021-03-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 23,
+              "key": 1617235200000,
+              "key_as_string": "2021-04-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 24,
+              "key": 1619827200000,
+              "key_as_string": "2021-05-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 50,
+              "key": 1622505600000,
+              "key_as_string": "2021-06-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 29,
+              "key": 1625097600000,
+              "key_as_string": "2021-07-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 31,
+              "key": 1627776000000,
+              "key_as_string": "2021-08-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 32,
+              "key": 1630454400000,
+              "key_as_string": "2021-09-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 30,
+              "key": 1633046400000,
+              "key_as_string": "2021-10-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 26,
+              "key": 1635724800000,
+              "key_as_string": "2021-11-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 38,
+              "key": 1638316800000,
+              "key_as_string": "2021-12-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 35,
+              "key": 1640995200000,
+              "key_as_string": "2022-01-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 43,
+              "key": 1643673600000,
+              "key_as_string": "2022-02-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 49,
+              "key": 1646092800000,
+              "key_as_string": "2022-03-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 51,
+              "key": 1648771200000,
+              "key_as_string": "2022-04-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 49,
+              "key": 1651363200000,
+              "key_as_string": "2022-05-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 49,
+              "key": 1654041600000,
+              "key_as_string": "2022-06-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 45,
+              "key": 1656633600000,
+              "key_as_string": "2022-07-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 56,
+              "key": 1659312000000,
+              "key_as_string": "2022-08-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 58,
+              "key": 1661990400000,
+              "key_as_string": "2022-09-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 55,
+              "key": 1664582400000,
+              "key_as_string": "2022-10-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 86,
+              "key": 1667260800000,
+              "key_as_string": "2022-11-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 59,
+              "key": 1669852800000,
+              "key_as_string": "2022-12-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 82,
+              "key": 1672531200000,
+              "key_as_string": "2023-01-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 164,
+              "key": 1675209600000,
+              "key_as_string": "2023-02-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 135,
+              "key": 1677628800000,
+              "key_as_string": "2023-03-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 117,
+              "key": 1680307200000,
+              "key_as_string": "2023-04-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 103,
+              "key": 1682899200000,
+              "key_as_string": "2023-05-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 136,
+              "key": 1685577600000,
+              "key_as_string": "2023-06-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 119,
+              "key": 1688169600000,
+              "key_as_string": "2023-07-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 133,
+              "key": 1690848000000,
+              "key_as_string": "2023-08-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 129,
+              "key": 1693526400000,
+              "key_as_string": "2023-09-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 195,
+              "key": 1696118400000,
+              "key_as_string": "2023-10-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 242,
+              "key": 1698796800000,
+              "key_as_string": "2023-11-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 344,
+              "key": 1701388800000,
+              "key_as_string": "2023-12-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 322,
+              "key": 1704067200000,
+              "key_as_string": "2024-01-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 402,
+              "key": 1706745600000,
+              "key_as_string": "2024-02-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 409,
+              "key": 1709251200000,
+              "key_as_string": "2024-03-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 440,
+              "key": 1711929600000,
+              "key_as_string": "2024-04-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 433,
+              "key": 1714521600000,
+              "key_as_string": "2024-05-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 421,
+              "key": 1717200000000,
+              "key_as_string": "2024-06-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 536,
+              "key": 1719792000000,
+              "key_as_string": "2024-07-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 528,
+              "key": 1722470400000,
+              "key_as_string": "2024-08-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 550,
+              "key": 1725148800000,
+              "key_as_string": "2024-09-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 766,
+              "key": 1727740800000,
+              "key_as_string": "2024-10-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 911,
+              "key": 1730419200000,
+              "key_as_string": "2024-11-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 1233,
+              "key": 1733011200000,
+              "key_as_string": "2024-12-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 3354,
+              "key": 1735689600000,
+              "key_as_string": "2025-01-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 3154,
+              "key": 1738368000000,
+              "key_as_string": "2025-02-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 2166,
+              "key": 1740787200000,
+              "key_as_string": "2025-03-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 1931,
+              "key": 1743465600000,
+              "key_as_string": "2025-04-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 2419,
+              "key": 1746057600000,
+              "key_as_string": "2025-05-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 2654,
+              "key": 1748736000000,
+              "key_as_string": "2025-06-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 3135,
+              "key": 1751328000000,
+              "key_as_string": "2025-07-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 2690,
+              "key": 1754006400000,
+              "key_as_string": "2025-08-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 2251,
+              "key": 1756684800000,
+              "key_as_string": "2025-09-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 2380,
+              "key": 1759276800000,
+              "key_as_string": "2025-10-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 2412,
+              "key": 1761955200000,
+              "key_as_string": "2025-11-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 1096,
+              "key": 1764547200000,
+              "key_as_string": "2025-12-01T00:00:00.000Z"
+            }
+          ]
+        },
+        "doc_count": 40170
+      },
+      "dateRangeBuckets": {
+        "body": {
+          "_source": [
+            "company",
+            "company_public_response",
+            "company_response",
+            "complaint_id",
+            "complaint_what_happened",
+            "consumer_consent_provided",
+            "consumer_disputed",
+            "date_received",
+            "date_sent_to_company",
+            "has_narrative",
+            "issue",
+            "product",
+            "state",
+            "submitted_via",
+            "sub_issue",
+            "sub_product",
+            "tags",
+            "timely",
+            "zip_code"
+          ],
+          "aggs": {
+            "dateRangeBuckets": {
+              "aggs": {
+                "dateRangeBuckets": {
+                  "date_histogram": {
+                    "calendar_interval": "month",
+                    "field": "date_received"
+                  }
+                }
+              },
+              "filter": {
+                "bool": {
+                  "must": [
+                    {
+                      "range": {
+                        "date_received": {
+                          "from": "2023-12-01",
+                          "to": "2025-12-01"
+                        }
+                      }
+                    }
+                  ],
+                  "must_not": []
+                }
+              }
+            }
+          },
+          "query": {
+            "match_all": {}
+          },
+          "size": 0,
+          "track_total_hits": true
+        },
+        "dateRangeBuckets": {
+          "buckets": [
+            {
+              "doc_count": 123071,
+              "key": 1701388800000,
+              "key_as_string": "2023-12-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 143378,
+              "key": 1704067200000,
+              "key_as_string": "2024-01-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 157626,
+              "key": 1706745600000,
+              "key_as_string": "2024-02-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 178262,
+              "key": 1709251200000,
+              "key_as_string": "2024-03-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 191597,
+              "key": 1711929600000,
+              "key_as_string": "2024-04-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 212245,
+              "key": 1714521600000,
+              "key_as_string": "2024-05-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 204773,
+              "key": 1717200000000,
+              "key_as_string": "2024-06-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 233175,
+              "key": 1719792000000,
+              "key_as_string": "2024-07-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 264069,
+              "key": 1722470400000,
+              "key_as_string": "2024-08-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 265129,
+              "key": 1725148800000,
+              "key_as_string": "2024-09-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 295981,
+              "key": 1727740800000,
+              "key_as_string": "2024-10-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 287246,
+              "key": 1730419200000,
+              "key_as_string": "2024-11-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 304182,
+              "key": 1733011200000,
+              "key_as_string": "2024-12-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 475805,
+              "key": 1735689600000,
+              "key_as_string": "2025-01-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 335249,
+              "key": 1738368000000,
+              "key_as_string": "2025-02-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 396989,
+              "key": 1740787200000,
+              "key_as_string": "2025-03-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 406139,
+              "key": 1743465600000,
+              "key_as_string": "2025-04-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 415220,
+              "key": 1746057600000,
+              "key_as_string": "2025-05-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 412204,
+              "key": 1748736000000,
+              "key_as_string": "2025-06-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 473234,
+              "key": 1751328000000,
+              "key_as_string": "2025-07-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 495622,
+              "key": 1754006400000,
+              "key_as_string": "2025-08-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 503857,
+              "key": 1756684800000,
+              "key_as_string": "2025-09-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 559348,
+              "key": 1759276800000,
+              "key_as_string": "2025-10-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 537328,
+              "key": 1761955200000,
+              "key_as_string": "2025-11-01T00:00:00.000Z"
+            },
+            {
+              "doc_count": 23268,
+              "key": 1764547200000,
+              "key_as_string": "2025-12-01T00:00:00.000Z"
+            }
+          ]
+        },
+        "doc_count": 7894997
+      },
+      "issue": {
+        "doc_count": 35963,
+        "issue": {
+          "buckets": [
+            {
+              "doc_count": 27512,
+              "issue": {
+                "buckets": [
+                  {
+                    "doc_count": 24387,
+                    "key": "Information belongs to someone else",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 1552,
+                          "interval_diff": {
+                            "value": -65.0
+                          },
+                          "key": 1761955200000,
+                          "key_as_string": "2025-11-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 1383,
+                    "key": "Account information incorrect",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 108,
+                          "interval_diff": {
+                            "value": 67.0
+                          },
+                          "key": 1761955200000,
+                          "key_as_string": "2025-11-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 879,
+                    "key": "Account status incorrect",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 11,
+                          "interval_diff": {
+                            "value": 3.0
+                          },
+                          "key": 1759276800000,
+                          "key_as_string": "2025-10-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 607,
+                    "key": "Personal information incorrect",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 24,
+                          "interval_diff": {
+                            "value": -66.0
+                          },
+                          "key": 1759276800000,
+                          "key_as_string": "2025-10-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 127,
+                    "key": "Public record information inaccurate",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 3,
+                          "interval_diff": {
+                            "value": -10.0
+                          },
+                          "key": 1759276800000,
+                          "key_as_string": "2025-10-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 64,
+                    "key": "Information is missing that should be on the report",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 3,
+                          "interval_diff": {
+                            "value": -4.0
+                          },
+                          "key": 1759276800000,
+                          "key_as_string": "2025-10-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 46,
+                    "key": "Old information reappears or never goes away",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 0,
+                          "interval_diff": {
+                            "value": -1.0
+                          },
+                          "key": 1756684800000,
+                          "key_as_string": "2025-09-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 16,
+                    "key": "Information is incorrect",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 1,
+                          "interval_diff": {
+                            "value": 0.0
+                          },
+                          "key": 1759276800000,
+                          "key_as_string": "2025-10-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 3,
+                    "key": "Information that should be on the report is missing",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 1,
+                          "interval_diff": {
+                            "value": 1.0
+                          },
+                          "key": 1756684800000,
+                          "key_as_string": "2025-09-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              },
+              "key": "Incorrect information on your report",
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 82,
+                    "interval_diff": {
+                      "value": -1624.0
+                    },
+                    "key": 1764547200000,
+                    "key_as_string": "2025-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1706,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1761955200000,
+                    "key_as_string": "2025-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1705,
+                    "interval_diff": {
+                      "value": 38.0
+                    },
+                    "key": 1759276800000,
+                    "key_as_string": "2025-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1667,
+                    "interval_diff": {
+                      "value": -321.0
+                    },
+                    "key": 1756684800000,
+                    "key_as_string": "2025-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1988,
+                    "interval_diff": {
+                      "value": -290.0
+                    },
+                    "key": 1754006400000,
+                    "key_as_string": "2025-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2278,
+                    "interval_diff": {
+                      "value": 127.0
+                    },
+                    "key": 1751328000000,
+                    "key_as_string": "2025-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2151,
+                    "interval_diff": {
+                      "value": 393.0
+                    },
+                    "key": 1748736000000,
+                    "key_as_string": "2025-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1758,
+                    "interval_diff": {
+                      "value": 114.0
+                    },
+                    "key": 1746057600000,
+                    "key_as_string": "2025-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1644,
+                    "interval_diff": {
+                      "value": -293.0
+                    },
+                    "key": 1743465600000,
+                    "key_as_string": "2025-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1937,
+                    "interval_diff": {
+                      "value": -1027.0
+                    },
+                    "key": 1740787200000,
+                    "key_as_string": "2025-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2964,
+                    "interval_diff": {
+                      "value": -85.0
+                    },
+                    "key": 1738368000000,
+                    "key_as_string": "2025-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 3049,
+                    "interval_diff": {
+                      "value": 2048.0
+                    },
+                    "key": 1735689600000,
+                    "key_as_string": "2025-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1001,
+                    "interval_diff": {
+                      "value": 381.0
+                    },
+                    "key": 1733011200000,
+                    "key_as_string": "2024-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 620,
+                    "interval_diff": {
+                      "value": 161.0
+                    },
+                    "key": 1730419200000,
+                    "key_as_string": "2024-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 459,
+                    "interval_diff": {
+                      "value": 123.0
+                    },
+                    "key": 1727740800000,
+                    "key_as_string": "2024-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 336,
+                    "interval_diff": {
+                      "value": 83.0
+                    },
+                    "key": 1725148800000,
+                    "key_as_string": "2024-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 253,
+                    "interval_diff": {
+                      "value": -33.0
+                    },
+                    "key": 1722470400000,
+                    "key_as_string": "2024-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 286,
+                    "interval_diff": {
+                      "value": 72.0
+                    },
+                    "key": 1719792000000,
+                    "key_as_string": "2024-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 214,
+                    "interval_diff": {
+                      "value": -17.0
+                    },
+                    "key": 1717200000000,
+                    "key_as_string": "2024-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 231,
+                    "interval_diff": {
+                      "value": -31.0
+                    },
+                    "key": 1714521600000,
+                    "key_as_string": "2024-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 262,
+                    "interval_diff": {
+                      "value": -16.0
+                    },
+                    "key": 1711929600000,
+                    "key_as_string": "2024-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 278,
+                    "interval_diff": {
+                      "value": 48.0
+                    },
+                    "key": 1709251200000,
+                    "key_as_string": "2024-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 230,
+                    "interval_diff": {
+                      "value": 42.0
+                    },
+                    "key": 1706745600000,
+                    "key_as_string": "2024-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 188,
+                    "interval_diff": {
+                      "value": -37.0
+                    },
+                    "key": 1704067200000,
+                    "key_as_string": "2024-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 225,
+                    "key": 1701388800000,
+                    "key_as_string": "2023-12-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            {
+              "doc_count": 4524,
+              "issue": {
+                "buckets": [
+                  {
+                    "doc_count": 4156,
+                    "key": "Reporting company used your report improperly",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 306,
+                          "interval_diff": {
+                            "value": -119.0
+                          },
+                          "key": 1761955200000,
+                          "key_as_string": "2025-11-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 359,
+                    "key": "Credit inquiries on your report that you don't recognize",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 2,
+                          "interval_diff": {
+                            "value": -3.0
+                          },
+                          "key": 1759276800000,
+                          "key_as_string": "2025-10-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 6,
+                    "key": "Received unsolicited financial product or insurance offers after opting out",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 0,
+                          "interval_diff": {
+                            "value": 0.0
+                          },
+                          "key": 1754006400000,
+                          "key_as_string": "2025-08-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 3,
+                    "key": "Report provided to employer without your written authorization",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 0,
+                          "interval_diff": {
+                            "value": 0.0
+                          },
+                          "key": 1738368000000,
+                          "key_as_string": "2025-02-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              },
+              "key": "Improper use of your report",
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 25,
+                    "interval_diff": {
+                      "value": -289.0
+                    },
+                    "key": 1764547200000,
+                    "key_as_string": "2025-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 314,
+                    "interval_diff": {
+                      "value": -113.0
+                    },
+                    "key": 1761955200000,
+                    "key_as_string": "2025-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 427,
+                    "interval_diff": {
+                      "value": 69.0
+                    },
+                    "key": 1759276800000,
+                    "key_as_string": "2025-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 358,
+                    "interval_diff": {
+                      "value": -80.0
+                    },
+                    "key": 1756684800000,
+                    "key_as_string": "2025-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 438,
+                    "interval_diff": {
+                      "value": -120.0
+                    },
+                    "key": 1754006400000,
+                    "key_as_string": "2025-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 558,
+                    "interval_diff": {
+                      "value": 352.0
+                    },
+                    "key": 1751328000000,
+                    "key_as_string": "2025-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 206,
+                    "interval_diff": {
+                      "value": 32.0
+                    },
+                    "key": 1748736000000,
+                    "key_as_string": "2025-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 174,
+                    "interval_diff": {
+                      "value": 107.0
+                    },
+                    "key": 1746057600000,
+                    "key_as_string": "2025-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 67,
+                    "interval_diff": {
+                      "value": -4.0
+                    },
+                    "key": 1743465600000,
+                    "key_as_string": "2025-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 71,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1740787200000,
+                    "key_as_string": "2025-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 72,
+                    "interval_diff": {
+                      "value": -43.0
+                    },
+                    "key": 1738368000000,
+                    "key_as_string": "2025-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 115,
+                    "interval_diff": {
+                      "value": -13.0
+                    },
+                    "key": 1735689600000,
+                    "key_as_string": "2025-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 128,
+                    "interval_diff": {
+                      "value": -37.0
+                    },
+                    "key": 1733011200000,
+                    "key_as_string": "2024-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 165,
+                    "interval_diff": {
+                      "value": -9.0
+                    },
+                    "key": 1730419200000,
+                    "key_as_string": "2024-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 174,
+                    "interval_diff": {
+                      "value": 54.0
+                    },
+                    "key": 1727740800000,
+                    "key_as_string": "2024-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 120,
+                    "interval_diff": {
+                      "value": -72.0
+                    },
+                    "key": 1725148800000,
+                    "key_as_string": "2024-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 192,
+                    "interval_diff": {
+                      "value": 28.0
+                    },
+                    "key": 1722470400000,
+                    "key_as_string": "2024-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 164,
+                    "interval_diff": {
+                      "value": 44.0
+                    },
+                    "key": 1719792000000,
+                    "key_as_string": "2024-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 120,
+                    "interval_diff": {
+                      "value": 25.0
+                    },
+                    "key": 1717200000000,
+                    "key_as_string": "2024-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 95,
+                    "interval_diff": {
+                      "value": -15.0
+                    },
+                    "key": 1714521600000,
+                    "key_as_string": "2024-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 110,
+                    "interval_diff": {
+                      "value": 19.0
+                    },
+                    "key": 1711929600000,
+                    "key_as_string": "2024-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 91,
+                    "interval_diff": {
+                      "value": -47.0
+                    },
+                    "key": 1709251200000,
+                    "key_as_string": "2024-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 138,
+                    "interval_diff": {
+                      "value": 29.0
+                    },
+                    "key": 1706745600000,
+                    "key_as_string": "2024-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 109,
+                    "interval_diff": {
+                      "value": 16.0
+                    },
+                    "key": 1704067200000,
+                    "key_as_string": "2024-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 93,
+                    "key": 1701388800000,
+                    "key_as_string": "2023-12-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            {
+              "doc_count": 1947,
+              "issue": {
+                "buckets": [
+                  {
+                    "doc_count": 1202,
+                    "key": "Investigation took more than 30 days",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 207,
+                          "interval_diff": {
+                            "value": 124.0
+                          },
+                          "key": 1761955200000,
+                          "key_as_string": "2025-11-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 652,
+                    "key": "Their investigation did not fix an error on your report",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 61,
+                          "interval_diff": {
+                            "value": 34.0
+                          },
+                          "key": 1761955200000,
+                          "key_as_string": "2025-11-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 48,
+                    "key": "Was not notified of investigation status or results",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 0,
+                          "interval_diff": {
+                            "value": -1.0
+                          },
+                          "key": 1759276800000,
+                          "key_as_string": "2025-10-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 37,
+                    "key": "Difficulty submitting a dispute or getting information about a dispute over the phone",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 2,
+                          "interval_diff": {
+                            "value": -1.0
+                          },
+                          "key": 1761955200000,
+                          "key_as_string": "2025-11-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 8,
+                    "key": "Problem with personal statement of dispute",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 2,
+                          "interval_diff": {
+                            "value": 1.0
+                          },
+                          "key": 1756684800000,
+                          "key_as_string": "2025-09-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              },
+              "key": "Problem with a company's investigation into an existing problem",
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 9,
+                    "interval_diff": {
+                      "value": -266.0
+                    },
+                    "key": 1764547200000,
+                    "key_as_string": "2025-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 275,
+                    "interval_diff": {
+                      "value": 161.0
+                    },
+                    "key": 1761955200000,
+                    "key_as_string": "2025-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 114,
+                    "interval_diff": {
+                      "value": -33.0
+                    },
+                    "key": 1759276800000,
+                    "key_as_string": "2025-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 147,
+                    "interval_diff": {
+                      "value": -21.0
+                    },
+                    "key": 1756684800000,
+                    "key_as_string": "2025-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 168,
+                    "interval_diff": {
+                      "value": 24.0
+                    },
+                    "key": 1754006400000,
+                    "key_as_string": "2025-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 144,
+                    "interval_diff": {
+                      "value": 19.0
+                    },
+                    "key": 1751328000000,
+                    "key_as_string": "2025-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 125,
+                    "interval_diff": {
+                      "value": -131.0
+                    },
+                    "key": 1748736000000,
+                    "key_as_string": "2025-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 256,
+                    "interval_diff": {
+                      "value": 176.0
+                    },
+                    "key": 1746057600000,
+                    "key_as_string": "2025-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 80,
+                    "interval_diff": {
+                      "value": 25.0
+                    },
+                    "key": 1743465600000,
+                    "key_as_string": "2025-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 55,
+                    "interval_diff": {
+                      "value": 5.0
+                    },
+                    "key": 1740787200000,
+                    "key_as_string": "2025-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 50,
+                    "interval_diff": {
+                      "value": -54.0
+                    },
+                    "key": 1738368000000,
+                    "key_as_string": "2025-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 104,
+                    "interval_diff": {
+                      "value": 38.0
+                    },
+                    "key": 1735689600000,
+                    "key_as_string": "2025-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 66,
+                    "interval_diff": {
+                      "value": -5.0
+                    },
+                    "key": 1733011200000,
+                    "key_as_string": "2024-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 71,
+                    "interval_diff": {
+                      "value": 31.0
+                    },
+                    "key": 1730419200000,
+                    "key_as_string": "2024-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 40,
+                    "interval_diff": {
+                      "value": -12.0
+                    },
+                    "key": 1727740800000,
+                    "key_as_string": "2024-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 52,
+                    "interval_diff": {
+                      "value": 17.0
+                    },
+                    "key": 1725148800000,
+                    "key_as_string": "2024-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 35,
+                    "interval_diff": {
+                      "value": 2.0
+                    },
+                    "key": 1722470400000,
+                    "key_as_string": "2024-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 33,
+                    "interval_diff": {
+                      "value": 21.0
+                    },
+                    "key": 1719792000000,
+                    "key_as_string": "2024-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 12,
+                    "interval_diff": {
+                      "value": -20.0
+                    },
+                    "key": 1717200000000,
+                    "key_as_string": "2024-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 32,
+                    "interval_diff": {
+                      "value": 7.0
+                    },
+                    "key": 1714521600000,
+                    "key_as_string": "2024-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 25,
+                    "interval_diff": {
+                      "value": 7.0
+                    },
+                    "key": 1711929600000,
+                    "key_as_string": "2024-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 18,
+                    "interval_diff": {
+                      "value": 10.0
+                    },
+                    "key": 1709251200000,
+                    "key_as_string": "2024-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 8,
+                    "interval_diff": {
+                      "value": -3.0
+                    },
+                    "key": 1706745600000,
+                    "key_as_string": "2024-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 11,
+                    "interval_diff": {
+                      "value": -6.0
+                    },
+                    "key": 1704067200000,
+                    "key_as_string": "2024-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 17,
+                    "key": 1701388800000,
+                    "key_as_string": "2023-12-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            {
+              "doc_count": 1656,
+              "issue": {
+                "buckets": [],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              },
+              "key": "Problem with fraud alerts or security freezes",
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 5,
+                    "interval_diff": {
+                      "value": -91.0
+                    },
+                    "key": 1764547200000,
+                    "key_as_string": "2025-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 96,
+                    "interval_diff": {
+                      "value": -27.0
+                    },
+                    "key": 1761955200000,
+                    "key_as_string": "2025-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 123,
+                    "interval_diff": {
+                      "value": 51.0
+                    },
+                    "key": 1759276800000,
+                    "key_as_string": "2025-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 72,
+                    "interval_diff": {
+                      "value": -13.0
+                    },
+                    "key": 1756684800000,
+                    "key_as_string": "2025-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 85,
+                    "interval_diff": {
+                      "value": -60.0
+                    },
+                    "key": 1754006400000,
+                    "key_as_string": "2025-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 145,
+                    "interval_diff": {
+                      "value": -18.0
+                    },
+                    "key": 1751328000000,
+                    "key_as_string": "2025-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 163,
+                    "interval_diff": {
+                      "value": -55.0
+                    },
+                    "key": 1748736000000,
+                    "key_as_string": "2025-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 218,
+                    "interval_diff": {
+                      "value": 96.0
+                    },
+                    "key": 1746057600000,
+                    "key_as_string": "2025-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 122,
+                    "interval_diff": {
+                      "value": 31.0
+                    },
+                    "key": 1743465600000,
+                    "key_as_string": "2025-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 91,
+                    "interval_diff": {
+                      "value": 40.0
+                    },
+                    "key": 1740787200000,
+                    "key_as_string": "2025-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 51,
+                    "interval_diff": {
+                      "value": -15.0
+                    },
+                    "key": 1738368000000,
+                    "key_as_string": "2025-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 66,
+                    "interval_diff": {
+                      "value": 52.0
+                    },
+                    "key": 1735689600000,
+                    "key_as_string": "2025-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 14,
+                    "interval_diff": {
+                      "value": -28.0
+                    },
+                    "key": 1733011200000,
+                    "key_as_string": "2024-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 42,
+                    "interval_diff": {
+                      "value": -35.0
+                    },
+                    "key": 1730419200000,
+                    "key_as_string": "2024-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 77,
+                    "interval_diff": {
+                      "value": 43.0
+                    },
+                    "key": 1727740800000,
+                    "key_as_string": "2024-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 34,
+                    "interval_diff": {
+                      "value": -8.0
+                    },
+                    "key": 1725148800000,
+                    "key_as_string": "2024-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 42,
+                    "interval_diff": {
+                      "value": -4.0
+                    },
+                    "key": 1722470400000,
+                    "key_as_string": "2024-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 46,
+                    "interval_diff": {
+                      "value": -14.0
+                    },
+                    "key": 1719792000000,
+                    "key_as_string": "2024-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 60,
+                    "interval_diff": {
+                      "value": 12.0
+                    },
+                    "key": 1717200000000,
+                    "key_as_string": "2024-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 48,
+                    "interval_diff": {
+                      "value": 19.0
+                    },
+                    "key": 1714521600000,
+                    "key_as_string": "2024-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 29,
+                    "interval_diff": {
+                      "value": 15.0
+                    },
+                    "key": 1711929600000,
+                    "key_as_string": "2024-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 14,
+                    "interval_diff": {
+                      "value": 5.0
+                    },
+                    "key": 1709251200000,
+                    "key_as_string": "2024-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 9,
+                    "interval_diff": {
+                      "value": 8.0
+                    },
+                    "key": 1706745600000,
+                    "key_as_string": "2024-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": -2.0
+                    },
+                    "key": 1704067200000,
+                    "key_as_string": "2024-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 3,
+                    "key": 1701388800000,
+                    "key_as_string": "2023-12-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            {
+              "doc_count": 211,
+              "issue": {
+                "buckets": [
+                  {
+                    "doc_count": 143,
+                    "key": "Other problem getting your report or credit score",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 3,
+                          "interval_diff": {
+                            "value": 0.0
+                          },
+                          "key": 1761955200000,
+                          "key_as_string": "2025-11-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 68,
+                    "key": "Problem getting your free annual credit report",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 3,
+                          "interval_diff": {
+                            "value": 3.0
+                          },
+                          "key": 1759276800000,
+                          "key_as_string": "2025-10-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              },
+              "key": "Unable to get your credit report or credit score",
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": -7.0
+                    },
+                    "key": 1764547200000,
+                    "key_as_string": "2025-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 8,
+                    "interval_diff": {
+                      "value": 2.0
+                    },
+                    "key": 1761955200000,
+                    "key_as_string": "2025-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 6,
+                    "interval_diff": {
+                      "value": 3.0
+                    },
+                    "key": 1759276800000,
+                    "key_as_string": "2025-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 3,
+                    "interval_diff": {
+                      "value": -6.0
+                    },
+                    "key": 1756684800000,
+                    "key_as_string": "2025-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 9,
+                    "interval_diff": {
+                      "value": 6.0
+                    },
+                    "key": 1754006400000,
+                    "key_as_string": "2025-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 3,
+                    "interval_diff": {
+                      "value": -2.0
+                    },
+                    "key": 1751328000000,
+                    "key_as_string": "2025-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 5,
+                    "interval_diff": {
+                      "value": -5.0
+                    },
+                    "key": 1748736000000,
+                    "key_as_string": "2025-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 10,
+                    "interval_diff": {
+                      "value": -2.0
+                    },
+                    "key": 1746057600000,
+                    "key_as_string": "2025-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 12,
+                    "interval_diff": {
+                      "value": 5.0
+                    },
+                    "key": 1743465600000,
+                    "key_as_string": "2025-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 7,
+                    "interval_diff": {
+                      "value": -7.0
+                    },
+                    "key": 1740787200000,
+                    "key_as_string": "2025-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 14,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1738368000000,
+                    "key_as_string": "2025-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 15,
+                    "interval_diff": {
+                      "value": 4.0
+                    },
+                    "key": 1735689600000,
+                    "key_as_string": "2025-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 11,
+                    "interval_diff": {
+                      "value": 3.0
+                    },
+                    "key": 1733011200000,
+                    "key_as_string": "2024-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 8,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1730419200000,
+                    "key_as_string": "2024-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 7,
+                    "interval_diff": {
+                      "value": 3.0
+                    },
+                    "key": 1727740800000,
+                    "key_as_string": "2024-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 4,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1725148800000,
+                    "key_as_string": "2024-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 5,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1722470400000,
+                    "key_as_string": "2024-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 4,
+                    "interval_diff": {
+                      "value": -9.0
+                    },
+                    "key": 1719792000000,
+                    "key_as_string": "2024-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 13,
+                    "interval_diff": {
+                      "value": -8.0
+                    },
+                    "key": 1717200000000,
+                    "key_as_string": "2024-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 21,
+                    "interval_diff": {
+                      "value": 10.0
+                    },
+                    "key": 1714521600000,
+                    "key_as_string": "2024-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 11,
+                    "interval_diff": {
+                      "value": 5.0
+                    },
+                    "key": 1711929600000,
+                    "key_as_string": "2024-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 6,
+                    "interval_diff": {
+                      "value": -6.0
+                    },
+                    "key": 1709251200000,
+                    "key_as_string": "2024-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 12,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1706745600000,
+                    "key_as_string": "2024-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 12,
+                    "interval_diff": {
+                      "value": 8.0
+                    },
+                    "key": 1704067200000,
+                    "key_as_string": "2024-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 4,
+                    "key": 1701388800000,
+                    "key_as_string": "2023-12-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            {
+              "doc_count": 23,
+              "issue": {
+                "buckets": [
+                  {
+                    "doc_count": 15,
+                    "key": "Their investigation did not fix an error on your report",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 0,
+                          "interval_diff": {
+                            "value": -2.0
+                          },
+                          "key": 1759276800000,
+                          "key_as_string": "2025-10-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 5,
+                    "key": "Difficulty submitting a dispute or getting information about a dispute over the phone",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 0,
+                          "interval_diff": {
+                            "value": 0.0
+                          },
+                          "key": 1751328000000,
+                          "key_as_string": "2025-07-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 2,
+                    "key": "Was not notified of investigation status or results",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 0,
+                          "interval_diff": {
+                            "value": 0.0
+                          },
+                          "key": 1740787200000,
+                          "key_as_string": "2025-03-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": "Investigation took more than 30 days",
+                    "trend_period": {
+                      "buckets": []
+                    }
+                  }
+                ],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              },
+              "key": "Problem with a company's investigation into an existing issue",
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1761955200000,
+                    "key_as_string": "2025-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -2.0
+                    },
+                    "key": 1759276800000,
+                    "key_as_string": "2025-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1756684800000,
+                    "key_as_string": "2025-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1754006400000,
+                    "key_as_string": "2025-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1751328000000,
+                    "key_as_string": "2025-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1748736000000,
+                    "key_as_string": "2025-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1746057600000,
+                    "key_as_string": "2025-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 3,
+                    "interval_diff": {
+                      "value": 2.0
+                    },
+                    "key": 1743465600000,
+                    "key_as_string": "2025-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1740787200000,
+                    "key_as_string": "2025-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1738368000000,
+                    "key_as_string": "2025-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1735689600000,
+                    "key_as_string": "2025-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1733011200000,
+                    "key_as_string": "2024-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1730419200000,
+                    "key_as_string": "2024-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1727740800000,
+                    "key_as_string": "2024-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1725148800000,
+                    "key_as_string": "2024-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1722470400000,
+                    "key_as_string": "2024-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1719792000000,
+                    "key_as_string": "2024-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -3.0
+                    },
+                    "key": 1717200000000,
+                    "key_as_string": "2024-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 3,
+                    "interval_diff": {
+                      "value": 3.0
+                    },
+                    "key": 1714521600000,
+                    "key_as_string": "2024-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1711929600000,
+                    "key_as_string": "2024-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -2.0
+                    },
+                    "key": 1709251200000,
+                    "key_as_string": "2024-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "key": 1706745600000,
+                    "key_as_string": "2024-02-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            {
+              "doc_count": 21,
+              "issue": {
+                "buckets": [
+                  {
+                    "doc_count": 14,
+                    "key": "Debt is not yours",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 0,
+                          "interval_diff": {
+                            "value": 0.0
+                          },
+                          "key": 1759276800000,
+                          "key_as_string": "2025-10-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 5,
+                    "key": "Debt was result of identity theft",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 0,
+                          "interval_diff": {
+                            "value": 0.0
+                          },
+                          "key": 1759276800000,
+                          "key_as_string": "2025-10-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": "Debt was already discharged in bankruptcy and is no longer owed",
+                    "trend_period": {
+                      "buckets": []
+                    }
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": "Debt was paid",
+                    "trend_period": {
+                      "buckets": []
+                    }
+                  }
+                ],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              },
+              "key": "Attempts to collect debt not owed",
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 4,
+                    "interval_diff": {
+                      "value": 4.0
+                    },
+                    "key": 1761955200000,
+                    "key_as_string": "2025-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1759276800000,
+                    "key_as_string": "2025-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1756684800000,
+                    "key_as_string": "2025-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1754006400000,
+                    "key_as_string": "2025-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1751328000000,
+                    "key_as_string": "2025-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1748736000000,
+                    "key_as_string": "2025-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1746057600000,
+                    "key_as_string": "2025-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1743465600000,
+                    "key_as_string": "2025-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": 2.0
+                    },
+                    "key": 1740787200000,
+                    "key_as_string": "2025-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1738368000000,
+                    "key_as_string": "2025-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1735689600000,
+                    "key_as_string": "2025-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1733011200000,
+                    "key_as_string": "2024-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": -3.0
+                    },
+                    "key": 1730419200000,
+                    "key_as_string": "2024-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 5,
+                    "interval_diff": {
+                      "value": 4.0
+                    },
+                    "key": 1727740800000,
+                    "key_as_string": "2024-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1725148800000,
+                    "key_as_string": "2024-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1722470400000,
+                    "key_as_string": "2024-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1719792000000,
+                    "key_as_string": "2024-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1717200000000,
+                    "key_as_string": "2024-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1714521600000,
+                    "key_as_string": "2024-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1711929600000,
+                    "key_as_string": "2024-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1709251200000,
+                    "key_as_string": "2024-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": 1706745600000,
+                    "key_as_string": "2024-02-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            {
+              "doc_count": 20,
+              "issue": {
+                "buckets": [
+                  {
+                    "doc_count": 11,
+                    "key": "Indicated you were committing crime by not paying debt",
+                    "trend_period": {
+                      "buckets": []
+                    }
+                  },
+                  {
+                    "doc_count": 8,
+                    "key": "Attempted to collect wrong amount",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 2,
+                          "interval_diff": {
+                            "value": 2.0
+                          },
+                          "key": 1759276800000,
+                          "key_as_string": "2025-10-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": "Impersonated attorney, law enforcement, or government official",
+                    "trend_period": {
+                      "buckets": []
+                    }
+                  }
+                ],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              },
+              "key": "False statements or representation",
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 3,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1761955200000,
+                    "key_as_string": "2025-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": 2.0
+                    },
+                    "key": 1759276800000,
+                    "key_as_string": "2025-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1756684800000,
+                    "key_as_string": "2025-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -2.0
+                    },
+                    "key": 1754006400000,
+                    "key_as_string": "2025-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": 2.0
+                    },
+                    "key": 1751328000000,
+                    "key_as_string": "2025-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1748736000000,
+                    "key_as_string": "2025-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1746057600000,
+                    "key_as_string": "2025-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1743465600000,
+                    "key_as_string": "2025-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1740787200000,
+                    "key_as_string": "2025-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1738368000000,
+                    "key_as_string": "2025-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -11.0
+                    },
+                    "key": 1735689600000,
+                    "key_as_string": "2025-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 11,
+                    "interval_diff": {
+                      "value": 11.0
+                    },
+                    "key": 1733011200000,
+                    "key_as_string": "2024-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1730419200000,
+                    "key_as_string": "2024-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": 1727740800000,
+                    "key_as_string": "2024-10-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            {
+              "doc_count": 19,
+              "issue": {
+                "buckets": [
+                  {
+                    "doc_count": 10,
+                    "key": "Problem canceling credit monitoring or identify theft protection service",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 0,
+                          "interval_diff": {
+                            "value": 0.0
+                          },
+                          "key": 1746057600000,
+                          "key_as_string": "2025-05-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 5,
+                    "key": "Billing dispute for services",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 1,
+                          "interval_diff": {
+                            "value": 1.0
+                          },
+                          "key": 1733011200000,
+                          "key_as_string": "2024-12-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 2,
+                    "key": "Didn't receive services that were advertised",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 0,
+                          "interval_diff": {
+                            "value": 0.0
+                          },
+                          "key": 1748736000000,
+                          "key_as_string": "2025-06-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": "Problem with product or service terms changing",
+                    "trend_period": {
+                      "buckets": []
+                    }
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": "Received unwanted marketing or advertising",
+                    "trend_period": {
+                      "buckets": []
+                    }
+                  }
+                ],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              },
+              "key": "Credit monitoring or identity theft protection services",
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1751328000000,
+                    "key_as_string": "2025-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1748736000000,
+                    "key_as_string": "2025-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1746057600000,
+                    "key_as_string": "2025-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1743465600000,
+                    "key_as_string": "2025-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1740787200000,
+                    "key_as_string": "2025-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -2.0
+                    },
+                    "key": 1738368000000,
+                    "key_as_string": "2025-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1735689600000,
+                    "key_as_string": "2025-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1733011200000,
+                    "key_as_string": "2024-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1730419200000,
+                    "key_as_string": "2024-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1727740800000,
+                    "key_as_string": "2024-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 3,
+                    "interval_diff": {
+                      "value": 3.0
+                    },
+                    "key": 1725148800000,
+                    "key_as_string": "2024-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1722470400000,
+                    "key_as_string": "2024-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1719792000000,
+                    "key_as_string": "2024-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1717200000000,
+                    "key_as_string": "2024-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": -2.0
+                    },
+                    "key": 1714521600000,
+                    "key_as_string": "2024-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 3,
+                    "interval_diff": {
+                      "value": 3.0
+                    },
+                    "key": 1711929600000,
+                    "key_as_string": "2024-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1709251200000,
+                    "key_as_string": "2024-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1706745600000,
+                    "key_as_string": "2024-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1704067200000,
+                    "key_as_string": "2024-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": 1701388800000,
+                    "key_as_string": "2023-12-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            {
+              "doc_count": 6,
+              "issue": {
+                "buckets": [
+                  {
+                    "doc_count": 4,
+                    "key": "Didn't receive enough information to verify debt",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 1,
+                          "interval_diff": {
+                            "value": 1.0
+                          },
+                          "key": 1759276800000,
+                          "key_as_string": "2025-10-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 2,
+                    "key": "Didn't receive notice of right to dispute",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 0,
+                          "interval_diff": {
+                            "value": 0.0
+                          },
+                          "key": 1733011200000,
+                          "key_as_string": "2024-12-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              },
+              "key": "Written notification about debt",
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1761955200000,
+                    "key_as_string": "2025-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1759276800000,
+                    "key_as_string": "2025-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1756684800000,
+                    "key_as_string": "2025-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1754006400000,
+                    "key_as_string": "2025-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1751328000000,
+                    "key_as_string": "2025-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1748736000000,
+                    "key_as_string": "2025-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1746057600000,
+                    "key_as_string": "2025-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1743465600000,
+                    "key_as_string": "2025-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1740787200000,
+                    "key_as_string": "2025-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1738368000000,
+                    "key_as_string": "2025-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1735689600000,
+                    "key_as_string": "2025-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1733011200000,
+                    "key_as_string": "2024-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1730419200000,
+                    "key_as_string": "2024-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1727740800000,
+                    "key_as_string": "2024-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1725148800000,
+                    "key_as_string": "2024-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1722470400000,
+                    "key_as_string": "2024-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1719792000000,
+                    "key_as_string": "2024-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1717200000000,
+                    "key_as_string": "2024-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": 1714521600000,
+                    "key_as_string": "2024-05-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            {
+              "doc_count": 5,
+              "issue": {
+                "buckets": [],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              },
+              "key": "Confusing or missing disclosures",
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 4,
+                    "interval_diff": {
+                      "value": 3.0
+                    },
+                    "key": 1761955200000,
+                    "key_as_string": "2025-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": 1759276800000,
+                    "key_as_string": "2025-10-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            {
+              "doc_count": 4,
+              "issue": {
+                "buckets": [
+                  {
+                    "doc_count": 2,
+                    "key": "Problem canceling credit monitoring or identify theft protection service",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 0,
+                          "interval_diff": {
+                            "value": 0.0
+                          },
+                          "key": 1746057600000,
+                          "key_as_string": "2025-05-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": "Problem with product or service terms changing",
+                    "trend_period": {
+                      "buckets": []
+                    }
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": "Received unwanted marketing or advertising",
+                    "trend_period": {
+                      "buckets": []
+                    }
+                  }
+                ],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              },
+              "key": "Identity theft protection or other monitoring services",
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1748736000000,
+                    "key_as_string": "2025-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1746057600000,
+                    "key_as_string": "2025-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1743465600000,
+                    "key_as_string": "2025-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1740787200000,
+                    "key_as_string": "2025-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1738368000000,
+                    "key_as_string": "2025-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1735689600000,
+                    "key_as_string": "2025-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1733011200000,
+                    "key_as_string": "2024-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1730419200000,
+                    "key_as_string": "2024-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1727740800000,
+                    "key_as_string": "2024-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1725148800000,
+                    "key_as_string": "2024-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1722470400000,
+                    "key_as_string": "2024-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1719792000000,
+                    "key_as_string": "2024-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1717200000000,
+                    "key_as_string": "2024-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1714521600000,
+                    "key_as_string": "2024-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1711929600000,
+                    "key_as_string": "2024-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1709251200000,
+                    "key_as_string": "2024-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1706745600000,
+                    "key_as_string": "2024-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1704067200000,
+                    "key_as_string": "2024-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": 1701388800000,
+                    "key_as_string": "2023-12-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            }
+          ],
+          "doc_count_error_upper_bound": 0,
+          "sum_other_doc_count": 15
+        }
+      },
+      "max_date": {
+        "value": 1766077200000.0,
+        "value_as_string": "2025-12-18T12:00:00-05:00"
+      },
+      "min_date": {
+        "value": 1322758800000.0,
+        "value_as_string": "2011-12-01T12:00:00-05:00"
+      },
+      "product": {
+        "doc_count": 35963,
+        "product": {
+          "buckets": [
+            {
+              "doc_count": 35892,
+              "key": "Credit reporting or other personal consumer reports",
+              "product": {
+                "buckets": [
+                  {
+                    "doc_count": 35692,
+                    "key": "Credit reporting",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 2397,
+                          "interval_diff": {
+                            "value": 27.0
+                          },
+                          "key": 1761955200000,
+                          "key_as_string": "2025-11-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 200,
+                    "key": "Other personal consumer report",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 5,
+                          "interval_diff": {
+                            "value": -9.0
+                          },
+                          "key": 1759276800000,
+                          "key_as_string": "2025-10-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              },
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 122,
+                    "interval_diff": {
+                      "value": -2278.0
+                    },
+                    "key": 1764547200000,
+                    "key_as_string": "2025-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2400,
+                    "interval_diff": {
+                      "value": 25.0
+                    },
+                    "key": 1761955200000,
+                    "key_as_string": "2025-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2375,
+                    "interval_diff": {
+                      "value": 126.0
+                    },
+                    "key": 1759276800000,
+                    "key_as_string": "2025-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2249,
+                    "interval_diff": {
+                      "value": -440.0
+                    },
+                    "key": 1756684800000,
+                    "key_as_string": "2025-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2689,
+                    "interval_diff": {
+                      "value": -442.0
+                    },
+                    "key": 1754006400000,
+                    "key_as_string": "2025-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 3131,
+                    "interval_diff": {
+                      "value": 478.0
+                    },
+                    "key": 1751328000000,
+                    "key_as_string": "2025-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2653,
+                    "interval_diff": {
+                      "value": 235.0
+                    },
+                    "key": 1748736000000,
+                    "key_as_string": "2025-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2418,
+                    "interval_diff": {
+                      "value": 490.0
+                    },
+                    "key": 1746057600000,
+                    "key_as_string": "2025-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1928,
+                    "interval_diff": {
+                      "value": -234.0
+                    },
+                    "key": 1743465600000,
+                    "key_as_string": "2025-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2162,
+                    "interval_diff": {
+                      "value": -991.0
+                    },
+                    "key": 1740787200000,
+                    "key_as_string": "2025-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 3153,
+                    "interval_diff": {
+                      "value": -198.0
+                    },
+                    "key": 1738368000000,
+                    "key_as_string": "2025-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 3351,
+                    "interval_diff": {
+                      "value": 2131.0
+                    },
+                    "key": 1735689600000,
+                    "key_as_string": "2025-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1220,
+                    "interval_diff": {
+                      "value": 312.0
+                    },
+                    "key": 1733011200000,
+                    "key_as_string": "2024-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 908,
+                    "interval_diff": {
+                      "value": 149.0
+                    },
+                    "key": 1730419200000,
+                    "key_as_string": "2024-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 759,
+                    "interval_diff": {
+                      "value": 210.0
+                    },
+                    "key": 1727740800000,
+                    "key_as_string": "2024-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 549,
+                    "interval_diff": {
+                      "value": 21.0
+                    },
+                    "key": 1725148800000,
+                    "key_as_string": "2024-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 528,
+                    "interval_diff": {
+                      "value": -7.0
+                    },
+                    "key": 1722470400000,
+                    "key_as_string": "2024-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 535,
+                    "interval_diff": {
+                      "value": 115.0
+                    },
+                    "key": 1719792000000,
+                    "key_as_string": "2024-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 420,
+                    "interval_diff": {
+                      "value": -11.0
+                    },
+                    "key": 1717200000000,
+                    "key_as_string": "2024-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 431,
+                    "interval_diff": {
+                      "value": -9.0
+                    },
+                    "key": 1714521600000,
+                    "key_as_string": "2024-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 440,
+                    "interval_diff": {
+                      "value": 33.0
+                    },
+                    "key": 1711929600000,
+                    "key_as_string": "2024-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 407,
+                    "interval_diff": {
+                      "value": 7.0
+                    },
+                    "key": 1709251200000,
+                    "key_as_string": "2024-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 400,
+                    "interval_diff": {
+                      "value": 80.0
+                    },
+                    "key": 1706745600000,
+                    "key_as_string": "2024-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 320,
+                    "interval_diff": {
+                      "value": -24.0
+                    },
+                    "key": 1704067200000,
+                    "key_as_string": "2024-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 344,
+                    "key": 1701388800000,
+                    "key_as_string": "2023-12-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            {
+              "doc_count": 53,
+              "key": "Debt collection",
+              "product": {
+                "buckets": [
+                  {
+                    "doc_count": 21,
+                    "key": "I do not know",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 2,
+                          "interval_diff": {
+                            "value": 2.0
+                          },
+                          "key": 1759276800000,
+                          "key_as_string": "2025-10-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 15,
+                    "key": "Other debt",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 0,
+                          "interval_diff": {
+                            "value": 0.0
+                          },
+                          "key": 1759276800000,
+                          "key_as_string": "2025-10-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 8,
+                    "key": "Credit card debt",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 1,
+                          "interval_diff": {
+                            "value": 0.0
+                          },
+                          "key": 1759276800000,
+                          "key_as_string": "2025-10-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 5,
+                    "key": "Telecommunications debt",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 0,
+                          "interval_diff": {
+                            "value": -1.0
+                          },
+                          "key": 1754006400000,
+                          "key_as_string": "2025-08-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 2,
+                    "key": "Rental debt",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 0,
+                          "interval_diff": {
+                            "value": 0.0
+                          },
+                          "key": 1727740800000,
+                          "key_as_string": "2024-10-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": "Auto debt",
+                    "trend_period": {
+                      "buckets": []
+                    }
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": "Federal student loan debt",
+                    "trend_period": {
+                      "buckets": []
+                    }
+                  }
+                ],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              },
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 8,
+                    "interval_diff": {
+                      "value": 5.0
+                    },
+                    "key": 1761955200000,
+                    "key_as_string": "2025-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 3,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1759276800000,
+                    "key_as_string": "2025-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1756684800000,
+                    "key_as_string": "2025-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": -2.0
+                    },
+                    "key": 1754006400000,
+                    "key_as_string": "2025-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 3,
+                    "interval_diff": {
+                      "value": 2.0
+                    },
+                    "key": 1751328000000,
+                    "key_as_string": "2025-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1748736000000,
+                    "key_as_string": "2025-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1746057600000,
+                    "key_as_string": "2025-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": -2.0
+                    },
+                    "key": 1743465600000,
+                    "key_as_string": "2025-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 3,
+                    "interval_diff": {
+                      "value": 2.0
+                    },
+                    "key": 1740787200000,
+                    "key_as_string": "2025-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1738368000000,
+                    "key_as_string": "2025-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": -10.0
+                    },
+                    "key": 1735689600000,
+                    "key_as_string": "2025-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 12,
+                    "interval_diff": {
+                      "value": 10.0
+                    },
+                    "key": 1733011200000,
+                    "key_as_string": "2024-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": -4.0
+                    },
+                    "key": 1730419200000,
+                    "key_as_string": "2024-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 6,
+                    "interval_diff": {
+                      "value": 5.0
+                    },
+                    "key": 1727740800000,
+                    "key_as_string": "2024-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1725148800000,
+                    "key_as_string": "2024-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1722470400000,
+                    "key_as_string": "2024-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1719792000000,
+                    "key_as_string": "2024-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1717200000000,
+                    "key_as_string": "2024-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1714521600000,
+                    "key_as_string": "2024-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -2.0
+                    },
+                    "key": 1711929600000,
+                    "key_as_string": "2024-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1709251200000,
+                    "key_as_string": "2024-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "key": 1706745600000,
+                    "key_as_string": "2024-02-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            {
+              "doc_count": 6,
+              "key": "Credit card",
+              "product": {
+                "buckets": [
+                  {
+                    "doc_count": 6,
+                    "key": "General-purpose credit card or charge card",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 0,
+                          "interval_diff": {
+                            "value": 0.0
+                          },
+                          "key": 1748736000000,
+                          "key_as_string": "2025-06-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              },
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1751328000000,
+                    "key_as_string": "2025-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1748736000000,
+                    "key_as_string": "2025-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1746057600000,
+                    "key_as_string": "2025-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1743465600000,
+                    "key_as_string": "2025-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1740787200000,
+                    "key_as_string": "2025-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1738368000000,
+                    "key_as_string": "2025-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1735689600000,
+                    "key_as_string": "2025-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1733011200000,
+                    "key_as_string": "2024-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1730419200000,
+                    "key_as_string": "2024-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1727740800000,
+                    "key_as_string": "2024-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1725148800000,
+                    "key_as_string": "2024-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1722470400000,
+                    "key_as_string": "2024-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1719792000000,
+                    "key_as_string": "2024-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1717200000000,
+                    "key_as_string": "2024-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1714521600000,
+                    "key_as_string": "2024-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1711929600000,
+                    "key_as_string": "2024-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1709251200000,
+                    "key_as_string": "2024-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1706745600000,
+                    "key_as_string": "2024-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": 1704067200000,
+                    "key_as_string": "2024-01-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            {
+              "doc_count": 6,
+              "key": "Debt or credit management",
+              "product": {
+                "buckets": [
+                  {
+                    "doc_count": 6,
+                    "key": "Credit repair services",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 1,
+                          "interval_diff": {
+                            "value": 1.0
+                          },
+                          "key": 1759276800000,
+                          "key_as_string": "2025-10-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              },
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 4,
+                    "interval_diff": {
+                      "value": 3.0
+                    },
+                    "key": 1761955200000,
+                    "key_as_string": "2025-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1759276800000,
+                    "key_as_string": "2025-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1756684800000,
+                    "key_as_string": "2025-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1754006400000,
+                    "key_as_string": "2025-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1751328000000,
+                    "key_as_string": "2025-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1748736000000,
+                    "key_as_string": "2025-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": 1746057600000,
+                    "key_as_string": "2025-05-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            {
+              "doc_count": 3,
+              "key": "Mortgage",
+              "product": {
+                "buckets": [
+                  {
+                    "doc_count": 2,
+                    "key": "Conventional home mortgage",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 0,
+                          "interval_diff": {
+                            "value": 0.0
+                          },
+                          "key": 1727740800000,
+                          "key_as_string": "2024-10-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": "FHA mortgage",
+                    "trend_period": {
+                      "buckets": []
+                    }
+                  }
+                ],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              },
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1743465600000,
+                    "key_as_string": "2025-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1740787200000,
+                    "key_as_string": "2025-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1738368000000,
+                    "key_as_string": "2025-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1735689600000,
+                    "key_as_string": "2025-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1733011200000,
+                    "key_as_string": "2024-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1730419200000,
+                    "key_as_string": "2024-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1727740800000,
+                    "key_as_string": "2024-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1725148800000,
+                    "key_as_string": "2024-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1722470400000,
+                    "key_as_string": "2024-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1719792000000,
+                    "key_as_string": "2024-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1717200000000,
+                    "key_as_string": "2024-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1714521600000,
+                    "key_as_string": "2024-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1711929600000,
+                    "key_as_string": "2024-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1709251200000,
+                    "key_as_string": "2024-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1706745600000,
+                    "key_as_string": "2024-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": 1704067200000,
+                    "key_as_string": "2024-01-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            {
+              "doc_count": 2,
+              "key": "Vehicle loan or lease",
+              "product": {
+                "buckets": [
+                  {
+                    "doc_count": 2,
+                    "key": "Loan",
+                    "trend_period": {
+                      "buckets": [
+                        {
+                          "doc_count": 0,
+                          "interval_diff": {
+                            "value": 0.0
+                          },
+                          "key": 1733011200000,
+                          "key_as_string": "2024-12-01T00:00:00.000Z"
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              },
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1735689600000,
+                    "key_as_string": "2025-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1733011200000,
+                    "key_as_string": "2024-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1730419200000,
+                    "key_as_string": "2024-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1727740800000,
+                    "key_as_string": "2024-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1725148800000,
+                    "key_as_string": "2024-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1722470400000,
+                    "key_as_string": "2024-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1719792000000,
+                    "key_as_string": "2024-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1717200000000,
+                    "key_as_string": "2024-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": 1714521600000,
+                    "key_as_string": "2024-05-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            {
+              "doc_count": 1,
+              "key": "Checking or savings account",
+              "product": {
+                "buckets": [
+                  {
+                    "doc_count": 1,
+                    "key": "Other banking product or service",
+                    "trend_period": {
+                      "buckets": []
+                    }
+                  }
+                ],
+                "doc_count_error_upper_bound": 0,
+                "sum_other_doc_count": 0
+              },
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 1,
+                    "key": 1759276800000,
+                    "key_as_string": "2025-10-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            }
+          ],
+          "doc_count_error_upper_bound": 0,
+          "sum_other_doc_count": 0
+        }
+      },
+      "tags": {
+        "doc_count": 35963,
+        "tags": {
+          "buckets": [
+            {
+              "doc_count": 294,
+              "key": "Servicemember",
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 30,
+                    "interval_diff": {
+                      "value": 19.0
+                    },
+                    "key": 1761955200000,
+                    "key_as_string": "2025-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 11,
+                    "interval_diff": {
+                      "value": -8.0
+                    },
+                    "key": 1759276800000,
+                    "key_as_string": "2025-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 19,
+                    "interval_diff": {
+                      "value": 11.0
+                    },
+                    "key": 1756684800000,
+                    "key_as_string": "2025-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 8,
+                    "interval_diff": {
+                      "value": -3.0
+                    },
+                    "key": 1754006400000,
+                    "key_as_string": "2025-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 11,
+                    "interval_diff": {
+                      "value": -4.0
+                    },
+                    "key": 1751328000000,
+                    "key_as_string": "2025-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 15,
+                    "interval_diff": {
+                      "value": 2.0
+                    },
+                    "key": 1748736000000,
+                    "key_as_string": "2025-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 13,
+                    "interval_diff": {
+                      "value": 5.0
+                    },
+                    "key": 1746057600000,
+                    "key_as_string": "2025-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 8,
+                    "interval_diff": {
+                      "value": -2.0
+                    },
+                    "key": 1743465600000,
+                    "key_as_string": "2025-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 10,
+                    "interval_diff": {
+                      "value": -8.0
+                    },
+                    "key": 1740787200000,
+                    "key_as_string": "2025-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 18,
+                    "interval_diff": {
+                      "value": -3.0
+                    },
+                    "key": 1738368000000,
+                    "key_as_string": "2025-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 21,
+                    "interval_diff": {
+                      "value": 8.0
+                    },
+                    "key": 1735689600000,
+                    "key_as_string": "2025-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 13,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1733011200000,
+                    "key_as_string": "2024-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 14,
+                    "interval_diff": {
+                      "value": 6.0
+                    },
+                    "key": 1730419200000,
+                    "key_as_string": "2024-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 8,
+                    "interval_diff": {
+                      "value": -3.0
+                    },
+                    "key": 1727740800000,
+                    "key_as_string": "2024-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 11,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1725148800000,
+                    "key_as_string": "2024-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 11,
+                    "interval_diff": {
+                      "value": -3.0
+                    },
+                    "key": 1722470400000,
+                    "key_as_string": "2024-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 14,
+                    "interval_diff": {
+                      "value": 6.0
+                    },
+                    "key": 1719792000000,
+                    "key_as_string": "2024-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 8,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1717200000000,
+                    "key_as_string": "2024-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 8,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1714521600000,
+                    "key_as_string": "2024-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 8,
+                    "interval_diff": {
+                      "value": -3.0
+                    },
+                    "key": 1711929600000,
+                    "key_as_string": "2024-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 11,
+                    "interval_diff": {
+                      "value": 5.0
+                    },
+                    "key": 1709251200000,
+                    "key_as_string": "2024-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 6,
+                    "interval_diff": {
+                      "value": -4.0
+                    },
+                    "key": 1706745600000,
+                    "key_as_string": "2024-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 10,
+                    "interval_diff": {
+                      "value": 2.0
+                    },
+                    "key": 1704067200000,
+                    "key_as_string": "2024-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 8,
+                    "key": 1701388800000,
+                    "key_as_string": "2023-12-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            {
+              "doc_count": 53,
+              "key": "Older American, Servicemember",
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1756684800000,
+                    "key_as_string": "2025-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": 2.0
+                    },
+                    "key": 1754006400000,
+                    "key_as_string": "2025-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1751328000000,
+                    "key_as_string": "2025-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1748736000000,
+                    "key_as_string": "2025-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1746057600000,
+                    "key_as_string": "2025-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1743465600000,
+                    "key_as_string": "2025-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1740787200000,
+                    "key_as_string": "2025-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1738368000000,
+                    "key_as_string": "2025-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 3,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1735689600000,
+                    "key_as_string": "2025-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 3,
+                    "interval_diff": {
+                      "value": 3.0
+                    },
+                    "key": 1733011200000,
+                    "key_as_string": "2024-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1730419200000,
+                    "key_as_string": "2024-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": -16.0
+                    },
+                    "key": 1727740800000,
+                    "key_as_string": "2024-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 17,
+                    "interval_diff": {
+                      "value": 14.0
+                    },
+                    "key": 1725148800000,
+                    "key_as_string": "2024-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 3,
+                    "interval_diff": {
+                      "value": -2.0
+                    },
+                    "key": 1722470400000,
+                    "key_as_string": "2024-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 5,
+                    "interval_diff": {
+                      "value": -3.0
+                    },
+                    "key": 1719792000000,
+                    "key_as_string": "2024-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 8,
+                    "interval_diff": {
+                      "value": 4.0
+                    },
+                    "key": 1717200000000,
+                    "key_as_string": "2024-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 4,
+                    "interval_diff": {
+                      "value": 4.0
+                    },
+                    "key": 1714521600000,
+                    "key_as_string": "2024-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1711929600000,
+                    "key_as_string": "2024-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1709251200000,
+                    "key_as_string": "2024-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1706745600000,
+                    "key_as_string": "2024-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": 1704067200000,
+                    "key_as_string": "2024-01-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            },
+            {
+              "doc_count": 32,
+              "key": "Older American",
+              "trend_period": {
+                "buckets": [
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1761955200000,
+                    "key_as_string": "2025-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1759276800000,
+                    "key_as_string": "2025-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": -2.0
+                    },
+                    "key": 1756684800000,
+                    "key_as_string": "2025-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 4,
+                    "interval_diff": {
+                      "value": 4.0
+                    },
+                    "key": 1754006400000,
+                    "key_as_string": "2025-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -2.0
+                    },
+                    "key": 1751328000000,
+                    "key_as_string": "2025-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1748736000000,
+                    "key_as_string": "2025-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1746057600000,
+                    "key_as_string": "2025-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1743465600000,
+                    "key_as_string": "2025-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1740787200000,
+                    "key_as_string": "2025-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1738368000000,
+                    "key_as_string": "2025-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -3.0
+                    },
+                    "key": 1735689600000,
+                    "key_as_string": "2025-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 3,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1733011200000,
+                    "key_as_string": "2024-12-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 3,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1730419200000,
+                    "key_as_string": "2024-11-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1727740800000,
+                    "key_as_string": "2024-10-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1725148800000,
+                    "key_as_string": "2024-09-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1722470400000,
+                    "key_as_string": "2024-08-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1719792000000,
+                    "key_as_string": "2024-07-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1717200000000,
+                    "key_as_string": "2024-06-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -2.0
+                    },
+                    "key": 1714521600000,
+                    "key_as_string": "2024-05-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 2,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1711929600000,
+                    "key_as_string": "2024-04-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 0.0
+                    },
+                    "key": 1709251200000,
+                    "key_as_string": "2024-03-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "interval_diff": {
+                      "value": 1.0
+                    },
+                    "key": 1706745600000,
+                    "key_as_string": "2024-02-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 0,
+                    "interval_diff": {
+                      "value": -1.0
+                    },
+                    "key": 1704067200000,
+                    "key_as_string": "2024-01-01T00:00:00.000Z"
+                  },
+                  {
+                    "doc_count": 1,
+                    "key": 1701388800000,
+                    "key_as_string": "2023-12-01T00:00:00.000Z"
+                  }
+                ]
+              }
+            }
+          ],
+          "doc_count_error_upper_bound": 0,
+          "sum_other_doc_count": 0
+        }
+      }
+    },
+    "hits": {
+      "hits": [],
+      "max_score": null,
+      "total": {
+        "relation": "eq",
+        "value": 12555877
+      }
+    },
+    "timed_out": false,
+    "took": 443
+  },
+  "status_code": 200,
+  "url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/trends?lens=overview&trend_interval=month&trend_depth=12&company=CBC+Companies%2C+Inc.&date_received_min=2023-12-01&date_received_max=2025-12-01"
+}

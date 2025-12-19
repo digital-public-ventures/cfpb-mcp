@@ -1,0 +1,27 @@
+{
+  "base_url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/",
+  "created_utc": "2025-12-19T09:25:58.195197Z",
+  "probes": [
+    {
+      "name": "",
+      "raw_file": "01_search.raw.json",
+      "status_code": 200,
+      "summary_file": "01_search.summary.json",
+      "url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/?size=1&frm=0&sort=created_date_desc&no_highlight=true&no_aggs=true"
+    },
+    {
+      "name": "trends",
+      "raw_file": "02_trends.raw.json",
+      "status_code": 200,
+      "summary_file": "02_trends.summary.json",
+      "url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/trends?lens=overview&trend_interval=month&trend_depth=24"
+    },
+    {
+      "name": "_suggest_company",
+      "raw_file": "03__suggest_company.raw.json",
+      "status_code": 200,
+      "summary_file": "03__suggest_company.summary.json",
+      "url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/_suggest_company?text=bank&size=10"
+    }
+  ]
+}

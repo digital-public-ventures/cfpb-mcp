@@ -1,0 +1,277 @@
+{
+  "examples": {
+    "_meta": {
+      "examples": {
+        "date_max": {
+          "type": "str",
+          "value_preview": "2025-12-18T12:00:00-05:00"
+        },
+        "date_min": {
+          "type": "str",
+          "value_preview": "2011-12-01T12:00:00-05:00"
+        }
+      },
+      "keys": [
+        "date_min",
+        "date_max"
+      ],
+      "num_keys": 2,
+      "type": "dict"
+    },
+    "_shards": {
+      "examples": {
+        "failed": {
+          "type": "int",
+          "value_preview": "0"
+        },
+        "skipped": {
+          "type": "int",
+          "value_preview": "0"
+        },
+        "successful": {
+          "type": "int",
+          "value_preview": "5"
+        },
+        "total": {
+          "type": "int",
+          "value_preview": "5"
+        }
+      },
+      "keys": [
+        "total",
+        "successful",
+        "skipped",
+        "failed"
+      ],
+      "num_keys": 4,
+      "type": "dict"
+    },
+    "aggregations": {
+      "examples": {
+        "dateRangeArea": {
+          "examples": {
+            "dateRangeArea": {
+              "type": "dict"
+            },
+            "doc_count": {
+              "type": "int"
+            },
+            "meta": {
+              "type": "dict"
+            }
+          },
+          "keys": [
+            "meta",
+            "doc_count",
+            "dateRangeArea"
+          ],
+          "num_keys": 3,
+          "type": "dict"
+        },
+        "dateRangeBrush": {
+          "examples": {
+            "dateRangeBrush": {
+              "type": "dict"
+            },
+            "doc_count": {
+              "type": "int"
+            },
+            "meta": {
+              "type": "dict"
+            }
+          },
+          "keys": [
+            "meta",
+            "doc_count",
+            "dateRangeBrush"
+          ],
+          "num_keys": 3,
+          "type": "dict"
+        },
+        "dateRangeBuckets": {
+          "examples": {
+            "body": {
+              "type": "dict"
+            },
+            "dateRangeBuckets": {
+              "type": "dict"
+            },
+            "doc_count": {
+              "type": "int"
+            },
+            "meta": {
+              "type": "dict"
+            }
+          },
+          "keys": [
+            "meta",
+            "doc_count",
+            "dateRangeBuckets",
+            "body"
+          ],
+          "num_keys": 4,
+          "type": "dict"
+        },
+        "issue": {
+          "examples": {
+            "doc_count": {
+              "type": "int"
+            },
+            "issue": {
+              "type": "dict"
+            },
+            "meta": {
+              "type": "dict"
+            }
+          },
+          "keys": [
+            "meta",
+            "doc_count",
+            "issue"
+          ],
+          "num_keys": 3,
+          "type": "dict"
+        },
+        "max_date": {
+          "examples": {
+            "value": {
+              "type": "float"
+            },
+            "value_as_string": {
+              "type": "str"
+            }
+          },
+          "keys": [
+            "value",
+            "value_as_string"
+          ],
+          "num_keys": 2,
+          "type": "dict"
+        },
+        "min_date": {
+          "examples": {
+            "value": {
+              "type": "float"
+            },
+            "value_as_string": {
+              "type": "str"
+            }
+          },
+          "keys": [
+            "value",
+            "value_as_string"
+          ],
+          "num_keys": 2,
+          "type": "dict"
+        },
+        "product": {
+          "examples": {
+            "doc_count": {
+              "type": "int"
+            },
+            "meta": {
+              "type": "dict"
+            },
+            "product": {
+              "type": "dict"
+            }
+          },
+          "keys": [
+            "meta",
+            "doc_count",
+            "product"
+          ],
+          "num_keys": 3,
+          "type": "dict"
+        },
+        "tags": {
+          "examples": {
+            "doc_count": {
+              "type": "int"
+            },
+            "meta": {
+              "type": "dict"
+            },
+            "tags": {
+              "type": "dict"
+            }
+          },
+          "keys": [
+            "meta",
+            "doc_count",
+            "tags"
+          ],
+          "num_keys": 3,
+          "type": "dict"
+        }
+      },
+      "keys": [
+        "dateRangeBrush",
+        "max_date",
+        "product",
+        "issue",
+        "min_date",
+        "dateRangeArea",
+        "tags",
+        "dateRangeBuckets"
+      ],
+      "num_keys": 8,
+      "type": "dict"
+    },
+    "hits": {
+      "examples": {
+        "hits": {
+          "first_item": null,
+          "item_type": null,
+          "len": 0,
+          "type": "list"
+        },
+        "max_score": {
+          "type": "NoneType",
+          "value_preview": "None"
+        },
+        "total": {
+          "examples": {
+            "relation": {
+              "type": "str"
+            },
+            "value": {
+              "type": "int"
+            }
+          },
+          "keys": [
+            "value",
+            "relation"
+          ],
+          "num_keys": 2,
+          "type": "dict"
+        }
+      },
+      "keys": [
+        "total",
+        "max_score",
+        "hits"
+      ],
+      "num_keys": 3,
+      "type": "dict"
+    },
+    "timed_out": {
+      "type": "bool",
+      "value_preview": "False"
+    },
+    "took": {
+      "type": "int",
+      "value_preview": "4569"
+    }
+  },
+  "keys": [
+    "took",
+    "timed_out",
+    "_shards",
+    "hits",
+    "aggregations",
+    "_meta"
+  ],
+  "num_keys": 6,
+  "type": "dict"
+}

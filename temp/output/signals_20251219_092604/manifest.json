@@ -1,0 +1,38 @@
+{
+  "base_url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/",
+  "created_utc": "2025-12-19T09:26:04.390721Z",
+  "scenarios": [
+    {
+      "computed_file": "01_overall_monthly_24.computed.json",
+      "raw_file": "01_overall_monthly_24.raw.json",
+      "slug": "overall_monthly_24",
+      "status_code": 200,
+      "title": "Overall complaint volume (monthly, last 24 buckets)",
+      "url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/trends?lens=overview&trend_interval=month&trend_depth=24"
+    },
+    {
+      "computed_file": "02_overall_weekly_52.computed.json",
+      "raw_file": "02_overall_weekly_52.raw.json",
+      "slug": "overall_weekly_52",
+      "status_code": 424,
+      "title": "Overall complaint volume (weekly, last 52 buckets)",
+      "url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/trends?lens=overview&trend_interval=week&trend_depth=52"
+    },
+    {
+      "computed_file": "03_product_monthly_top10.computed.json",
+      "raw_file": "03_product_monthly_top10.raw.json",
+      "slug": "product_monthly_top10",
+      "status_code": 200,
+      "title": "Top products over time (monthly, sub_lens product)",
+      "url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/trends?lens=overview&trend_interval=month&trend_depth=12&sub_lens=product&sub_lens_depth=10"
+    },
+    {
+      "computed_file": "04_company_weekly_top10.computed.json",
+      "raw_file": "04_company_weekly_top10.raw.json",
+      "slug": "company_weekly_top10",
+      "status_code": 424,
+      "title": "Top companies over time (weekly, sub_lens company)",
+      "url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/trends?lens=overview&trend_interval=week&trend_depth=16&sub_lens=company&sub_lens_depth=10"
+    }
+  ]
+}

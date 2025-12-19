@@ -1,0 +1,589 @@
+{
+  "params": {
+    "date_received_max": "2025-12-31",
+    "date_received_min": "2023-01-01",
+    "lens": "overview",
+    "sub_lens": "issue",
+    "sub_lens_depth": 10,
+    "trend_depth": 12,
+    "trend_interval": "month"
+  },
+  "signals": {
+    "grouped": {
+      "group": "issue",
+      "num_groups": 12,
+      "top_by_pct": [
+        {
+          "doc_count": 183725,
+          "group": "Problem with a credit reporting company's investigation into an existing problem",
+          "last_bucket": {
+            "count": 25202.0,
+            "label": "2023-08-01T00:00:00.000Z"
+          },
+          "num_points": 8,
+          "prev_bucket": {
+            "count": 26204.0,
+            "label": "2023-07-01T00:00:00.000Z"
+          },
+          "signals": {
+            "last_vs_baseline": {
+              "baseline_mean": 22646.14285714286,
+              "baseline_sd": 3244.158875505916,
+              "baseline_window": 8,
+              "min_baseline_mean": 10.0,
+              "ratio": 1.1128605943617014,
+              "z": 0.7878335312596438
+            },
+            "last_vs_prev": {
+              "abs": -1002.0,
+              "pct": -0.03823843687986572
+            }
+          }
+        },
+        {
+          "doc_count": 4414394,
+          "group": "Incorrect information on your report",
+          "last_bucket": {
+            "count": 176598.0,
+            "label": "2025-12-01T00:00:00.000Z"
+          },
+          "num_points": 36,
+          "prev_bucket": {
+            "count": 296997.0,
+            "label": "2025-11-01T00:00:00.000Z"
+          },
+          "signals": {
+            "last_vs_baseline": {
+              "baseline_mean": 253674.25,
+              "baseline_sd": 36153.404663817135,
+              "baseline_window": 8,
+              "min_baseline_mean": 10.0,
+              "ratio": 0.6961605287095557,
+              "z": -2.1319223104079894
+            },
+            "last_vs_prev": {
+              "abs": -120399.0,
+              "pct": -0.4053879332114466
+            }
+          }
+        },
+        {
+          "doc_count": 1404667,
+          "group": "Problem with a company's investigation into an existing problem",
+          "last_bucket": {
+            "count": 51991.0,
+            "label": "2025-12-01T00:00:00.000Z"
+          },
+          "num_points": 29,
+          "prev_bucket": {
+            "count": 92281.0,
+            "label": "2025-11-01T00:00:00.000Z"
+          },
+          "signals": {
+            "last_vs_baseline": {
+              "baseline_mean": 75074.5,
+              "baseline_sd": 13110.864665830179,
+              "baseline_window": 8,
+              "min_baseline_mean": 10.0,
+              "ratio": 0.6925254247447535,
+              "z": -1.7606390263611462
+            },
+            "last_vs_prev": {
+              "abs": -40290.0,
+              "pct": -0.4366012505282778
+            }
+          }
+        },
+        {
+          "doc_count": 2128133,
+          "group": "Improper use of your report",
+          "last_bucket": {
+            "count": 55492.0,
+            "label": "2025-12-01T00:00:00.000Z"
+          },
+          "num_points": 36,
+          "prev_bucket": {
+            "count": 99782.0,
+            "label": "2025-11-01T00:00:00.000Z"
+          },
+          "signals": {
+            "last_vs_baseline": {
+              "baseline_mean": 98569.125,
+              "baseline_sd": 8593.37454816209,
+              "baseline_window": 8,
+              "min_baseline_mean": 10.0,
+              "ratio": 0.5629754753326663,
+              "z": -5.012829914321974
+            },
+            "last_vs_prev": {
+              "abs": -44290.0,
+              "pct": -0.44386763143653163
+            }
+          }
+        },
+        {
+          "doc_count": 58607,
+          "group": "Took or threatened to take negative or legal action",
+          "last_bucket": {
+            "count": 3012.0,
+            "label": "2025-12-01T00:00:00.000Z"
+          },
+          "num_points": 36,
+          "prev_bucket": {
+            "count": 7157.0,
+            "label": "2025-11-01T00:00:00.000Z"
+          },
+          "signals": {
+            "last_vs_baseline": {
+              "baseline_mean": 3946.0,
+              "baseline_sd": 2014.3927833752498,
+              "baseline_window": 8,
+              "min_baseline_mean": 10.0,
+              "ratio": 0.7633046122655854,
+              "z": -0.4636632973014431
+            },
+            "last_vs_prev": {
+              "abs": -4145.0,
+              "pct": -0.5791532765125053
+            }
+          }
+        },
+        {
+          "doc_count": 122566,
+          "group": "Written notification about debt",
+          "last_bucket": {
+            "count": 1754.0,
+            "label": "2025-12-01T00:00:00.000Z"
+          },
+          "num_points": 36,
+          "prev_bucket": {
+            "count": 4462.0,
+            "label": "2025-11-01T00:00:00.000Z"
+          },
+          "signals": {
+            "last_vs_baseline": {
+              "baseline_mean": 5875.25,
+              "baseline_sd": 687.9534348859875,
+              "baseline_window": 8,
+              "min_baseline_mean": 10.0,
+              "ratio": 0.2985404876388239,
+              "z": -5.990594408011064
+            },
+            "last_vs_prev": {
+              "abs": -2708.0,
+              "pct": -0.6069027341999104
+            }
+          }
+        },
+        {
+          "doc_count": 215233,
+          "group": "Attempts to collect debt not owed",
+          "last_bucket": {
+            "count": 3358.0,
+            "label": "2025-12-01T00:00:00.000Z"
+          },
+          "num_points": 36,
+          "prev_bucket": {
+            "count": 9385.0,
+            "label": "2025-11-01T00:00:00.000Z"
+          },
+          "signals": {
+            "last_vs_baseline": {
+              "baseline_mean": 9643.625,
+              "baseline_sd": 685.2553095640444,
+              "baseline_window": 8,
+              "min_baseline_mean": 10.0,
+              "ratio": 0.3482093092587072,
+              "z": -9.172676099363432
+            },
+            "last_vs_prev": {
+              "abs": -6027.0,
+              "pct": -0.6421949920085243
+            }
+          }
+        },
+        {
+          "doc_count": 100233,
+          "group": "Managing an account",
+          "last_bucket": {
+            "count": 994.0,
+            "label": "2025-12-01T00:00:00.000Z"
+          },
+          "num_points": 36,
+          "prev_bucket": {
+            "count": 3341.0,
+            "label": "2025-11-01T00:00:00.000Z"
+          },
+          "signals": {
+            "last_vs_baseline": {
+              "baseline_mean": 3325.0,
+              "baseline_sd": 276.25505813080986,
+              "baseline_window": 8,
+              "min_baseline_mean": 10.0,
+              "ratio": 0.29894736842105263,
+              "z": -8.437854552861237
+            },
+            "last_vs_prev": {
+              "abs": -2347.0,
+              "pct": -0.7024842861418736
+            }
+          }
+        },
+        {
+          "doc_count": 58642,
+          "group": "Other transaction problem",
+          "last_bucket": {
+            "count": 123.0,
+            "label": "2025-12-01T00:00:00.000Z"
+          },
+          "num_points": 36,
+          "prev_bucket": {
+            "count": 420.0,
+            "label": "2025-11-01T00:00:00.000Z"
+          },
+          "signals": {
+            "last_vs_baseline": {
+              "baseline_mean": 740.125,
+              "baseline_sd": 481.3366619559091,
+              "baseline_window": 8,
+              "min_baseline_mean": 10.0,
+              "ratio": 0.1661881438946124,
+              "z": -1.2821067846615208
+            },
+            "last_vs_prev": {
+              "abs": -297.0,
+              "pct": -0.7071428571428571
+            }
+          }
+        },
+        {
+          "doc_count": 58852,
+          "group": "False statements or representation",
+          "last_bucket": {
+            "count": 867.0,
+            "label": "2025-12-01T00:00:00.000Z"
+          },
+          "num_points": 36,
+          "prev_bucket": {
+            "count": 2968.0,
+            "label": "2025-11-01T00:00:00.000Z"
+          },
+          "signals": {
+            "last_vs_baseline": {
+              "baseline_mean": 3275.125,
+              "baseline_sd": 469.32913747786245,
+              "baseline_window": 8,
+              "min_baseline_mean": 10.0,
+              "ratio": 0.26472272050685086,
+              "z": -5.130994024664807
+            },
+            "last_vs_prev": {
+              "abs": -2101.0,
+              "pct": -0.7078840970350404
+            }
+          }
+        }
+      ],
+      "top_by_z": [
+        {
+          "doc_count": 183725,
+          "group": "Problem with a credit reporting company's investigation into an existing problem",
+          "last_bucket": {
+            "count": 25202.0,
+            "label": "2023-08-01T00:00:00.000Z"
+          },
+          "num_points": 8,
+          "prev_bucket": {
+            "count": 26204.0,
+            "label": "2023-07-01T00:00:00.000Z"
+          },
+          "signals": {
+            "last_vs_baseline": {
+              "baseline_mean": 22646.14285714286,
+              "baseline_sd": 3244.158875505916,
+              "baseline_window": 8,
+              "min_baseline_mean": 10.0,
+              "ratio": 1.1128605943617014,
+              "z": 0.7878335312596438
+            },
+            "last_vs_prev": {
+              "abs": -1002.0,
+              "pct": -0.03823843687986572
+            }
+          }
+        },
+        {
+          "doc_count": 58607,
+          "group": "Took or threatened to take negative or legal action",
+          "last_bucket": {
+            "count": 3012.0,
+            "label": "2025-12-01T00:00:00.000Z"
+          },
+          "num_points": 36,
+          "prev_bucket": {
+            "count": 7157.0,
+            "label": "2025-11-01T00:00:00.000Z"
+          },
+          "signals": {
+            "last_vs_baseline": {
+              "baseline_mean": 3946.0,
+              "baseline_sd": 2014.3927833752498,
+              "baseline_window": 8,
+              "min_baseline_mean": 10.0,
+              "ratio": 0.7633046122655854,
+              "z": -0.4636632973014431
+            },
+            "last_vs_prev": {
+              "abs": -4145.0,
+              "pct": -0.5791532765125053
+            }
+          }
+        },
+        {
+          "doc_count": 58642,
+          "group": "Other transaction problem",
+          "last_bucket": {
+            "count": 123.0,
+            "label": "2025-12-01T00:00:00.000Z"
+          },
+          "num_points": 36,
+          "prev_bucket": {
+            "count": 420.0,
+            "label": "2025-11-01T00:00:00.000Z"
+          },
+          "signals": {
+            "last_vs_baseline": {
+              "baseline_mean": 740.125,
+              "baseline_sd": 481.3366619559091,
+              "baseline_window": 8,
+              "min_baseline_mean": 10.0,
+              "ratio": 0.1661881438946124,
+              "z": -1.2821067846615208
+            },
+            "last_vs_prev": {
+              "abs": -297.0,
+              "pct": -0.7071428571428571
+            }
+          }
+        },
+        {
+          "doc_count": 1404667,
+          "group": "Problem with a company's investigation into an existing problem",
+          "last_bucket": {
+            "count": 51991.0,
+            "label": "2025-12-01T00:00:00.000Z"
+          },
+          "num_points": 29,
+          "prev_bucket": {
+            "count": 92281.0,
+            "label": "2025-11-01T00:00:00.000Z"
+          },
+          "signals": {
+            "last_vs_baseline": {
+              "baseline_mean": 75074.5,
+              "baseline_sd": 13110.864665830179,
+              "baseline_window": 8,
+              "min_baseline_mean": 10.0,
+              "ratio": 0.6925254247447535,
+              "z": -1.7606390263611462
+            },
+            "last_vs_prev": {
+              "abs": -40290.0,
+              "pct": -0.4366012505282778
+            }
+          }
+        },
+        {
+          "doc_count": 4414394,
+          "group": "Incorrect information on your report",
+          "last_bucket": {
+            "count": 176598.0,
+            "label": "2025-12-01T00:00:00.000Z"
+          },
+          "num_points": 36,
+          "prev_bucket": {
+            "count": 296997.0,
+            "label": "2025-11-01T00:00:00.000Z"
+          },
+          "signals": {
+            "last_vs_baseline": {
+              "baseline_mean": 253674.25,
+              "baseline_sd": 36153.404663817135,
+              "baseline_window": 8,
+              "min_baseline_mean": 10.0,
+              "ratio": 0.6961605287095557,
+              "z": -2.1319223104079894
+            },
+            "last_vs_prev": {
+              "abs": -120399.0,
+              "pct": -0.4053879332114466
+            }
+          }
+        },
+        {
+          "doc_count": 2128133,
+          "group": "Improper use of your report",
+          "last_bucket": {
+            "count": 55492.0,
+            "label": "2025-12-01T00:00:00.000Z"
+          },
+          "num_points": 36,
+          "prev_bucket": {
+            "count": 99782.0,
+            "label": "2025-11-01T00:00:00.000Z"
+          },
+          "signals": {
+            "last_vs_baseline": {
+              "baseline_mean": 98569.125,
+              "baseline_sd": 8593.37454816209,
+              "baseline_window": 8,
+              "min_baseline_mean": 10.0,
+              "ratio": 0.5629754753326663,
+              "z": -5.012829914321974
+            },
+            "last_vs_prev": {
+              "abs": -44290.0,
+              "pct": -0.44386763143653163
+            }
+          }
+        },
+        {
+          "doc_count": 58852,
+          "group": "False statements or representation",
+          "last_bucket": {
+            "count": 867.0,
+            "label": "2025-12-01T00:00:00.000Z"
+          },
+          "num_points": 36,
+          "prev_bucket": {
+            "count": 2968.0,
+            "label": "2025-11-01T00:00:00.000Z"
+          },
+          "signals": {
+            "last_vs_baseline": {
+              "baseline_mean": 3275.125,
+              "baseline_sd": 469.32913747786245,
+              "baseline_window": 8,
+              "min_baseline_mean": 10.0,
+              "ratio": 0.26472272050685086,
+              "z": -5.130994024664807
+            },
+            "last_vs_prev": {
+              "abs": -2101.0,
+              "pct": -0.7078840970350404
+            }
+          }
+        },
+        {
+          "doc_count": 122566,
+          "group": "Written notification about debt",
+          "last_bucket": {
+            "count": 1754.0,
+            "label": "2025-12-01T00:00:00.000Z"
+          },
+          "num_points": 36,
+          "prev_bucket": {
+            "count": 4462.0,
+            "label": "2025-11-01T00:00:00.000Z"
+          },
+          "signals": {
+            "last_vs_baseline": {
+              "baseline_mean": 5875.25,
+              "baseline_sd": 687.9534348859875,
+              "baseline_window": 8,
+              "min_baseline_mean": 10.0,
+              "ratio": 0.2985404876388239,
+              "z": -5.990594408011064
+            },
+            "last_vs_prev": {
+              "abs": -2708.0,
+              "pct": -0.6069027341999104
+            }
+          }
+        },
+        {
+          "doc_count": 100233,
+          "group": "Managing an account",
+          "last_bucket": {
+            "count": 994.0,
+            "label": "2025-12-01T00:00:00.000Z"
+          },
+          "num_points": 36,
+          "prev_bucket": {
+            "count": 3341.0,
+            "label": "2025-11-01T00:00:00.000Z"
+          },
+          "signals": {
+            "last_vs_baseline": {
+              "baseline_mean": 3325.0,
+              "baseline_sd": 276.25505813080986,
+              "baseline_window": 8,
+              "min_baseline_mean": 10.0,
+              "ratio": 0.29894736842105263,
+              "z": -8.437854552861237
+            },
+            "last_vs_prev": {
+              "abs": -2347.0,
+              "pct": -0.7024842861418736
+            }
+          }
+        },
+        {
+          "doc_count": 215233,
+          "group": "Attempts to collect debt not owed",
+          "last_bucket": {
+            "count": 3358.0,
+            "label": "2025-12-01T00:00:00.000Z"
+          },
+          "num_points": 36,
+          "prev_bucket": {
+            "count": 9385.0,
+            "label": "2025-11-01T00:00:00.000Z"
+          },
+          "signals": {
+            "last_vs_baseline": {
+              "baseline_mean": 9643.625,
+              "baseline_sd": 685.2553095640444,
+              "baseline_window": 8,
+              "min_baseline_mean": 10.0,
+              "ratio": 0.3482093092587072,
+              "z": -9.172676099363432
+            },
+            "last_vs_prev": {
+              "abs": -6027.0,
+              "pct": -0.6421949920085243
+            }
+          }
+        }
+      ]
+    },
+    "overall": {
+      "last_bucket": {
+        "count": 301244.0,
+        "label": "2025-12-01T00:00:00.000Z"
+      },
+      "num_points": 36,
+      "prev_bucket": {
+        "count": 537328.0,
+        "label": "2025-11-01T00:00:00.000Z"
+      },
+      "signals": {
+        "last_vs_baseline": {
+          "baseline_mean": 475369.0,
+          "baseline_sd": 59182.780828307055,
+          "baseline_window": 8,
+          "min_baseline_mean": 10.0,
+          "ratio": 0.6337056055401172,
+          "z": -2.94215644420541
+        },
+        "last_vs_prev": {
+          "abs": -236084.0,
+          "pct": -0.439366643837656
+        }
+      }
+    }
+  },
+  "status_code": 200,
+  "title": "Top issues over time (monthly, sub_lens issue)",
+  "url": "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/trends?lens=overview&trend_interval=month&trend_depth=12&sub_lens=issue&sub_lens_depth=10&date_received_min=2023-01-01&date_received_max=2025-12-31"
+}

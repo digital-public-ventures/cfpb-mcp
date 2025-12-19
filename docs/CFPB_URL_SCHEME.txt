@@ -1,0 +1,180 @@
+Complaints
+These endpoints provide access to consumer complaints
+
+
+
+GET
+/
+Search consumer complaints
+Search the contents of the consumer complaint database
+
+Parameters
+Try it out
+Name	Description
+search_term
+string
+(query)
+Return results containing specific term
+
+search_term
+field
+string
+(query)
+If the parameter "search_term" has a value, use "field" to specify which field is searched. If not specified, "complaint_what_happened" will be searched.
+
+Available values : complaint_what_happened, company_public_response, all
+
+Default value : complaint_what_happened
+
+
+complaint_what_happened
+frm
+integer($int64)
+(query)
+Return results starting from a specific index, only if format parameter is not specified, ignore otherwise
+
+Default value : 0
+
+0
+size
+integer($int64)
+(query)
+Limit the size of the results
+
+Default value : 10
+
+10
+sort
+string
+(query)
+Return results sort in a particular order
+
+Available values : relevance_desc, relevance_asc, created_date_desc, created_date_asc
+
+Default value : relevance_desc
+
+
+relevance_desc
+format
+string
+(query)
+Format to be returned, if this parameter is not specified, frm/size parameters can be used properly, but if a format is specified for exporting, frm/size will be ignored
+
+Available values : json, csv
+
+Default value : json
+
+
+json
+no_aggs
+boolean
+(query)
+Include aggregations in result or not, True means no aggregations will be included, False means aggregations will be included.
+
+Default value : false
+
+
+false
+no_highlight
+boolean
+(query)
+Include highlight of search term in result or not, True means no highlighting will be included, False means highlighting will be included.
+
+Default value : false
+
+
+false
+company
+array[string]
+(query)
+Filter the results to only return these companies
+
+company_public_response
+array[string]
+(query)
+Filter the results to only return these types of public response by the company
+
+company_received_max
+string($date)
+(query)
+Return results with date < company_received_max (i.e. 2017-03-04)
+
+company_received_max
+company_received_min
+string($date)
+(query)
+Return results with date >= company_received_min (i.e. 2017-03-04)
+
+company_received_min
+company_response
+array[string]
+(query)
+Filter the results to only return these types of response by the company
+
+consumer_consent_provided
+array[string]
+(query)
+Filter the results to only return these types of consent consumer provided
+
+consumer_disputed
+array[string]
+(query)
+Filter the results to only return the specified state of consumer disputed, i.e. yes, no
+
+date_received_max
+string($date)
+(query)
+Return results with date < date_received_max (i.e. 2017-03-04)
+
+date_received_max
+date_received_min
+string($date)
+(query)
+Return results with date >= date_received_min (i.e. 2017-03-04)
+
+date_received_min
+has_narrative
+array[string]
+(query)
+Filter the results to only return the specified state of whether it has narrative in the complaint or not, i.e. yes, no
+
+issue
+array[string]
+(query)
+Filter the results to only return these types of issue and subissue, i.e. product-only: Getting a Loan, subproduct needs to include product, separated by '•', Getting a Loan•Can't qualify for a loan
+
+product
+array[string]
+(query)
+Filter the results to only return these types of product and subproduct, i.e. product-only: Mortgage, subproduct needs to include product, separated by '•', Mortgage•FHA mortgage
+
+search_after
+string
+(query)
+Used in conjunction with frm parameter to paginate results. This value is calculated by combining the values from the break_points object in the _meta key from the api response. For instance to paginate to the nth page, use the value from the break_points n:[k, id] to pass to the API the value page=n&frm=25&search_after=k_id Please see https://github.com/cfpb/cfpb.github.io/issues/292 for more detailed examples
+
+search_after
+state
+array[string]
+(query)
+Filter the results to only return these states (use abbreviation, i.e. CA, VA)
+
+submitted_via
+array[string]
+(query)
+Filter the results to only return these types of way consumers submitted their complaints
+
+tags
+array[string]
+(query)
+Filter the results to only return these types of tag
+
+timely
+array[string]
+(query)
+Filter the results to show whether a response was timely
+
+zip_code
+array[string]
+(query)
+Filter the results to only return these zip codes

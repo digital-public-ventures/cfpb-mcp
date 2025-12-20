@@ -1,52 +1,70 @@
-# Repository Guidelines
+## Agent Handbook
 
-## Project Structure & Module Organization
+### CLI guardrails
 
-* **`server.py`**: Single FastAPI app exposing both REST routes and MCP tools; shared business logic lives in helper functions near the top of the file.
-* **`tests/`**: Pytest suite that boots uvicorn in-process and exercises REST and MCP flows (`test_rest_*`, `test_mcp_*`).
-* **`scripts/`**: Local harnesses for MCP/OpenAPI clients; useful for manual smoke checks.
-* **`docs/`**: Notes and examples for MCP integrations; keep in sync with any interface changes.
-* **`README.md` & `IDEA.md`**: Quickstart and design context; update when changing developer workflows.
+* Avoid terminal heredocs (`cat <<EOF`, `python - <<'PY'`); they crash this shell.
+* Write helper scripts under `temp/` and run them normally (e.g., `bash temp/diagnose.sh`).
+* Prefer simple pipelines/one-liners for quick commands.
 
-## Build, Test, and Development Commands
+### Repository map
 
-* **Create env & install**: `uv venv && uv sync`
-* **Run server locally**: `uv run python server.py` (listens on `http://localhost:8000`)
-* **REST smoke checks**: `curl "http://localhost:8000/search?size=3"` (see README for more)
-* **Run all tests**: `uv run pytest`
-* **Focused test example**: `uv run pytest tests/test_rest_endpoints.py -k search_smoke`
-* **Optional harnesses**: `uv run python scripts/anthropic_mcp_harness.py` to exercise MCP tools interactively.
+* `server.py`: FastAPI app exposing REST + MCP; shared logic lives near the top.
+* `tests/`: Pytest suite that boots uvicorn in-process for REST/MCP flows (`test_rest_*`, `test_mcp_*`).
+* `scripts/`: Local harnesses for MCP/OpenAPI clients and dev helpers.
+* `docs/`: Integration notes and examples; keep in sync with interface changes.
+* `deployment/`: Packaging for MCP extensions (e.g., `.mcpb`) and deployment assets.
+* `planning/`: Design notes and task planning artifacts.
+* `README.md` / `IDEA.md`: Quickstart + design context; update when workflows change.
 
-## Coding Style & Naming Conventions
+### Roadmap snapshot (see `planning/ROADMAP.md`)
 
-* **Language**: Python 3.10+, PEP 8 style, 4-space indentation.
-* **Types**: Prefer explicit type hints and `Optional`/`Literal` usage as seen in `server.py`.
-* **Naming**: Snake\_case for functions/vars; keep REST paths and MCP tool names descriptive and aligned.
-* **Structure**: Keep shared logic transport-agnostic; REST endpoints and MCP tools should reuse the same helper functions.
+* Complete: Phase 1 (REST+MCP wrapper), Phase 2 (Docker Compose stack), Phase 4 (proxy analytics helpers), Phase 5.2 (Cloudflare tunnel for remote MCP).
+* In flight/next: Phase 3 proxy hardening, Phase 5.3 FastMCP migration with dual transports, Phase 5.4 OAuth for Claude connectors, Phase 5.5 cleanup of legacy `.mcpb`/API key paths, Phase 6 local dataset + vector search.
 
-## Testing Guidelines
+### Dev commands
 
-* **Frameworks**: Pytest + pytest-asyncio; fixtures spin up a temporary uvicorn server (`client`, `server_url`).
-* **Scope**: Write `test_*.py` files alongside existing suites; prefer small payload sizes (`size=1`) to reduce API load.
-* **External dependency**: Tests hit the public CFPB API; ensure network access and expect live data variability.
-* **Before PRs**: Run `uv run pytest` and relevant targeted cases.
+* Create env & install: `uv venv && uv sync`
+* Run server locally: `uv run python server.py` (listens on `http://localhost:8000`)
+* REST smoke checks: `curl "http://localhost:8000/search?size=3"` (see README for more)
+* Run all tests: `uv run pytest`
+* Focused test: `uv run pytest tests/test_rest_endpoints.py -k search_smoke`
+* MCP harness: `uv run python scripts/anthropic_mcp_harness.py`
+* MCP endpoints: Streamable HTTP at `/mcp`, legacy SSE at `/mcp/sse`
 
-### E2E Tests Are A Contract (DO NOT CHANGE)
+### Coding style
 
-The files under `tests/e2e/` represent a **long-term compatibility contract** with downstream users and third-party agents.
+* Python 3.10+, PEP 8, 4-space indentation.
+* Prefer explicit type hints and `Optional`/`Literal` as used in `server.py`.
+* Keep shared logic transport-agnostic; reuse helpers across REST and MCP tools.
 
-* **DO NOT EDIT `tests/e2e/**`** under any circumstances.
-* **DO NOT “fix”, “clean up”, “refactor”, “rename”, “reformat”, or “improve”** E2E tests.
-* If behavior changes require a new contract, **add a new suite** (e.g. `tests/e2e_v2/`) rather than modifying the existing E2E tests.
-* If an E2E test fails after server changes, treat it as a **regression in the server/public contract**, not a reason to modify the E2E tests.
+### Testing expectations
 
-## Commit & Pull Request Guidelines
+* Pytest + pytest-asyncio; fixtures spin up uvicorn (`client`, `server_url`).
+* Favor small payload sizes (e.g., `size=1`) to limit API load.
+* Live CFPB API dependency means data can vary; keep assertions resilient.
+* Run `uv run pytest` (plus targeted cases) before merging.
 
-* **Commits**: Use concise, imperative messages (e.g., "Add trends parameter validation"); group logical changes per commit.
-* **PRs**: Provide a clear summary, linked issue (if any), test results, and notes on REST/MCP interface impacts. Add curl examples or screenshots when modifying responses.
+### E2E contract (do not edit)
 
-## Security & Configuration Tips
+* `tests/e2e/**` are compatibility contracts—never change, reformat, or rename them.
+* If behavior changes, add a new suite (e.g., `tests/e2e_v2/`) instead of touching existing files.
+* Failures here indicate server regressions, not test bugs.
 
-* **Secrets**: No secrets or API keys belong in code or history; rely on public CFPB endpoints only.
-* **Config overrides**: Prefer environment variables for future tunables (e.g., alternate base URLs); avoid hardcoding local paths.
-* **Operational hygiene**: Keep long-running clients within the shared `httpx.AsyncClient`; clean up resources to prevent connection leaks.
+### Git workflow
+
+* Work on feature branches, not `main` (e.g., `phase5.2/mcp-auth`).
+* Keep PRs small and focused; include concise summaries and test output.
+* Use concise, imperative commits (e.g., "Add trends parameter validation").
+
+### Security & operations
+
+* Do not commit secrets; rely only on public CFPB endpoints.
+* Prefer env vars for tunables (e.g., alternate base URLs); avoid hardcoded local paths.
+* Keep long-running clients within the shared `httpx.AsyncClient` and clean up resources.
+
+### Cloudflare tunnel (Phase 5.2)
+
+Two supported approaches:
+
+1. Token-based (default): set `TUNNEL_TOKEN` in `.env`; config managed in Cloudflare dashboard.
+2. File-based: set `TUNNEL_ID` in `.env` and mount `./cloudflared/` with `credentials.json` and `config.yml`.

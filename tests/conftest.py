@@ -17,7 +17,7 @@ def pytest_collection_modifyitems(
 ) -> None:  # noqa: ARG001
     """Apply suite markers based on file path.
 
-    - tests/e2e/** -> e2e
+    - tests/contract/** -> contract
     - tests/unit/** -> unit
     - everything else under tests/** -> integration
 
@@ -28,8 +28,8 @@ def pytest_collection_modifyitems(
         path = str(getattr(item, "fspath", ""))
         normalized = path.replace("\\", "/")
 
-        if "/tests/e2e/" in normalized:
-            item.add_marker(pytest.mark.e2e)
+        if "/tests/contract/" in normalized:
+            item.add_marker(pytest.mark.contract)
         elif "/tests/unit/" in normalized:
             item.add_marker(pytest.mark.unit)
         elif "/tests/" in normalized:
@@ -43,19 +43,13 @@ def _pick_free_port() -> int:
         return int(sock.getsockname()[1])
 
 
-def _is_server_ready(url: str, *, require_paths: list[str] | None = None) -> bool:
+def _is_server_ready(url: str) -> bool:
     try:
-        r = httpx.get(f"{url}/openapi.json", timeout=5)
+        r = httpx.get(f"{url}/", timeout=5)
         if r.status_code != 200:
             return False
-        if not require_paths:
-            return True
-
-        spec = r.json()
-        paths = spec.get("paths") if isinstance(spec, dict) else None
-        if not isinstance(paths, dict):
-            return False
-        return all(p in paths for p in require_paths)
+        payload = r.json()
+        return isinstance(payload, dict) and "mcp" in payload
     except Exception:  # noqa: BLE001
         return False
 
@@ -77,14 +71,7 @@ def server_url() -> Iterator[str]:
     if configured_url:
         url = configured_url.rstrip("/")
         # If a server is already running there *and* matches our current contract, reuse it.
-        required_paths = [
-            "/signals/overall",
-            "/signals/group",
-            "/signals/company",
-            "/cfpb-ui/url",
-            "/cfpb-ui/screenshot",
-        ]
-        if _is_server_ready(url, require_paths=required_paths):
+        if _is_server_ready(url):
             yield url
             return
 

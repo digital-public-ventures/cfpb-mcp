@@ -11,14 +11,15 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path as FilePath
 from typing import Any, Dict, List, Literal, Optional, Tuple
-from urllib.parse import urlencode
 
 import httpx
 import uvicorn
-from fastapi import FastAPI, HTTPException, Path, Query
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
 from mcp.server.fastmcp import FastMCP
 from playwright.async_api import async_playwright, Browser, BrowserContext
+
+from utils.deeplink_mapping import build_deeplink_url
 
 BASE_URL = (
     "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/"
@@ -127,11 +128,10 @@ from contextlib import asynccontextmanager, AsyncExitStack
 from datetime import datetime, timezone
 from pathlib import Path as FilePath
 from typing import Any, Dict, List, Literal, Optional, Tuple
-from urllib.parse import urlencode
 
 import httpx
 import uvicorn
-from fastapi import FastAPI, HTTPException, Path, Query
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
 from mcp.server.fastmcp import FastMCP
 from playwright.async_api import async_playwright, Browser, BrowserContext
@@ -703,74 +703,36 @@ def build_cfpb_ui_url(
     date_interval: Optional[str] = None,
     **kwargs: Any,
 ) -> str:
-    """Build a URL to the official CFPB consumer complaints UI.
+    """Build a URL to the official CFPB consumer complaints UI."""
 
-    The CFPB UI is state-driven by URL parameters. This allows agents to
-    construct deep-links to pre-filtered views matching user queries.
+    api_params: Dict[str, Any] = {
+        "search_term": search_term,
+        "date_received_min": date_received_min,
+        "date_received_max": date_received_max,
+        "company": company,
+        "product": product,
+        "issue": issue,
+        "state": state,
+        "has_narrative": has_narrative,
+        "company_response": company_response,
+        "company_public_response": company_public_response,
+        "consumer_disputed": consumer_disputed,
+        "tags": tags,
+        "submitted_via": submitted_via,
+        "timely": timely,
+        "zip_code": zip_code,
+    }
 
-    Returns a full URL like:
-    https://www.consumerfinance.gov/data-research/consumer-complaints/search/?
-        searchText=foreclosure&date_received_min=2020-01-01&product=Mortgage
-    """
-
-    base = "https://www.consumerfinance.gov/data-research/consumer-complaints/search/"
-
-    # Map our internal param names to the CFPB UI param names.
-    # The UI actually uses snake_case (same as the API), with a few exceptions.
-    params: Dict[str, Any] = {}
-
-    # UI display parameters (for Trends/Map views)
-    if tab:
-        params["tab"] = tab
     if lens:
-        params["lens"] = lens
+        api_params["lens"] = lens
     if sub_lens:
-        params["subLens"] = sub_lens
+        api_params["sub_lens"] = sub_lens
     if chart_type:
-        params["chartType"] = chart_type
+        api_params["chartType"] = chart_type
     if date_interval:
-        params["dateInterval"] = date_interval
+        api_params["trend_interval"] = date_interval.lower()
 
-    # Search parameters
-    if search_term:
-        params["searchText"] = search_term
-    if date_received_min:
-        params["date_received_min"] = date_received_min
-    if date_received_max:
-        params["date_received_max"] = date_received_max
-    if has_narrative and has_narrative.lower() in {"yes", "true"}:
-        params["has_narrative"] = "true"
-
-    # Multi-value filters: the UI accepts them as repeated params or comma-separated.
-    # We'll use comma-separated for cleaner URLs.
-    if company:
-        params["company"] = ",".join(company)
-    if product:
-        params["product"] = ",".join(product)
-    if issue:
-        params["issue"] = ",".join(issue)
-    if state:
-        params["state"] = ",".join(state)
-    if company_response:
-        params["company_response"] = ",".join(company_response)
-    if company_public_response:
-        params["company_public_response"] = ",".join(company_public_response)
-    if consumer_disputed:
-        params["consumer_disputed"] = ",".join(consumer_disputed)
-    if tags:
-        params["tags"] = ",".join(tags)
-    if submitted_via:
-        params["submitted_via"] = ",".join(submitted_via)
-    if timely:
-        params["timely"] = ",".join(timely)
-    if zip_code:
-        params["zip_code"] = ",".join(zip_code)
-
-    if not params:
-        return base
-
-    url = f"{base}?{urlencode(params)}"
-    return url
+    return build_deeplink_url(api_params, tab=tab)
 
 
 def generate_citations(
@@ -818,7 +780,7 @@ def generate_citations(
 
     if context_type == "search":
         # List view citation
-        url = build_cfpb_ui_url(tab="List", **filter_params)
+        url = build_deeplink_url(filter_params, tab="List")
         desc = "View these matching complaint(s) on CFPB.gov"
         if total_hits is not None and isinstance(total_hits, int):
             desc = f"View all {total_hits:,} matching complaint(s) on CFPB.gov"
@@ -826,13 +788,13 @@ def generate_citations(
 
     elif context_type == "trends":
         # Trends chart citation
-        url = build_cfpb_ui_url(
-            tab="Trends",
-            lens=lens or "Overview",
-            chart_type="line",
-            date_interval="Month",
+        trend_params = {
             **filter_params,
-        )
+            "lens": lens or "Overview",
+            "chartType": "line",
+            "trend_interval": "month",
+        }
+        url = build_deeplink_url(trend_params, tab="Trends")
         citations.append(
             {
                 "type": "trends_chart",
@@ -843,7 +805,7 @@ def generate_citations(
 
     elif context_type == "geo":
         # Map view citation
-        url = build_cfpb_ui_url(tab="Map", **filter_params)
+        url = build_deeplink_url(filter_params, tab="Map")
         citations.append(
             {
                 "type": "geographic_map",
@@ -867,7 +829,7 @@ def generate_citations(
 
     # For all contexts except document-only, add a list view if not already present
     if context_type in {"trends", "geo"} and filter_params:
-        list_url = build_cfpb_ui_url(tab="List", **filter_params)
+        list_url = build_deeplink_url(filter_params, tab="List")
         citations.append(
             {
                 "type": "search_results",
@@ -1260,65 +1222,44 @@ async def generate_cfpb_dashboard_url(
     )
 
 
-# TEMPORARILY DISABLED - Screenshot functionality
-# @server.tool()
-# async def capture_cfpb_chart_screenshot(
-#     search_term: Optional[str] = None,
-#     date_received_min: Optional[str] = None,
-#     date_received_max: Optional[str] = None,
-#     product: Optional[List[str]] = None,
-#     issue: Optional[List[str]] = None,
-#     state: Optional[List[str]] = None,
-#     company: Optional[List[str]] = None,
-#     lens: str = "Product",
-#     chart_type: str = "line",
-#     date_interval: str = "Month",
-# ) -> str:
-#     """Capture a screenshot of the official CFPB trends chart as a PNG image.
-#
-#     This tool uses a headless browser to navigate to the official CFPB UI,
-#     render the chart with your specified filters, and return the chart as
-#     a base64-encoded PNG image.
-#
-#     Perfect for:
-#     - Creating official, branded visualizations for reports
-#     - Capturing trend charts to share in presentations
-#     - Getting authoritative CFPB-styled graphics
-#
-#     The chart will show complaint trends over time with the official CFPB
-#     branding and styling. Returns a base64-encoded PNG image string.
-#
-#     Example:
-#     - lens="Product" shows trends by product type
-#     - lens="Company" shows trends by company
-#     - lens="Overview" shows overall complaint volume
-#     """
-#     # Build URL for Trends view with chart parameters
-#     url = build_cfpb_ui_url(
-#         tab="Trends",
-#         lens=lens,
-#         chart_type=chart_type,
-#         date_interval=date_interval,
-#         search_term=search_term,
-#         date_received_min=date_received_min,
-#         date_received_max=date_received_max,
-#         product=product,
-#         issue=issue,
-#         state=state,
-#         company=company,
-#     )
-#
-#     # Capture screenshot using Playwright
-#     screenshot_bytes = await screenshot_cfpb_ui(
-#         app.state.browser,
-#         url,
-#         wait_for_charts=True,
-#     )
-#
-#     # Return base64-encoded image
-#     import base64
-#
-#     return base64.b64encode(screenshot_bytes).decode("utf-8")
+@server.tool()
+async def capture_cfpb_chart_screenshot(
+    search_term: Optional[str] = None,
+    date_received_min: Optional[str] = None,
+    date_received_max: Optional[str] = None,
+    product: Optional[List[str]] = None,
+    issue: Optional[List[str]] = None,
+    state: Optional[List[str]] = None,
+    company: Optional[List[str]] = None,
+    lens: str = "Product",
+    chart_type: str = "line",
+    date_interval: str = "Month",
+) -> str:
+    """Capture a screenshot of the official CFPB trends chart as a PNG image."""
+    if not getattr(app.state, "browser", None):
+        raise RuntimeError("Playwright browser unavailable for screenshots.")
+
+    api_params: Dict[str, Any] = {
+        "lens": lens,
+        "chartType": chart_type,
+        "trend_interval": date_interval.lower(),
+        "search_term": search_term,
+        "date_received_min": date_received_min,
+        "date_received_max": date_received_max,
+        "product": product,
+        "issue": issue,
+        "state": state,
+        "company": company,
+    }
+    url = build_deeplink_url(api_params, tab="Trends")
+
+    screenshot_bytes = await screenshot_cfpb_ui(
+        app.state.browser,
+        url,
+        wait_for_charts=True,
+    )
+
+    return base64.b64encode(screenshot_bytes).decode("utf-8")
 
 
 @server.tool()
@@ -1620,447 +1561,7 @@ async def rank_company_spikes(
 
 
 # -------------------------------------------------------------------------
-# 4) Interface B: Standard REST API (for ChatGPT Actions)
-# -------------------------------------------------------------------------
-
-
-@app.get("/search", operation_id="searchComplaints", summary="Search Complaints")
-async def search_route(
-    search_term: Optional[str] = None,
-    field: SearchField = "complaint_what_happened",
-    size: int = 10,
-    from_index: int = 0,
-    sort: SearchSort = "relevance_desc",
-    search_after: Optional[str] = None,
-    no_highlight: bool = False,
-    company: Optional[List[str]] = Query(None),
-    company_public_response: Optional[List[str]] = Query(None),
-    company_response: Optional[List[str]] = Query(None),
-    consumer_consent_provided: Optional[List[str]] = Query(None),
-    consumer_disputed: Optional[List[str]] = Query(None),
-    date_received_min: Optional[str] = None,
-    date_received_max: Optional[str] = None,
-    company_received_min: Optional[str] = None,
-    company_received_max: Optional[str] = None,
-    has_narrative: Optional[List[str]] = Query(None),
-    issue: Optional[List[str]] = Query(None),
-    product: Optional[List[str]] = Query(None),
-    state: Optional[List[str]] = Query(None),
-    submitted_via: Optional[List[str]] = Query(None),
-    tags: Optional[List[str]] = Query(None),
-    timely: Optional[List[str]] = Query(None),
-    zip_code: Optional[List[str]] = Query(None),
-):
-    """REST endpoint for searching complaints."""
-    return await search_logic(
-        size,
-        from_index,
-        sort,
-        search_after,
-        no_highlight,
-        search_term=search_term,
-        field=field,
-        company=company,
-        company_public_response=company_public_response,
-        company_response=company_response,
-        consumer_consent_provided=consumer_consent_provided,
-        consumer_disputed=consumer_disputed,
-        date_received_min=date_received_min,
-        date_received_max=date_received_max,
-        company_received_min=company_received_min,
-        company_received_max=company_received_max,
-        has_narrative=has_narrative,
-        issue=issue,
-        product=product,
-        state=state,
-        submitted_via=submitted_via,
-        tags=tags,
-        timely=timely,
-        zip_code=zip_code,
-    )
-
-
-@app.get("/trends", operation_id="listTrends", summary="List Complaint Trends")
-async def trends_route(
-    lens: str = "overview",
-    trend_interval: str = "month",
-    trend_depth: int = Query(5, ge=5),
-    sub_lens: Optional[str] = None,
-    sub_lens_depth: int = Query(5, ge=5),
-    focus: Optional[str] = None,
-    search_term: Optional[str] = None,
-    field: SearchField = "complaint_what_happened",
-    company: Optional[List[str]] = Query(None),
-    company_public_response: Optional[List[str]] = Query(None),
-    company_response: Optional[List[str]] = Query(None),
-    consumer_consent_provided: Optional[List[str]] = Query(None),
-    consumer_disputed: Optional[List[str]] = Query(None),
-    date_received_min: Optional[str] = None,
-    date_received_max: Optional[str] = None,
-    company_received_min: Optional[str] = None,
-    company_received_max: Optional[str] = None,
-    has_narrative: Optional[List[str]] = Query(None),
-    issue: Optional[List[str]] = Query(None),
-    product: Optional[List[str]] = Query(None),
-    state: Optional[List[str]] = Query(None),
-    submitted_via: Optional[List[str]] = Query(None),
-    tags: Optional[List[str]] = Query(None),
-    timely: Optional[List[str]] = Query(None),
-    zip_code: Optional[List[str]] = Query(None),
-):
-    """REST endpoint for retrieving trends."""
-    return await trends_logic(
-        lens,
-        trend_interval,
-        trend_depth,
-        sub_lens,
-        sub_lens_depth,
-        focus,
-        search_term=search_term,
-        field=field,
-        company=company,
-        company_public_response=company_public_response,
-        company_response=company_response,
-        consumer_consent_provided=consumer_consent_provided,
-        consumer_disputed=consumer_disputed,
-        date_received_min=date_received_min,
-        date_received_max=date_received_max,
-        company_received_min=company_received_min,
-        company_received_max=company_received_max,
-        has_narrative=has_narrative,
-        issue=issue,
-        product=product,
-        state=state,
-        submitted_via=submitted_via,
-        tags=tags,
-        timely=timely,
-        zip_code=zip_code,
-    )
-
-
-@app.get("/geo/states", operation_id="getGeoStates", summary="Get State Aggregations")
-async def geo_route(
-    search_term: Optional[str] = None,
-    field: SearchField = "complaint_what_happened",
-    company: Optional[List[str]] = Query(None),
-    company_public_response: Optional[List[str]] = Query(None),
-    company_response: Optional[List[str]] = Query(None),
-    consumer_consent_provided: Optional[List[str]] = Query(None),
-    consumer_disputed: Optional[List[str]] = Query(None),
-    date_received_min: Optional[str] = None,
-    date_received_max: Optional[str] = None,
-    company_received_min: Optional[str] = None,
-    company_received_max: Optional[str] = None,
-    has_narrative: Optional[List[str]] = Query(None),
-    issue: Optional[List[str]] = Query(None),
-    product: Optional[List[str]] = Query(None),
-    state: Optional[List[str]] = Query(None),
-    submitted_via: Optional[List[str]] = Query(None),
-    tags: Optional[List[str]] = Query(None),
-    timely: Optional[List[str]] = Query(None),
-    zip_code: Optional[List[str]] = Query(None),
-):
-    """REST endpoint for geographic aggregations."""
-    return await geo_logic(
-        search_term=search_term,
-        field=field,
-        company=company,
-        company_public_response=company_public_response,
-        company_response=company_response,
-        consumer_consent_provided=consumer_consent_provided,
-        consumer_disputed=consumer_disputed,
-        date_received_min=date_received_min,
-        date_received_max=date_received_max,
-        company_received_min=company_received_min,
-        company_received_max=company_received_max,
-        has_narrative=has_narrative,
-        issue=issue,
-        product=product,
-        state=state,
-        submitted_via=submitted_via,
-        tags=tags,
-        timely=timely,
-        zip_code=zip_code,
-    )
-
-
-@app.get(
-    "/complaint/{complaint_id}",
-    operation_id="getComplaintDocument",
-    summary="Get Complaint Document",
-)
-async def document_route(
-    complaint_id: str = Path(..., description="The ID of the complaint to retrieve"),
-):
-    """REST endpoint for retrieving a single complaint."""
-    return await document_logic(complaint_id)
-
-
-@app.get(
-    "/suggest/{field}",
-    operation_id="suggestFilterValues",
-    summary="Suggest Filter Values",
-)
-async def suggest_route(
-    field: Literal["company", "zip_code"] = Path(..., pattern="^(company|zip_code)$"),
-    text: str = Query(..., min_length=1),
-    size: int = 10,
-):
-    """REST endpoint for autosuggestions."""
-    return await suggest_logic(field, text, size)
-
-
-@app.get(
-    "/cfpb-ui/url",
-    operation_id="generateCFPBDashboardUrl",
-    summary="Generate CFPB Dashboard URL",
-)
-async def cfpb_ui_url_route(
-    search_term: Optional[str] = None,
-    date_received_min: Optional[str] = None,
-    date_received_max: Optional[str] = None,
-    company: Optional[List[str]] = Query(None),
-    product: Optional[List[str]] = Query(None),
-    issue: Optional[List[str]] = Query(None),
-    state: Optional[List[str]] = Query(None),
-    has_narrative: Optional[str] = None,
-    company_response: Optional[List[str]] = Query(None),
-):
-    """Generate a deep-link to the official CFPB dashboard with pre-applied filters."""
-    url = build_cfpb_ui_url(
-        search_term=search_term,
-        date_received_min=date_received_min,
-        date_received_max=date_received_max,
-        company=company,
-        product=product,
-        issue=issue,
-        state=state,
-        has_narrative=has_narrative,
-        company_response=company_response,
-    )
-    return {"url": url}
-
-
-@app.get(
-    "/cfpb-ui/screenshot",
-    operation_id="screenshotCFPBDashboard",
-    summary="Screenshot CFPB Dashboard",
-    responses={
-        200: {
-            "content": {"image/png": {}},
-            "description": "PNG screenshot of the CFPB dashboard",
-        },
-        503: {"description": "Screenshot functionality temporarily disabled"},
-    },
-)
-async def cfpb_ui_screenshot_route(
-    search_term: Optional[str] = None,
-    date_received_min: Optional[str] = None,
-    date_received_max: Optional[str] = None,
-    company: Optional[List[str]] = Query(None),
-    product: Optional[List[str]] = Query(None),
-    issue: Optional[List[str]] = Query(None),
-    state: Optional[List[str]] = Query(None),
-    has_narrative: Optional[str] = None,
-    company_response: Optional[List[str]] = Query(None),
-    timeout: int = Query(30000, ge=5000, le=60000),
-):
-    """Capture a screenshot of the official CFPB dashboard with applied filters.
-
-    Temporarily disabled. This route is kept to preserve the REST/OpenAPI contract.
-    """
-
-    raise HTTPException(
-        status_code=503,
-        detail="Screenshot service unavailable (Playwright disabled)",
-    )
-
-
-@app.get(
-    "/signals/overall",
-    operation_id="getOverallSignals",
-    summary="Overall Trend Signals",
-)
-async def signals_overall_route(
-    date_received_min: str = Query(..., description="ISO date (YYYY-MM-DD)"),
-    date_received_max: str = Query(..., description="ISO date (YYYY-MM-DD)"),
-    lens: str = "overview",
-    trend_interval: str = "month",
-    trend_depth: int = Query(24, ge=5),
-    baseline_window: int = Query(8, ge=2),
-    min_baseline_mean: float = Query(10.0, ge=0.0),
-    search_term: Optional[str] = None,
-    field: SearchField = "complaint_what_happened",
-    company: Optional[List[str]] = Query(None),
-    company_public_response: Optional[List[str]] = Query(None),
-    company_response: Optional[List[str]] = Query(None),
-    consumer_consent_provided: Optional[List[str]] = Query(None),
-    consumer_disputed: Optional[List[str]] = Query(None),
-    company_received_min: Optional[str] = None,
-    company_received_max: Optional[str] = None,
-    has_narrative: Optional[List[str]] = Query(None),
-    issue: Optional[List[str]] = Query(None),
-    product: Optional[List[str]] = Query(None),
-    state: Optional[List[str]] = Query(None),
-    submitted_via: Optional[List[str]] = Query(None),
-    tags: Optional[List[str]] = Query(None),
-    timely: Optional[List[str]] = Query(None),
-    zip_code: Optional[List[str]] = Query(None),
-):
-    return await get_overall_trend_signals(
-        lens=lens,
-        trend_interval=trend_interval,
-        trend_depth=trend_depth,
-        baseline_window=baseline_window,
-        min_baseline_mean=min_baseline_mean,
-        date_received_min=date_received_min,
-        date_received_max=date_received_max,
-        search_term=search_term,
-        field=field,
-        company=company,
-        company_public_response=company_public_response,
-        company_response=company_response,
-        consumer_consent_provided=consumer_consent_provided,
-        consumer_disputed=consumer_disputed,
-        company_received_min=company_received_min,
-        company_received_max=company_received_max,
-        has_narrative=has_narrative,
-        issue=issue,
-        product=product,
-        state=state,
-        submitted_via=submitted_via,
-        tags=tags,
-        timely=timely,
-        zip_code=zip_code,
-    )
-
-
-@app.get(
-    "/signals/group",
-    operation_id="rankGroupSignals",
-    summary="Rank Group Spike Signals",
-)
-async def signals_group_route(
-    group: Literal["product", "issue"] = Query(..., description="Group to rank"),
-    date_received_min: str = Query(..., description="ISO date (YYYY-MM-DD)"),
-    date_received_max: str = Query(..., description="ISO date (YYYY-MM-DD)"),
-    lens: str = "overview",
-    trend_interval: str = "month",
-    trend_depth: int = Query(12, ge=5),
-    sub_lens_depth: int = Query(10, ge=5),
-    top_n: int = Query(10, ge=1, le=50),
-    baseline_window: int = Query(8, ge=2),
-    min_baseline_mean: float = Query(10.0, ge=0.0),
-    search_term: Optional[str] = None,
-    field: SearchField = "complaint_what_happened",
-    company: Optional[List[str]] = Query(None),
-    company_public_response: Optional[List[str]] = Query(None),
-    company_response: Optional[List[str]] = Query(None),
-    consumer_consent_provided: Optional[List[str]] = Query(None),
-    consumer_disputed: Optional[List[str]] = Query(None),
-    company_received_min: Optional[str] = None,
-    company_received_max: Optional[str] = None,
-    has_narrative: Optional[List[str]] = Query(None),
-    issue: Optional[List[str]] = Query(None),
-    product: Optional[List[str]] = Query(None),
-    state: Optional[List[str]] = Query(None),
-    submitted_via: Optional[List[str]] = Query(None),
-    tags: Optional[List[str]] = Query(None),
-    timely: Optional[List[str]] = Query(None),
-    zip_code: Optional[List[str]] = Query(None),
-):
-    return await rank_group_spikes(
-        group=group,
-        lens=lens,
-        trend_interval=trend_interval,
-        trend_depth=trend_depth,
-        sub_lens_depth=sub_lens_depth,
-        top_n=top_n,
-        baseline_window=baseline_window,
-        min_baseline_mean=min_baseline_mean,
-        date_received_min=date_received_min,
-        date_received_max=date_received_max,
-        search_term=search_term,
-        field=field,
-        company=company,
-        company_public_response=company_public_response,
-        company_response=company_response,
-        consumer_consent_provided=consumer_consent_provided,
-        consumer_disputed=consumer_disputed,
-        company_received_min=company_received_min,
-        company_received_max=company_received_max,
-        has_narrative=has_narrative,
-        issue=issue,
-        product=product,
-        state=state,
-        submitted_via=submitted_via,
-        tags=tags,
-        timely=timely,
-        zip_code=zip_code,
-    )
-
-
-@app.get(
-    "/signals/company",
-    operation_id="rankCompanySignals",
-    summary="Rank Company Spike Signals",
-)
-async def signals_company_route(
-    date_received_min: str = Query(..., description="ISO date (YYYY-MM-DD)"),
-    date_received_max: str = Query(..., description="ISO date (YYYY-MM-DD)"),
-    lens: str = "overview",
-    trend_interval: str = "month",
-    trend_depth: int = Query(12, ge=5),
-    top_n: int = Query(10, ge=1, le=25),
-    baseline_window: int = Query(8, ge=2),
-    min_baseline_mean: float = Query(25.0, ge=0.0),
-    search_term: Optional[str] = None,
-    field: SearchField = "complaint_what_happened",
-    company_public_response: Optional[List[str]] = Query(None),
-    company_response: Optional[List[str]] = Query(None),
-    consumer_consent_provided: Optional[List[str]] = Query(None),
-    consumer_disputed: Optional[List[str]] = Query(None),
-    company_received_min: Optional[str] = None,
-    company_received_max: Optional[str] = None,
-    has_narrative: Optional[List[str]] = Query(None),
-    issue: Optional[List[str]] = Query(None),
-    product: Optional[List[str]] = Query(None),
-    state: Optional[List[str]] = Query(None),
-    submitted_via: Optional[List[str]] = Query(None),
-    tags: Optional[List[str]] = Query(None),
-    timely: Optional[List[str]] = Query(None),
-    zip_code: Optional[List[str]] = Query(None),
-):
-    return await rank_company_spikes(
-        lens=lens,
-        trend_interval=trend_interval,
-        trend_depth=trend_depth,
-        top_n=top_n,
-        baseline_window=baseline_window,
-        min_baseline_mean=min_baseline_mean,
-        date_received_min=date_received_min,
-        date_received_max=date_received_max,
-        search_term=search_term,
-        field=field,
-        company_public_response=company_public_response,
-        company_response=company_response,
-        consumer_consent_provided=consumer_consent_provided,
-        consumer_disputed=consumer_disputed,
-        company_received_min=company_received_min,
-        company_received_max=company_received_max,
-        has_narrative=has_narrative,
-        issue=issue,
-        product=product,
-        state=state,
-        submitted_via=submitted_via,
-        tags=tags,
-        timely=timely,
-        zip_code=zip_code,
-    )
-
-
-# -------------------------------------------------------------------------
-# 5) Application Mount
+# 4) Application Mount
 # -------------------------------------------------------------------------
 
 # Phase 5.3: Streamable HTTP Only
@@ -2086,10 +1587,6 @@ async def root() -> Dict[str, Any]:
     return {
         "name": "cfpb-mcp",
         "message": "CFPB MCP server is running.",
-        "rest": {
-            "docs": "/docs",
-            "openapi": "/openapi.json",
-        },
         "mcp": {
             "http": "/mcp",
         },

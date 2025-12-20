@@ -26,8 +26,11 @@ def _pick_free_port() -> int:
 
 def _is_server_ready(url: str) -> bool:
     try:
-        r = httpx.get(f"{url}/openapi.json", timeout=5)
-        return r.status_code == 200
+        r = httpx.get(f"{url}/", timeout=5)
+        if r.status_code != 200:
+            return False
+        payload = r.json()
+        return isinstance(payload, dict) and "mcp" in payload
     except Exception:  # noqa: BLE001
         return False
 

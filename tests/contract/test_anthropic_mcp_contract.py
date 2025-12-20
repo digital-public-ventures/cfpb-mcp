@@ -3,7 +3,6 @@ import json
 import re
 from typing import Any, cast
 
-import httpx
 import pytest
 from anthropic import Anthropic
 from anthropic.types import (
@@ -19,13 +18,113 @@ from mcp.client.streamable_http import streamable_http_client
 
 load_dotenv()
 
-# ... (omitted) ...
+def _load_dotenv_if_present() -> None:
+    """Load .env for local runs without requiring external tooling."""
+    env_path = os.path.join(os.getcwd(), ".env")
+    if not os.path.exists(env_path):
+        return
 
-@pytest.mark.e2e
+    try:
+        with open(env_path, "r", encoding="utf-8") as f:
+            for raw_line in f:
+                line = raw_line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                key, value = line.split("=", 1)
+                key = key.strip()
+                if not key or key in os.environ:
+                    continue
+                value = value.strip().strip('"').strip("'")
+                os.environ[key] = value
+    except OSError:
+        return
+
+
+def _extract_text(blocks) -> str:
+    if not isinstance(blocks, list):
+        return str(blocks or "")
+    parts = []
+    for b in blocks:
+        if getattr(b, "type", None) == "text" and hasattr(b, "text"):
+            parts.append(str(getattr(b, "text")))
+    return "\n".join([p for p in parts if p]).strip()
+
+
+def _tool_result_text(payload: Any) -> str:
+    if payload is None:
+        return ""
+    if isinstance(payload, str):
+        return payload
+    return json.dumps(payload, ensure_ascii=False, default=str)
+
+
+def _coerce_json(payload: object) -> object:
+    if isinstance(payload, str):
+        try:
+            return json.loads(payload)
+        except json.JSONDecodeError:
+            return payload
+    return payload
+
+
+def _extract_company_from_document(doc: object) -> str:
+    if not isinstance(doc, dict):
+        return ""
+
+    hits = doc.get("hits") if isinstance(doc.get("hits"), dict) else None
+    if hits and isinstance(hits.get("hits"), list) and hits["hits"]:
+        hit0 = hits["hits"][0] if isinstance(hits["hits"][0], dict) else {}
+        source = hit0.get("_source") if isinstance(hit0.get("_source"), dict) else {}
+    else:
+        source = doc.get("_source") if isinstance(doc.get("_source"), dict) else doc
+
+    if not isinstance(source, dict):
+        return ""
+
+    company = source.get("company")
+    return str(company or "").strip()
+
+
+def _extract_complaint_id_from_text(text: str) -> tuple[int, str]:
+    matches = re.findall(r"\b\d{4,9}\b", text or "")
+    assert matches, "Expected a 4-9 digit integer token in the final response text"
+    token = max(matches, key=len)
+    assert 4 <= len(token) <= 9
+    return int(token), token
+
+
+def _extract_complaint_id_from_search_payload(payload: object) -> int | None:
+    if not isinstance(payload, dict):
+        return None
+    data = payload.get("data") if isinstance(payload.get("data"), dict) else None
+    if not isinstance(data, dict):
+        return None
+    hits = data.get("hits", {})
+    if not isinstance(hits, dict):
+        return None
+    inner = hits.get("hits", [])
+    if not isinstance(inner, list) or not inner:
+        return None
+    hit0 = inner[0] if isinstance(inner[0], dict) else None
+    if not hit0:
+        return None
+    cid = hit0.get("_id") or (
+        hit0.get("_source", {}) if isinstance(hit0.get("_source"), dict) else {}
+    ).get("complaint_id")
+    if cid is None:
+        return None
+    try:
+        cid_int = int(str(cid))
+    except ValueError:
+        return None
+    if 4 <= len(str(cid_int)) <= 9:
+        return cid_int
+    return None
+
+@pytest.mark.contract
+@pytest.mark.fast
 @pytest.mark.anyio
 async def test_anthropic_mcp_tool_loop_smoke(server_url: str) -> None:
-    _require_e2e_opt_in()
-
     _load_dotenv_if_present()
 
     api_key = os.getenv("ANTHROPIC_API_KEY")
@@ -47,6 +146,7 @@ async def test_anthropic_mcp_tool_loop_smoke(server_url: str) -> None:
 
     final_text: str | None = None
     complaint_id_from_tools: int | None = None
+    complaint_doc: object | None = None
 
     # Connect using Streamable HTTP client
     async with streamable_http_client(mcp_url) as (read_stream, write_stream, _):
@@ -163,17 +263,17 @@ async def test_anthropic_mcp_tool_loop_smoke(server_url: str) -> None:
             complaint_id, _ = _extract_complaint_id_from_text(text)
             assert complaint_id == complaint_id_from_tools
 
+            doc_result = await mcp.call_tool(
+                "get_complaint_document",
+                {"complaint_id": str(complaint_id_from_tools)},
+            )
+            doc_payload = doc_result.structuredContent or doc_result.content
+            complaint_doc = _coerce_json(doc_payload) or doc_payload
+
     assert final_text is not None
     assert complaint_id_from_tools is not None
 
-    # Do REST assertions outside MCP SSE context to avoid pytest.skip leaking out of
-    # the AnyIO TaskGroup and producing noisy ExceptionGroup logs.
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        r = await client.get(f"{server_url}/complaint/{complaint_id_from_tools}")
-        r.raise_for_status()
-        doc = r.json()
-
-    company = _extract_company_from_document(doc)
+    company = _extract_company_from_document(complaint_doc)
     if not company:
         pytest.skip(
             f"Complaint {complaint_id_from_tools} document missing company field"

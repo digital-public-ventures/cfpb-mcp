@@ -142,3 +142,4 @@ curl "http://localhost:8000/trends?trend_depth=3"
 curl "http://localhost:8000/geo/states"
 curl "http://localhost:8000/suggest/company?text=bank&size=5"
 ```
+ 

@@ -32,9 +32,8 @@ Default `pytest` runs include everything; individual suites use markers.
 
 ## Contract Tests (Why They Exist)
 
-The contract tests in `tests/contract/` verify a fixed prompt against fixed
-assertions. This protects
-the external user experience of MCP tool loops. The prompt and assertions are
+The contract tests in `tests/contract/` verify a fixed prompt against fixed assertions.
+This protects the external user experience of MCP tool loops. The prompt and assertions are
 documented in `claude.md`, `AGENTS.md`, and `.github/copilot-instructions.md`.
 
 If behavior changes require a new prompt or assertions, add a new contract test

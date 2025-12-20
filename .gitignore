@@ -8,3 +8,5 @@ tests/e2e/outputs/*.jpg
 tests/e2e/outputs/*.webp
 
 /data
+server.log
+server_test.log

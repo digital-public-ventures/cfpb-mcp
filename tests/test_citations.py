@@ -1,222 +1,255 @@
-"""Tests for Phase 4.6 citation URL generation."""
+from __future__ import annotations
 
+import asyncio
+from datetime import date
+import re
+from typing import Any, Dict, Mapping
+from urllib.parse import parse_qs, urlparse
+
+import httpx
 import pytest
-from server import build_cfpb_ui_url, generate_citations
+
+from citations_mapping import build_deeplink_url, map_api_params_to_url_params
+from utils.deeplink_mapping import (
+    TRENDS_ENDPOINT_KEYS,
+    apply_default_dates,
+    validate_api_params,
+)
+from tests.playwright_helpers import fast_playwright_context
+from server import BASE_URL
+
+FAST_URL_CASES = [
+    pytest.param(
+        {
+            "search_term": "mortgage",
+            "field": "all",
+            "size": 25,
+            "sort": "created_date_desc",
+            "frm": 0,
+        },
+        id="example-simple-search",
+        marks=pytest.mark.slow,
+    ),
+    pytest.param(
+        {
+            "product": ["Credit card"],
+            "state": ["CA"],
+            "date_received_min": "2023-01-01",
+            "date_received_max": "2023-12-31",
+            "size": 50,
+            "frm": 50,
+        },
+        id="example-filtered-list",
+        marks=pytest.mark.slow,
+    ),
+]
+
+SLOW_URL_CASES = [
+    pytest.param(
+        {
+            "search_term": "forbearance",
+            "field": "all",
+            "product": ["Mortgage"],
+            "company_response": ["Closed with explanation"],
+            "state": ["TX"],
+            "size": 10,
+            "sort": "created_date_desc",
+            "frm": 0,
+        },
+        id="example-filtered-search",
+        marks=pytest.mark.slow,
+    ),
+    pytest.param(
+        {
+            "search_term": "credit card",
+            "field": "all",
+            "tags": ["Older American"],
+            "consumer_disputed": ["yes"],
+            "has_narrative": "true",
+            "size": 10,
+            "sort": "created_date_desc",
+            "frm": 0,
+        },
+        id="example-tags-disputed",
+        marks=pytest.mark.slow,
+    ),
+]
+
+EXTRA_SLOW_URL_CASES = [
+    pytest.param(
+        {
+            "search_term": "debt collection",
+            "field": "all",
+            "product": ["Debt collection", "Credit card"],
+            "state": ["CA", "NY"],
+            "company_response": ["Closed with explanation"],
+            "consumer_disputed": ["yes"],
+            "has_narrative": "true",
+            "size": 10,
+            "sort": "created_date_desc",
+            "frm": 0,
+        },
+        id="example-multi-filter",
+        marks=[pytest.mark.slow, pytest.mark.extra_slow],
+    ),
+]
+
+EXAMPLE_API_QUERIES = FAST_URL_CASES + SLOW_URL_CASES + EXTRA_SLOW_URL_CASES
+
+EXAMPLE_TREND_QUERY = {
+    "lens": "product",
+    "trend_interval": "month",
+    "trend_depth": 5,
+    "date_received_min": "2022-01-01",
+    "date_received_max": "2022-12-31",
+    "product": ["Mortgage"],
+}
+
+FIXED_TODAY = date(2025, 12, 20)
+
+UI_MATCH_PATTERNS = [
+    re.compile(
+        r"Showing\s+([\d,]+)\s+matches\s+out of\s+[\d,]+\s+total complaints",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"Showing\s+([\d,]+)\s+matches\s+out of\s+[\d,]+\s+complaints",
+        re.IGNORECASE,
+    ),
+]
 
 
-class TestBuildCfpbUiUrl:
-    """Test URL construction for CFPB UI deep-links."""
-
-    def test_basic_search_url(self):
-        """Test simple search query URL."""
-        url = build_cfpb_ui_url(
-            search_term="foreclosure", product=["Mortgage"], tab="List"
-        )
-        assert "searchText=foreclosure" in url
-        assert "product=Mortgage" in url
-        assert "tab=List" in url
-        assert url.startswith(
-            "https://www.consumerfinance.gov/data-research/consumer-complaints/search/?"
-        )
-
-    def test_trends_url(self):
-        """Test trends view URL with lens and chart type."""
-        url = build_cfpb_ui_url(
-            product=["Mortgage"],
-            date_received_min="2020-01-01",
-            date_received_max="2023-12-31",
-            tab="Trends",
-            lens="Product",
-            chart_type="line",
-            date_interval="Month",
-        )
-        assert "tab=Trends" in url
-        assert "lens=Product" in url
-        assert "chartType=line" in url
-        assert "dateInterval=Month" in url
-        assert "product=Mortgage" in url
-        assert "date_received_min=2020-01-01" in url
-
-    def test_map_url(self):
-        """Test geographic map view URL."""
-        url = build_cfpb_ui_url(
-            product=["Mortgage"], state=["CA", "TX", "FL"], tab="Map"
-        )
-        assert "tab=Map" in url
-        assert "product=Mortgage" in url
-        assert "state=CA%2CTX%2CFL" in url
-
-    def test_multi_value_params(self):
-        """Test multiple products/issues/states."""
-        url = build_cfpb_ui_url(
-            product=["Mortgage", "Debt collection"],
-            issue=["Trouble during payment process"],
-            state=["TX", "FL"],
-        )
-        assert "product=Mortgage%2CDebt+collection" in url
-        assert "issue=Trouble+during+payment+process" in url
-        assert "state=TX%2CFL" in url
-
-    def test_boolean_params(self):
-        """Test boolean parameters like has_narrative."""
-        url = build_cfpb_ui_url(has_narrative="true", tab="List")
-        assert "has_narrative=true" in url
-
-    def test_no_params_returns_base_url(self):
-        """Test that no parameters returns just the base URL."""
-        url = build_cfpb_ui_url()
-        assert (
-            url
-            == "https://www.consumerfinance.gov/data-research/consumer-complaints/search/"
-        )
-
-    def test_company_response_params(self):
-        """Test company response filtering."""
-        url = build_cfpb_ui_url(
-            company_response=["Closed with explanation", "Closed with monetary relief"],
-            tab="List",
-        )
-        assert (
-            "company_response=Closed+with+explanation%2CClosed+with+monetary+relief"
-            in url
-        )
-
-    def test_special_characters_encoded(self):
-        """Test URL encoding of special characters."""
-        url = build_cfpb_ui_url(
-            search_term="mortgage scam", company=["WELLS FARGO & COMPANY"]
-        )
-        assert "searchText=mortgage+scam" in url
-        assert "company=WELLS+FARGO+%26+COMPANY" in url
+def _parse_query(url: str) -> Dict[str, list[str]]:
+    parsed = urlparse(url)
+    return parse_qs(parsed.query)
 
 
-class TestGenerateCitations:
-    """Test citation generation for different query contexts."""
+def _parse_ui_matches(ui_text: str) -> int:
+    for pattern in UI_MATCH_PATTERNS:
+        match = pattern.search(ui_text)
+        if match:
+            return int(match.group(1).replace(",", ""))
+    raise ValueError("Unable to locate matches-out-of count in UI text.")
 
-    def test_search_citations(self):
-        """Test citations for search queries."""
-        citations = generate_citations(
-            context_type="search",
-            total_hits=1234,
-            search_term="foreclosure",
-            product=["Mortgage"],
-            date_received_min="2023-01-01",
-            date_received_max="2023-12-31",
-        )
 
-        assert len(citations) == 1
-        assert citations[0]["type"] == "search_results"
-        assert "tab=List" in citations[0]["url"]
-        assert "searchText=foreclosure" in citations[0]["url"]
-        assert "product=Mortgage" in citations[0]["url"]
-        assert "1,234" in citations[0]["description"]
+async def _fetch_api_total(
+    client: httpx.AsyncClient, api_params: Mapping[str, Any]
+) -> int:
+    response = await client.get(BASE_URL, params=api_params)
+    if response.status_code != 200:
+        pytest.fail(f"API call failed: {response.url} ({response.status_code})")
 
-    def test_trends_citations(self):
-        """Test citations for trend queries."""
-        citations = generate_citations(
-            context_type="trends",
-            lens="Product",
-            product=["Mortgage"],
-            date_received_min="2022-01-01",
-        )
+    data = response.json()
+    total = data.get("hits", {}).get("total", 0)
+    if isinstance(total, dict):
+        total = total.get("value", 0)
+    if isinstance(total, str) and total.isdigit():
+        total = int(total)
+    if not isinstance(total, int):
+        pytest.fail(f"Unexpected API total format: {total}")
+    return total
 
-        assert len(citations) == 2
-        # First citation should be trends chart
-        assert citations[0]["type"] == "trends_chart"
-        assert "tab=Trends" in citations[0]["url"]
-        assert "lens=Product" in citations[0]["url"]
-        assert "chartType=line" in citations[0]["url"]
-        assert "dateInterval=Month" in citations[0]["url"]
-        # Second citation should be list view
-        assert citations[1]["type"] == "search_results"
-        assert "tab=List" in citations[1]["url"]
 
-    def test_geo_citations(self):
-        """Test citations for geographic queries."""
-        citations = generate_citations(
-            context_type="geo",
-            product=["Mortgage"],
-            state=["CA"],
-        )
+@pytest.fixture(scope="module")
+async def api_client() -> httpx.AsyncClient:
+    async with httpx.AsyncClient(timeout=20.0) as client:
+        yield client
 
-        assert len(citations) == 2
-        # First citation should be map view
-        assert citations[0]["type"] == "geographic_map"
-        assert "tab=Map" in citations[0]["url"]
-        # Second citation should be list view
-        assert citations[1]["type"] == "search_results"
-        assert "tab=List" in citations[1]["url"]
 
-    def test_document_citations(self):
-        """Test citations for individual complaint documents."""
-        citations = generate_citations(
-            context_type="document",
-            complaint_id="12345678",
-        )
+@pytest.fixture(scope="module")
+async def ui_context():
+    try:
+        async with fast_playwright_context() as context:
+            yield context
+    except RuntimeError as exc:
+        pytest.skip(str(exc))
 
-        assert len(citations) == 1
-        assert citations[0]["type"] == "complaint_detail"
-        assert "12345678" in citations[0]["description"]
 
-    def test_citations_with_multiple_filters(self):
-        """Test citations with complex filter combinations."""
-        citations = generate_citations(
-            context_type="search",
-            total_hits=500,
-            search_term="scam",
-            product=["Debt collection", "Credit reporting"],
-            state=["TX", "FL", "CA"],
-            date_received_min="2020-01-01",
-            has_narrative="true",
-            company_response=["Closed with explanation"],
-        )
+@pytest.mark.fast
+def test_map_api_params_to_url_params_examples():
+    api_params = {
+        "search_term": "mortgage",
+        "field": "all",
+        "size": 25,
+        "sort": "created_date_desc",
+        "frm": 0,
+    }
+    mapped = map_api_params_to_url_params(api_params)
+    assert mapped["searchText"] == "mortgage"
+    assert mapped["searchField"] == "all"
+    assert mapped["size"] == 25
+    assert mapped["sort"] == "created_date_desc"
 
-        url = citations[0]["url"]
-        assert "searchText=scam" in url
-        assert "product=Debt+collection%2CCredit+reporting" in url
-        assert "state=TX%2CFL%2CCA" in url
-        assert "date_received_min=2020-01-01" in url
-        assert "has_narrative=true" in url
-        assert "company_response=Closed+with+explanation" in url
+    url = build_deeplink_url(api_params, today=FIXED_TODAY)
+    query = _parse_query(url)
+    assert query["page"] == ["1"]
 
-    def test_citations_without_filters(self):
-        """Test citations with minimal filters."""
-        citations = generate_citations(
-            context_type="search",
-            total_hits=100,
-        )
+    api_params = {
+        "product": ["Credit card"],
+        "state": ["CA"],
+        "date_received_min": "2023-01-01",
+        "date_received_max": "2023-12-31",
+        "size": 50,
+        "frm": 50,
+    }
+    url = build_deeplink_url(api_params, today=FIXED_TODAY)
+    query = _parse_query(url)
+    assert query["product"] == ["Credit card"]
+    assert query["state"] == ["CA"]
+    assert query["date_received_min"] == ["2023-01-01"]
+    assert query["date_received_max"] == ["2023-12-31"]
+    assert query["page"] == ["2"]
 
-        assert len(citations) == 1
-        # Should still generate valid base URL
-        assert citations[0]["url"].startswith(
-            "https://www.consumerfinance.gov/data-research/consumer-complaints/search/"
-        )
 
-    def test_trends_with_lens(self):
-        """Test trends citations respect lens parameter."""
-        citations = generate_citations(
-            context_type="trends",
-            lens="Company",
-            company=["BANK OF AMERICA"],
-        )
+@pytest.mark.fast
+def test_trend_mapping_defaults():
+    url = build_deeplink_url(EXAMPLE_TREND_QUERY, today=FIXED_TODAY)
+    query = _parse_query(url)
+    assert query["tab"] == ["Trends"]
+    assert query["lens"] == ["product"]
+    assert query["dateInterval"] == ["Month"]
+    assert query["trend_depth"] == ["5"]
 
-        assert "lens=Company" in citations[0]["url"]
-        assert citations[0]["type"] == "trends_chart"
+    validation = validate_api_params(EXAMPLE_TREND_QUERY, TRENDS_ENDPOINT_KEYS)
+    assert not validation.unknown_keys
 
-    def test_citation_descriptions(self):
-        """Test that citation descriptions are meaningful."""
-        # Search with count
-        search_cites = generate_citations(
-            context_type="search", total_hits=42, product=["Mortgage"]
-        )
-        assert "42" in search_cites[0]["description"]
-        assert "CFPB.gov" in search_cites[0]["description"]
 
-        # Trends
-        trend_cites = generate_citations(context_type="trends", lens="Overview")
-        assert "Interactive" in trend_cites[0]["description"]
-        assert "trends" in trend_cites[0]["description"].lower()
+@pytest.mark.fast
+def test_default_date_window():
+    params = apply_default_dates({}, today=FIXED_TODAY)
+    assert params["date_received_min"] == "2011-12-01"
+    assert params["date_received_max"] == "2025-10-31"
 
-        # Geo
-        geo_cites = generate_citations(context_type="geo")
-        assert "map" in geo_cites[0]["description"].lower()
+
+@pytest.mark.integration
+@pytest.mark.slow
+@pytest.mark.anyio
+@pytest.mark.parametrize("api_params", EXAMPLE_API_QUERIES)
+async def test_ui_vs_api_counts(api_params, api_client, ui_context):
+    api_params_with_dates = apply_default_dates(api_params, today=FIXED_TODAY)
+    url = build_deeplink_url(api_params_with_dates, tab="List", today=FIXED_TODAY)
+
+    api_task = asyncio.create_task(
+        _fetch_api_total(api_client, api_params_with_dates)
+    )
+    page = await ui_context.new_page()
+    try:
+        await page.goto(url, wait_until="domcontentloaded", timeout=60000)
+        try:
+            await page.wait_for_function(
+                "document.body && /matches out of/i.test(document.body.innerText)",
+                timeout=20000,
+            )
+        except Exception:
+            pass
+        ui_text = await page.inner_text("body")
+    finally:
+        await page.close()
+
+    api_total = await api_task
+    ui_matches = _parse_ui_matches(ui_text)
+
+    assert api_total == ui_matches, (
+        "API/UI match count mismatch: "
+        f"api_total={api_total} ui_matches={ui_matches} url={url}"
+    )

@@ -44,11 +44,36 @@
 * Live CFPB API dependency means data can vary; keep assertions resilient.
 * Run `uv run pytest` (plus targeted cases) before merging.
 
-### E2E contract (do not edit)
+### Contract tests (prompt + assertions only)
 
-* `tests/e2e/**` are compatibility contracts—never change, reformat, or rename them.
-* If behavior changes, add a new suite (e.g., `tests/e2e_v2/`) instead of touching existing files.
-* Failures here indicate server regressions, not test bugs.
+The files under `tests/contract/` represent a **long-term compatibility contract** with downstream users and third-party agents.
+
+The only sacred parts of the contract are:
+
+User prompt (quoted exactly):
+"I'm researching CFPB consumer complaints about loan forbearance. Please find a complaint mentioning 'forbearance' where the company name is present, then tell me the complaint id, the company (if present), the state (if present), and a short 2-3 sentence summary grounded in the complaint. If you can't use tools, say 'MCP tools unavailable'."
+
+Assertions (quoted exactly):
+
+Anthropic contract assertions:
+- "Final response text is non-empty."
+- "\"MCP tools unavailable\" is not present in the final response text."
+- "A complaint id is obtained via tools."
+- "The complaint id is 4-9 digits long."
+- "The tool-derived complaint id appears in the final response text."
+- "The complaint id parsed from text matches the tool-derived complaint id."
+- "The first word of the complaint company appears in the final response text (case-insensitive)."
+
+OpenAI contract assertions:
+- "Final response text is non-empty."
+- "\"MCP tools unavailable\" is not present in the final response text."
+- "A complaint id is obtained via tools."
+- "The complaint id is 4-9 digits long."
+- "A 4-9 digit complaint id token can be extracted from the final response text."
+- "If the tool-derived complaint id appears in the final response text, it matches the extracted complaint id."
+- "The first word of the complaint company appears in the final response text (case-insensitive)."
+
+We may add another user prompt and its own assertions to the contract in the future.
 
 ### Git workflow
 

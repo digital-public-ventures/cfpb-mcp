@@ -28,13 +28,13 @@ def _pytest(args: list[str], *, extra_env: dict[str, str] | None = None) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Run pytest suites for this repo (unit/integration/e2e/full)."
+        description="Run pytest suites for this repo (unit/integration/slow/contract/full)."
     )
     parser.add_argument(
         "suite",
         nargs="?",
         default="integration",
-        choices=["unit", "integration", "e2e", "full"],
+        choices=["unit", "integration", "slow", "contract", "full"],
         help="Which suite to run (default: integration)",
     )
     parser.add_argument(
@@ -56,16 +56,17 @@ def main() -> int:
         return _pytest(default_args + ["-m", "unit"] + extra)
 
     if ns.suite == "integration":
-        # Includes anything under tests/ except e2e/unit.
+        # Includes anything under tests/ except slow/unit/contract.
         return _pytest(default_args + ["-m", "integration"] + extra)
 
-    if ns.suite == "e2e":
-        # E2E tests are opt-in and may require provider keys.
-        env = {"RUN_E2E": os.getenv("RUN_E2E", "1")}
-        return _pytest(default_args + ["-m", "e2e", "-rs"] + extra, extra_env=env)
+    if ns.suite == "slow":
+        return _pytest(default_args + ["-m", "slow", "-rs"] + extra)
+
+    if ns.suite == "contract":
+        return _pytest(default_args + ["-m", "contract", "-rs"] + extra)
 
     if ns.suite == "full":
-        # Run unit, then integration, then e2e.
+        # Run unit, then integration, then slow.
         rc = _pytest(default_args + ["-m", "unit"] + extra)
         if rc != 0:
             return rc
@@ -73,8 +74,7 @@ def main() -> int:
         rc = _pytest(default_args + ["-m", "integration"] + extra)
         if rc != 0:
             return rc
-        env = {"RUN_E2E": os.getenv("RUN_E2E", "1")}
-        return _pytest(default_args + ["-m", "e2e", "-rs"] + extra, extra_env=env)
+        return _pytest(default_args + ["-m", "slow", "-rs"] + extra)
 
     _die(f"Unknown suite: {ns.suite}")
 

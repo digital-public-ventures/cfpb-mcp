@@ -30,13 +30,13 @@ What’s already implemented (high level):
 * A single FastAPI server that exposes both **REST/OpenAPI** endpoints and **MCP tools over SSE** (mounted at `/mcp/sse`).
 * Shared, transport-agnostic helper logic (REST routes and MCP tools reuse the same underlying request/response shaping).
 * Defensive upstream parameter handling to avoid CFPB API errors (e.g., we prune `None` / empty values rather than forwarding them).
-* A deterministic pytest suite for REST + MCP flows, plus **opt-in** provider E2E tests (treated as a long-term compatibility contract).
+* A deterministic pytest suite for REST + MCP flows, plus **opt-in** provider slow contract tests (treated as a long-term compatibility contract).
 * Lightweight harness scripts to exercise both integration modes (useful for manual smoke checks).
 
 Context-setting choices (why these goals are sequenced the way they are):
 
 * **Dual-protocol is a core constraint:** we treat OpenAPI (`/openapi.json`) and MCP SSE (`/mcp/sse`) as first-class public interfaces, not “nice-to-have adapters.”
-* **Stability over cleverness:** the repo explicitly treats `tests/e2e/**` as immutable contracts; if we need breaking changes, we add a new versioned suite rather than modifying the existing one.
+* **Stability over cleverness:** the repo explicitly treats `tests/contract/**` as immutable contracts; if we need breaking changes, we add a new versioned suite rather than modifying the existing one.
 * **Semantics come later by design:** semantic/vector search, epoch logic, and anomaly detection can be layered on top of the already-working wrapper without changing client integration patterns.
 
 ### Goal 1: Arming the Advocates (Semantic & Narrative Search)
@@ -292,7 +292,7 @@ MCP Response:
 ✅ Created `generate_citations()` helper with smart tab selection based on context\
 ✅ Wrapped MCP tool responses: `search_complaints`, `list_complaint_trends`, `get_state_aggregations`\
 ✅ Added 16 comprehensive tests in `tests/test_citations.py` validating URL construction and citation generation\
-✅ All tests passing (43 passed, 3 skipped E2E tests)\
+✅ All tests passing (43 passed, 3 skipped contract tests)\
 ✅ Response format: `{"data": <original_payload>, "citations": [...]}`
 
 ### Phase 5: Claude Custom Connector (Remote, OAuth)
@@ -315,7 +315,7 @@ We are no longer pursuing `.mcpb` packaging. Any `.mcpb` plans and related imple
 * Tool names/schemas remain stable.
 * Existing REST/OpenAPI surface remains available.
 
-#### Phase 5.3: FastMCP Standardization + Streamable HTTP (Drop SSE)
+#### ✅ Phase 5.3: FastMCP Standardization + Streamable HTTP (Drop SSE) ✅
 
 **Goal:** Standardize on the `fastmcp` library for MCP serving and consolidate all integrations (Anthropic, OpenAI) onto the modern **Streamable HTTP** transport (`POST /mcp`). Legacy SSE support will be removed to simplify the architecture.
 
@@ -355,7 +355,7 @@ We are no longer pursuing `.mcpb` packaging. Any `.mcpb` plans and related imple
 
    * Ensure `tests/transport/http/` fully covers tool execution and connectivity.
 
-   * Ensure `tests/e2e/` (if any exist for SSE) are updated or marked for migration.
+   * Ensure `tests/contract/` (if any exist for SSE) are updated or marked for migration.
 
 **Files to touch (expected / scoped):**
 
@@ -375,7 +375,38 @@ We are no longer pursuing `.mcpb` packaging. Any `.mcpb` plans and related imple
 
 * Existing tools (`search_complaints`, etc.) function correctly over HTTP transport.
 
-#### Phase 5.4: OAuth for Claude Custom Connector (FastMCP-Recommended)
+#### ✅ Phase 5.4: Test Standardization & URL Verification ✅
+
+**Goal:** Simplify the test suite by removing redundancy and implementing rigorous verification for the critical "Citation URL" feature. We will validate that our constructed UI URLs actually yield the same data as the underlying API calls.
+
+Goal: Simplify the test suite by removing redundancy and implement rigorous verification for the "Citation URL" feature. Validate that constructed UI URLs yield the same data as the underlying API calls.
+
+Deliverables:
+
+1. Test Suite Cleanup
+   * Delete `tests/test_cfpb_ui.py` (redundant coverage).
+   * Delete `tests/contract/test_anthropic_mcp_screenshot_contract.py` (feature disabled).
+   * Merge `test_rest_openapi.py` into `test_rest_endpoints.py` to consolidate REST/OpenAPI smoke tests.
+
+2. Enhance `test_citations.py`
+   * Use `/docs/cfpb/CFPB_URL_SCHEME.txt` as reference for verification.
+   * Construct ~30 representative query permutations (date ranges, products, companies).
+   * For each permutation:
+     * Construct the UI URL (e.g., `consumerfinance.gov/...`).
+     * Construct the equivalent API call (e.g., `api/v1/search?...`).
+     * Execute both requests.
+     * Validation: assert the complaint count in the API response matches the "matches out of X complaints" text in the rendered UI HTML.
+
+3. Contract & Testing Docs
+   * Rename the contract suite to `tests/contract/` with explicit prompt + assertion documentation.
+   * Add `docs/testing.md` with testing strategy, markers, and gotchas.
+
+Files to touch:
+
+* `tests/` (deletions and refactoring)
+* `tests/test_citations.py` (major enhancement)
+
+#### Phase 5.5: OAuth for Claude Custom Connector (FastMCP-Recommended)
 
 **Goal:** Implement OAuth compatible with Claude Custom Connectors (OAuth client id/secret; no API keys), using FastMCP’s recommended auth patterns.
 
@@ -393,7 +424,7 @@ We are no longer pursuing `.mcpb` packaging. Any `.mcpb` plans and related imple
 1. Configure the chosen auth approach (Token validation / Remote OAuth / OAuth Proxy).
 2. Publish `/.well-known/oauth-protected-resource` and related discovery endpoints.
 3. Implement selective auth semantics (allow initialize/initialized; require auth for tools/list + tools/call).
-4. Add OAuth-focused tests without modifying `tests/e2e/**`.
+4. Add OAuth-focused tests without modifying `tests/contract/**`.
 
 **Acceptance criteria:**
 
@@ -401,7 +432,7 @@ We are no longer pursuing `.mcpb` packaging. Any `.mcpb` plans and related imple
 * Discovery endpoints are reachable and consistent with the public MCP URL.
 * OAuth applies identically to both `/mcp` and `/mcp/sse`.
 
-#### Phase 5.5: Cleanup After OAuth-Only (Remove mcpb + API Keys)
+#### Phase 5.6: Cleanup After OAuth-Only (Remove mcpb + API Keys)
 
 **Goal:** Remove legacy and temporary scaffolding now that OAuth is the only supported production auth path.
 
@@ -414,7 +445,7 @@ We are no longer pursuing `.mcpb` packaging. Any `.mcpb` plans and related imple
   * Remove `X-API-Key` references from docs.
   * Remove API-key generation instructions.
 * Replace or supersede any API-key-oriented integration tests with OAuth-oriented tests.
-  * Do not edit `tests/e2e/**`; add a new OAuth E2E suite instead (e.g., `tests/e2e_oauth/`) if the contract changes.
+  * Do not edit `tests/contract/**`; add a new OAuth contract suite instead (e.g., `tests/contract_oauth/`) if the contract changes.
 
 ### Phase 6: Local Dataset + Vector Embeddings (MiniLM on Apple Silicon)
 

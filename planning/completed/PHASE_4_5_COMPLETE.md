@@ -115,7 +115,7 @@ Following the production patterns from your reference:
 
 All tests passing:
 
-* ✅ 27 passed, 2 skipped (E2E require opt-in)
+* ✅ 27 passed, 2 skipped (contract tests require opt-in)
 * ✅ URL generation tests
 * ✅ Screenshot endpoint availability tests
 * ✅ OpenAPI contract compliance

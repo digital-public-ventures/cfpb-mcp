@@ -10,9 +10,42 @@ https://www.consumerfinance.gov/data-research/consumer-complaints/search/
 
 This real-world URL demonstrates all major parameters:
 
+```base url
+https://www.consumerfinance.gov/data-research/consumer-complaints/search/?chartType=line
 ```
-https://www.consumerfinance.gov/data-research/consumer-complaints/search/?chartType=line&company_public_response=Company%20has%20responded%20to%20the%20consumer%20and%20the%20CFPB%20and%20chooses%20not%20to%20provide%20a%20public%20response&company_public_response=Company%20believes%20it%20acted%20appropriately%20as%20authorized%20by%20contract%20or%20law&company_public_response=Company%20believes%20the%20complaint%20provided%20an%20opportunity%20to%20answer%20consumer%27s%20questions&company_public_response=Company%20believes%20complaint%20is%20the%20result%20of%20an%20isolated%20error&company_response=Closed%20with%20explanation&company_response=Closed%20with%20non-monetary%20relief&dateInterval=Month&date_received_max=2025-12-18&date_received_min=2019-12-18&has_narrative=true&issue=Trouble%20during%20payment%20process&issue=Applying%20for%20a%20mortgage%20or%20refinancing%20an%20existing%20mortgage&lens=Product&product=Mortgage&product=Debt%20collection&product=Credit%20reporting%2C%20credit%20repair%20services%2C%20or%20other%20personal%20consumer%20reports&searchField=all&searchText=mortgage%20scam&state=TX&state=FL&state=CA&state=NY&state=IL&subLens=sub_product&tab=Trends&tags=Older%20American&tags=Servicemember&tags=Older%20American%2C%20Servicemember
+
+```query params
+company_public_response=Company%20has%20responded%20to%20the%20consumer%20and%20the%20CFPB%20and%20chooses%20not%20to%20provide%20a%20public%20response
+company_public_response=Company%20believes%20it%20acted%20appropriately%20as%20authorized%20by%20contract%20or%20law
+company_public_response=Company%20believes%20the%20complaint%20provided%20an%20opportunity%20to%20answer%20consumer%27s%20questions
+company_public_response=Company%20believes%20complaint%20is%20the%20result%20of%20an%20isolated%20error
+company_response=Closed%20with%20explanation
+company_response=Closed%20with%20non-monetary%20relief
+dateInterval=Month
+date_received_max=2025-12-18
+date_received_min=2019-12-18
+has_narrative=true
+issue=Trouble%20during%20payment%20process
+issue=Applying%20for%20a%20mortgage%20or%20refinancing%20an%20existing%20mortgage
+lens=Product
+product=Mortgage
+product=Debt%20collection
+product=Credit%20reporting%2C%20credit%20repair%20services%2C%20or%20other%20personal%20consumer%20reports
+searchField=all
+searchText=mortgage%20scam
+state=TX
+state=FL
+state=CA
+state=NY
+state=IL
+subLens=sub_product
+tab=Trends
+tags=Older%20American
+tags=Servicemember
+tags=Older%20American%2C%20Servicemember
 ```
+
+**NOTE:** Some query params can be repeated for multi-value filters.
 
 ## URL Parameter Reference
 
@@ -26,7 +59,9 @@ https://www.consumerfinance.gov/data-research/consumer-complaints/search/?chartT
 | `subLens` | string | `sub_product`, `issue`, etc. | Secondary aggregation dimension | Hierarchical drill-down |
 | `dateInterval` | string | `Day`, `Week`, `Month`, `Quarter`, `Year` | Time grouping for trends | Default: `Month` |
 
-### Search & Filter Parameters
+### Search
+
+Filter Parameters
 
 | Parameter | Type | Values | Description | Notes |
 |-----------|------|--------|-------------|-------|
@@ -88,31 +123,31 @@ These parameters can be repeated for multiple selections:
 ### Example 1: Simple Search
 
 ```
-/search/?searchText=foreclosure&date_received_min=2020-01-01&product=Mortgage
+https://www.consumerfinance.gov/data-research/consumer-complaints/search/?searchText=foreclosure&date_received_min=2020-01-01&product=Mortgage
 ```
 
 ### Example 2: Trends View with Multiple Filters
 
 ```
-/search/?tab=Trends&chartType=line&lens=Product&dateInterval=Month&date_received_min=2020-01-01&date_received_max=2024-12-31&state=CA&state=NY
+https://www.consumerfinance.gov/data-research/consumer-complaints/search/?tab=Trends&chartType=line&lens=Product&dateInterval=Month&date_received_min=2020-01-01&date_received_max=2024-12-31&state=CA&state=NY
 ```
 
 ### Example 3: List View with Narratives
 
 ```
-/search/?tab=List&has_narrative=true&searchField=complaint_what_happened&searchText=fraud&page=1&size=25&sort=created_date_desc
+https://www.consumerfinance.gov/data-research/consumer-complaints/search/?tab=List&has_narrative=true&searchField=complaint_what_happened&searchText=fraud&page=1&size=25&sort=created_date_desc
 ```
 
 ### Example 4: Company-Specific Analysis
 
 ```
-/search/?tab=Trends&lens=Company&company=WELLS%20FARGO%20%26%20COMPANY&dateInterval=Quarter&date_received_min=2019-01-01
+https://www.consumerfinance.gov/data-research/consumer-complaints/search/?tab=Trends&lens=Company&company=WELLS%20FARGO%20%26%20COMPANY&dateInterval=Quarter&date_received_min=2019-01-01
 ```
 
 ### Example 5: Map View by State
 
 ```
-/search/?tab=Map&product=Mortgage&issue=Trouble%20during%20payment%20process&date_received_min=2023-01-01
+https://www.consumerfinance.gov/data-research/consumer-complaints/search/?tab=Map&product=Mortgage&issue=Trouble%20during%20payment%20process&date_received_min=2023-01-01
 ```
 
 ## Implementation Notes

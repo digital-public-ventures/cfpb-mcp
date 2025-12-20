@@ -317,85 +317,63 @@ We are no longer pursuing `.mcpb` packaging. Any `.mcpb` plans and related imple
 
 #### Phase 5.3: FastMCP Standardization + Streamable HTTP (Drop SSE)
 
-
-
 **Goal:** Standardize on the `fastmcp` library for MCP serving and consolidate all integrations (Anthropic, OpenAI) onto the modern **Streamable HTTP** transport (`POST /mcp`). Legacy SSE support will be removed to simplify the architecture.
-
-
 
 **Context:**
 
-*   **Anthropic:** Natively supports Streamable HTTP.
+* **Anthropic:** Natively supports Streamable HTTP.
 
-*   **OpenAI:** While historically SSE-focused, the ecosystem is converging on Streamable HTTP as the robust standard for remote MCP. FastMCP handles the protocol details.
+* **OpenAI:** While historically SSE-focused, the ecosystem is converging on Streamable HTTP as the robust standard for remote MCP. FastMCP handles the protocol details.
 
-*   **Simplification:** Maintaining dual transports adds unnecessary complexity (routing, middleware, testing). We will serve a single, robust endpoint.
-
-
+* **Simplification:** Maintaining dual transports adds unnecessary complexity (routing, middleware, testing). We will serve a single, robust endpoint.
 
 **Deliverables:**
 
+1. **Migrate MCP server implementation to `fastmcp` (Completed):**
 
+   * Replace usage of the MCP SDK server with FastMCP (`fastmcp.FastMCP`) while preserving tool names, schemas, and outputs.
 
-1.  **Migrate MCP server implementation to `fastmcp` (Completed):**
+   * Keep the existing FastAPI REST surface unchanged.
 
-    *   Replace usage of the MCP SDK server with FastMCP (`fastmcp.FastMCP`) while preserving tool names, schemas, and outputs.
+2. **Expose SINGLE transport (Streamable HTTP):**
 
-    *   Keep the existing FastAPI REST surface unchanged.
+   * **Primary Endpoint:** `POST /mcp` (Streamable HTTP).
 
+   * **Remove:** Legacy SSE endpoints (`GET /mcp/sse`, `POST /mcp/messages`).
 
+   * **Routing:** Ensure `POST /mcp` is handled directly by the FastMCP app without complex rewrites or redirects.
 
-2.  **Expose SINGLE transport (Streamable HTTP):**
+3. **Refactor Middleware & Lifespan:**
 
-    *   **Primary Endpoint:** `POST /mcp` (Streamable HTTP).
+   * Update `MCPAccessControlMiddleware` to protecting only `/mcp`.
 
-    *   **Remove:** Legacy SSE endpoints (`GET /mcp/sse`, `POST /mcp/messages`).
+   * Simplify `lifespan` context manager to only initialize the HTTP app.
 
-    *   **Routing:** Ensure `POST /mcp` is handled directly by the FastMCP app without complex rewrites or redirects.
+4. **Testing Cleanup:**
 
+   * Remove `tests/transport/sse/`.
 
+   * Ensure `tests/transport/http/` fully covers tool execution and connectivity.
 
-3.  **Refactor Middleware & Lifespan:**
-
-    *   Update `MCPAccessControlMiddleware` to protecting only `/mcp`.
-
-    *   Simplify `lifespan` context manager to only initialize the HTTP app.
-
-
-
-4.  **Testing Cleanup:**
-
-    *   Remove `tests/transport/sse/`.
-
-    *   Ensure `tests/transport/http/` fully covers tool execution and connectivity.
-
-    *   Ensure `tests/e2e/` (if any exist for SSE) are updated or marked for migration.
-
-
+   * Ensure `tests/e2e/` (if any exist for SSE) are updated or marked for migration.
 
 **Files to touch (expected / scoped):**
 
+* `server.py` (Remove SSE app, simplify mounting, update middleware/lifespan)
 
+* `tests/` (Remove SSE tests, verify HTTP tests)
 
-*   `server.py` (Remove SSE app, simplify mounting, update middleware/lifespan)
-
-*   `tests/` (Remove SSE tests, verify HTTP tests)
-
-*   `docs/` (Update integration guides to point to `/mcp`)
-
-
+* `docs/` (Update integration guides to point to `/mcp`)
 
 **Acceptance criteria:**
 
+* `POST /mcp` accepts JSON-RPC requests (verified via `test_http_transport.py`).
 
+* `GET /mcp/sse` returns 404 (SSE is gone).
 
-*   `POST /mcp` accepts JSON-RPC requests (verified via `test_http_transport.py`).
+* Server startup and shutdown are clean.
 
-*   `GET /mcp/sse` returns 404 (SSE is gone).
-
-*   Server startup and shutdown are clean.
-
-*   Existing tools (`search_complaints`, etc.) function correctly over HTTP transport.
+* Existing tools (`search_complaints`, etc.) function correctly over HTTP transport.
 
 #### Phase 5.4: OAuth for Claude Custom Connector (FastMCP-Recommended)
 

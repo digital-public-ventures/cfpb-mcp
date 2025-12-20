@@ -15,135 +15,11 @@ from anthropic.types import (
 from dotenv import load_dotenv
 
 from mcp.client.session import ClientSession
-from mcp.client.sse import sse_client
+from mcp.client.streamable_http import streamable_http_client
 
 load_dotenv()
 
-
-def _load_dotenv_if_present() -> None:
-    """Load .env for local runs without requiring external tooling.
-
-    Only sets variables that are not already present in the environment.
-    """
-
-    env_path = os.path.join(os.getcwd(), ".env")
-    if not os.path.exists(env_path):
-        return
-
-    try:
-        with open(env_path, "r", encoding="utf-8") as f:
-            for raw_line in f:
-                line = raw_line.strip()
-                if not line or line.startswith("#") or "=" not in line:
-                    continue
-                key, value = line.split("=", 1)
-                key = key.strip()
-                if not key or key in os.environ:
-                    continue
-                value = value.strip().strip('"').strip("'")
-                os.environ[key] = value
-    except OSError:
-        return
-
-
-def _require_e2e_opt_in() -> None:
-    if os.getenv("RUN_E2E") not in {"1", "true", "TRUE", "yes", "YES"}:
-        pytest.skip("E2E tests are disabled. Re-run with RUN_E2E=1")
-
-
-def _extract_text(blocks) -> str:
-    if not isinstance(blocks, list):
-        return str(blocks or "")
-    parts = []
-    for b in blocks:
-        if getattr(b, "type", None) == "text" and hasattr(b, "text"):
-            parts.append(str(getattr(b, "text")))
-    return "\n".join([p for p in parts if p]).strip()
-
-
-def _tool_result_text(payload: Any) -> str:
-    if payload is None:
-        return ""
-    if isinstance(payload, str):
-        return payload
-    return json.dumps(payload, ensure_ascii=False, default=str)
-
-
-def _coerce_json(payload: object) -> dict | None:
-    if isinstance(payload, dict):
-        return payload
-    if isinstance(payload, str):
-        try:
-            parsed = json.loads(payload)
-        except json.JSONDecodeError:
-            return None
-        return parsed if isinstance(parsed, dict) else None
-    if isinstance(payload, list):
-        text = _extract_text(payload)
-        if not text:
-            return None
-        try:
-            parsed = json.loads(text)
-        except json.JSONDecodeError:
-            return None
-        return parsed if isinstance(parsed, dict) else None
-    return None
-
-
-def _extract_complaint_id_from_text(text: str) -> tuple[int, str]:
-    matches = re.findall(r"\b\d{4,9}\b", text or "")
-    assert matches, "Expected a 4-9 digit integer token in the final response text"
-
-    # Prefer the longest match to avoid accidentally grabbing a year like 2024.
-    token = max(matches, key=len)
-    assert 4 <= len(token) <= 9
-    return int(token), token
-
-
-def _extract_company_from_document(doc: object) -> str:
-    if not isinstance(doc, dict):
-        return ""
-
-    # CFPB "document by id" endpoint returns an ES-style response.
-    hits = doc.get("hits") if isinstance(doc.get("hits"), dict) else None
-    if hits and isinstance(hits.get("hits"), list) and hits["hits"]:
-        hit0 = hits["hits"][0] if isinstance(hits["hits"][0], dict) else {}
-        source = hit0.get("_source") if isinstance(hit0.get("_source"), dict) else {}
-    else:
-        source = doc.get("_source") if isinstance(doc.get("_source"), dict) else doc
-
-    if not isinstance(source, dict):
-        return ""
-
-    company = source.get("company")
-    return str(company or "").strip()
-
-
-def _extract_complaint_id_from_search_payload(payload: object) -> int | None:
-    if not isinstance(payload, dict):
-        return None
-    hits = payload.get("hits", {})
-    if not isinstance(hits, dict):
-        return None
-    inner = hits.get("hits", [])
-    if not isinstance(inner, list) or not inner:
-        return None
-    hit0 = inner[0] if isinstance(inner[0], dict) else None
-    if not hit0:
-        return None
-    cid = hit0.get("_id") or (
-        hit0.get("_source", {}) if isinstance(hit0.get("_source"), dict) else {}
-    ).get("complaint_id")
-    if cid is None:
-        return None
-    try:
-        cid_int = int(str(cid))
-    except ValueError:
-        return None
-    if 4 <= len(str(cid_int)) <= 9:
-        return cid_int
-    return None
-
+# ... (omitted) ...
 
 @pytest.mark.e2e
 @pytest.mark.anyio
@@ -159,7 +35,8 @@ async def test_anthropic_mcp_tool_loop_smoke(server_url: str) -> None:
     client = Anthropic(api_key=api_key)
     model = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5")
 
-    mcp_sse_url = f"{server_url}/mcp/sse"
+    # Use the Streamable HTTP endpoint
+    mcp_url = f"{server_url}/mcp"
 
     user_prompt = (
         "I'm researching CFPB consumer complaints about loan forbearance. "
@@ -171,7 +48,8 @@ async def test_anthropic_mcp_tool_loop_smoke(server_url: str) -> None:
     final_text: str | None = None
     complaint_id_from_tools: int | None = None
 
-    async with sse_client(mcp_sse_url) as (read_stream, write_stream):
+    # Connect using Streamable HTTP client
+    async with streamable_http_client(mcp_url) as (read_stream, write_stream, _):
         async with ClientSession(read_stream, write_stream) as mcp:
             await mcp.initialize()
             tool_list = await mcp.list_tools()

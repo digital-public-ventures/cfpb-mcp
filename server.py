@@ -151,10 +151,6 @@ async def lifespan(app: FastAPI):
         # We pass the sub-app itself to its lifespan context.
         if hasattr(_http_app.router, "lifespan_context"):
             await stack.enter_async_context(_http_app.router.lifespan_context(_http_app))
-        
-        # SSE app likely shares state or doesn't need task group, but safe to init.
-        if hasattr(_sse_app.router, "lifespan_context"):
-            await stack.enter_async_context(_sse_app.router.lifespan_context(_sse_app))
 
         # A single shared client for connection pooling.
         app.state.http = httpx.AsyncClient(timeout=httpx.Timeout(30.0))
@@ -294,8 +290,8 @@ class MCPAccessControlMiddleware:
             return
 
         path = scope.get("path") or ""
-        # Phase 5.3: Protect both /mcp (Streamable HTTP) and /mcp/* (SSE)
-        if path != "/mcp" and not path.startswith("/mcp/"):
+        # Phase 5.3: Protect /mcp (Streamable HTTP)
+        if path != "/mcp":
             await self.app(scope, receive, send)
             return
 
@@ -2067,12 +2063,11 @@ async def signals_company_route(
 # 5) Application Mount
 # -------------------------------------------------------------------------
 
-# Phase 5.3: Dual Transport Support
-# We explicitly route /mcp, /mcp/sse, and /mcp/messages to avoid Starlette's
-# automatic 307 redirects that occur when using app.mount("/mcp", ...) for the root path.
+# Phase 5.3: Streamable HTTP Only
+# We explicitly route /mcp to avoid Starlette's automatic 307 redirects
+# that occur when using app.mount("/mcp", ...) for the root path.
 
 _http_app = server.streamable_http_app()
-_sse_app = server.sse_app()
 
 class HttpMCPHandler:
     def __init__(self, app):
@@ -2082,13 +2077,8 @@ class HttpMCPHandler:
         """Pass request to Streamable HTTP app without rewriting path (it expects /mcp)."""
         await self.app(scope, receive, send)
 
-# 1. Streamable HTTP: POST /mcp
+# Streamable HTTP: POST /mcp
 app.add_route("/mcp", HttpMCPHandler(_http_app), methods=["POST"])
-
-# 2. Legacy SSE: GET /mcp/sse and POST /mcp/messages
-# Use standard mount for SSE to ensure correct behavior/buffering.
-# Note: This might shadow /mcp if defined before, but we define add_route first.
-app.mount("/mcp", _sse_app)
 
 
 @app.get("/", include_in_schema=False)
@@ -2102,7 +2092,6 @@ async def root() -> Dict[str, Any]:
         },
         "mcp": {
             "http": "/mcp",
-            "sse": "/mcp/sse",
         },
     }
 

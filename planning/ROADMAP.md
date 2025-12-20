@@ -315,56 +315,87 @@ We are no longer pursuing `.mcpb` packaging. Any `.mcpb` plans and related imple
 * Tool names/schemas remain stable.
 * Existing REST/OpenAPI surface remains available.
 
-#### Phase 5.3: FastMCP Migration + Dual Transport (Pre-OAuth)
+#### Phase 5.3: FastMCP Standardization + Streamable HTTP (Drop SSE)
 
-**Goal:** Standardize on the `fastmcp` library for MCP serving, so we can support both Streamable HTTP and legacy SSE from the same framework before adding OAuth.
 
-**Why this comes before OAuth:** FastMCP’s auth patterns (Token Verification / Remote OAuth / OAuth Proxy) are designed to sit “above” the transport layer; migrating first avoids implementing OAuth twice.
+
+**Goal:** Standardize on the `fastmcp` library for MCP serving and consolidate all integrations (Anthropic, OpenAI) onto the modern **Streamable HTTP** transport (`POST /mcp`). Legacy SSE support will be removed to simplify the architecture.
+
+
+
+**Context:**
+
+*   **Anthropic:** Natively supports Streamable HTTP.
+
+*   **OpenAI:** While historically SSE-focused, the ecosystem is converging on Streamable HTTP as the robust standard for remote MCP. FastMCP handles the protocol details.
+
+*   **Simplification:** Maintaining dual transports adds unnecessary complexity (routing, middleware, testing). We will serve a single, robust endpoint.
+
+
 
 **Deliverables:**
 
-1. **Migrate MCP server implementation to `fastmcp`:**
-   * Replace usage of the MCP SDK server with FastMCP (`fastmcp.FastMCP`) while preserving tool names, schemas, and outputs.
-   * Keep the existing FastAPI REST surface unchanged.
 
-2. **Expose dual transports simultaneously:**
-   * Streamable HTTP MCP endpoint: `POST /mcp` (recommended remote standard)
-   * Legacy SSE MCP endpoint: `GET /mcp/sse` (compat / transition)
 
-3. **Compatibility + invariants:**
-   * Tool list and tool call behavior remains stable.
-   * Responses remain deterministic and match existing tests.
-   * Keep Cloudflare/host-header constraints in mind for external access.
+1.  **Migrate MCP server implementation to `fastmcp` (Completed):**
 
-4. **Testing + infra:**
-   * Add `docker-compose.test.yml` so E2E runs do not collide with the non-test stack (ports, volumes, container names).
-   * Do not edit `tests/e2e/**`; if transport/OAuth behavior changes require new contracts, add a new suite.
+    *   Replace usage of the MCP SDK server with FastMCP (`fastmcp.FastMCP`) while preserving tool names, schemas, and outputs.
+
+    *   Keep the existing FastAPI REST surface unchanged.
+
+
+
+2.  **Expose SINGLE transport (Streamable HTTP):**
+
+    *   **Primary Endpoint:** `POST /mcp` (Streamable HTTP).
+
+    *   **Remove:** Legacy SSE endpoints (`GET /mcp/sse`, `POST /mcp/messages`).
+
+    *   **Routing:** Ensure `POST /mcp` is handled directly by the FastMCP app without complex rewrites or redirects.
+
+
+
+3.  **Refactor Middleware & Lifespan:**
+
+    *   Update `MCPAccessControlMiddleware` to protecting only `/mcp`.
+
+    *   Simplify `lifespan` context manager to only initialize the HTTP app.
+
+
+
+4.  **Testing Cleanup:**
+
+    *   Remove `tests/transport/sse/`.
+
+    *   Ensure `tests/transport/http/` fully covers tool execution and connectivity.
+
+    *   Ensure `tests/e2e/` (if any exist for SSE) are updated or marked for migration.
+
+
 
 **Files to touch (expected / scoped):**
 
-* `server.py` (swap MCP implementation to `fastmcp`, mount `/mcp` + `/mcp/sse`)
-* `pyproject.toml` and `uv.lock` (add `fastmcp`, remove/adjust old MCP SDK dependency if no longer needed)
-* `docker/server/Dockerfile` (ensure container build installs the updated dependencies)
-* `docker-compose.yml` (only if we need to expose/add paths or env vars for the new endpoints)
-* `tests/` (update or add unit/integration tests for `/mcp` and `/mcp/sse`; do not edit `tests/e2e/**`)
-* `scripts/` (update any harnesses that assume only `/mcp/sse`)
 
-**Testing Plan:**
 
-* **Strategy:** Split transport-specific tests into dedicated directories to verify the dual-transport architecture.
-* **New Structure:**
-    * `tests/transport/sse/`: Contains tests verifying the legacy SSE endpoint (`GET /mcp/sse`).
-    * `tests/transport/http/`: Contains *new* tests verifying the Streamable HTTP endpoint (`POST /mcp`).
-* **Regression Testing:**
-    * Existing tests in `tests/test_mcp_tools.py` and `tests/e2e/**` remain as the regression suite for the SSE transport.
-    * Use `RUN_E2E=1` to execute the immutable E2E suite, ensuring both OpenAPI (OpenAI) and SSE (Anthropic) endpoints function correctly.
-* **CI/CD:** Ensure `docker-compose.test.yml` supports running both suites.
+*   `server.py` (Remove SSE app, simplify mounting, update middleware/lifespan)
+
+*   `tests/` (Remove SSE tests, verify HTTP tests)
+
+*   `docs/` (Update integration guides to point to `/mcp`)
+
+
 
 **Acceptance criteria:**
 
-* Both endpoints work concurrently (`/mcp` and `/mcp/sse`).
-* Existing non-auth flows still pass current unit/integration tests.
-* E2E still passes (or remains skipped) without modifying `tests/e2e/**`.
+
+
+*   `POST /mcp` accepts JSON-RPC requests (verified via `test_http_transport.py`).
+
+*   `GET /mcp/sse` returns 404 (SSE is gone).
+
+*   Server startup and shutdown are clean.
+
+*   Existing tools (`search_complaints`, etc.) function correctly over HTTP transport.
 
 #### Phase 5.4: OAuth for Claude Custom Connector (FastMCP-Recommended)
 

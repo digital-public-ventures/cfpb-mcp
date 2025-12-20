@@ -127,42 +127,32 @@ def rate_limited_auth_server_url() -> Iterator[str]:
                 proc.wait(timeout=5)
 
 
-def test_mcp_sse_requires_api_key(auth_server_url: str) -> None:
-    with httpx.Client(timeout=5) as client:
-        with client.stream("GET", f"{auth_server_url}/mcp/sse") as r:
-            assert r.status_code == 401
-            assert (r.headers.get("content-type") or "").startswith("application/json")
-
-
 def test_mcp_http_requires_api_key(auth_server_url: str) -> None:
     with httpx.Client(timeout=5) as client:
         r = client.post(f"{auth_server_url}/mcp", json={})
         assert r.status_code == 401
+        assert (r.headers.get("content-type") or "").startswith("application/json")
 
 
-def test_mcp_messages_requires_api_key(auth_server_url: str) -> None:
-    with httpx.Client(timeout=5) as client:
-        r = client.post(f"{auth_server_url}/mcp/messages", json={})
-        assert r.status_code == 401
-
-
-def test_mcp_sse_allows_valid_api_key(auth_server_url: str) -> None:
+def test_mcp_http_allows_valid_api_key(auth_server_url: str) -> None:
     key = _dev_testing_api_key()
     with httpx.Client(timeout=5) as client:
-        with client.stream(
-            "GET",
-            f"{auth_server_url}/mcp/sse",
-            headers={"X-API-Key": key},
-        ) as r:
-            # The SSE connection may remain open; we only assert we get through auth.
-            assert r.status_code == 200
+        # We don't need to stream here, just check that the POST request gets through auth.
+        # It might return 200, 400 (bad JSON-RPC), or 406 (Not Acceptable), 
+        # but 401 means auth failed.
+        r = client.post(
+            f"{auth_server_url}/mcp",
+            headers={"X-API-Key": key, "Accept": "application/json"},
+            json={"jsonrpc": "2.0", "id": 1, "method": "tools/list"},
+        )
+        assert r.status_code != 401
 
 
 def test_mcp_rate_limit_429(rate_limited_auth_server_url: str) -> None:
     key = _dev_testing_api_key()
     with httpx.Client(timeout=5) as client:
         r1 = client.post(
-            f"{rate_limited_auth_server_url}/mcp/messages",
+            f"{rate_limited_auth_server_url}/mcp",
             headers={"X-API-Key": key},
             json={},
         )
@@ -170,7 +160,7 @@ def test_mcp_rate_limit_429(rate_limited_auth_server_url: str) -> None:
         assert r1.status_code != 429
 
         r2 = client.post(
-            f"{rate_limited_auth_server_url}/mcp/messages",
+            f"{rate_limited_auth_server_url}/mcp",
             headers={"X-API-Key": key},
             json={},
         )

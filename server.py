@@ -1,6 +1,12 @@
 from __future__ import annotations
 
 import base64
+import hashlib
+import hmac
+import json
+import os
+import threading
+import time
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path as FilePath
@@ -33,18 +39,33 @@ def prune_params(params: Dict[str, Any]) -> Dict[str, Any]:
     for key, value in params.items():
         if value is None:
             continue
+        if isinstance(value, bool):
+            cleaned[key] = "true" if value else "false"
+            continue
         if isinstance(value, str):
             if value.strip() == "":
                 continue
-            cleaned[key] = value
+            lowered = value.strip().lower()
+            if lowered in {"true", "false"}:
+                cleaned[key] = lowered
+            else:
+                cleaned[key] = value
             continue
         if isinstance(value, list):
             filtered: List[Any] = []
             for item in value:
                 if item is None:
                     continue
+                if isinstance(item, bool):
+                    filtered.append("true" if item else "false")
+                    continue
                 if isinstance(item, str) and item.strip() == "":
                     continue
+                if isinstance(item, str):
+                    lowered = item.strip().lower()
+                    if lowered in {"true", "false"}:
+                        filtered.append(lowered)
+                        continue
                 filtered.append(item)
             if not filtered:
                 continue
@@ -102,41 +123,78 @@ def build_params(
     return prune_params(params)
 
 
+from contextlib import asynccontextmanager, AsyncExitStack
+from datetime import datetime, timezone
+from pathlib import Path as FilePath
+from typing import Any, Dict, List, Literal, Optional, Tuple
+from urllib.parse import urlencode
+
+import httpx
+import uvicorn
+from fastapi import FastAPI, HTTPException, Path, Query
+from fastapi.responses import Response
+from mcp.server.fastmcp import FastMCP
+from playwright.async_api import async_playwright, Browser, BrowserContext
+
+BASE_URL = (
+    "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/"
+)
+
+# ... (omitted code) ...
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # A single shared client for connection pooling.
-    app.state.http = httpx.AsyncClient(timeout=httpx.Timeout(30.0))
+    # Initialize FastMCP lifespans (critical for session management)
+    async with AsyncExitStack() as stack:
+        # We must initialize the lifecycle of the FastMCP apps we are using.
+        # This ensures internal task groups and session managers are started.
+        # We pass the sub-app itself to its lifespan context.
+        if hasattr(_http_app.router, "lifespan_context"):
+            await stack.enter_async_context(_http_app.router.lifespan_context(_http_app))
 
-    # Initialize Playwright for screenshot service (Phase 4.5)
-    app.state.playwright = None
-    app.state.browser = None
-    try:
-        pw = await async_playwright().start()
-        app.state.playwright = pw
-        app.state.browser = await pw.chromium.launch(
-            headless=True,
-            args=[
-                "--no-sandbox",
-                "--disable-setuid-sandbox",
-                "--disable-dev-shm-usage",
-                "--disable-gpu",
-            ],
-        )
-    except Exception as e:
-        # If Playwright isn't available (e.g., in minimal test env), log and continue.
-        # The screenshot endpoints will return 503.
-        import sys
+        # A single shared client for connection pooling.
+        app.state.http = httpx.AsyncClient(timeout=httpx.Timeout(30.0))
 
-        print(f"Warning: Playwright initialization failed: {e}", file=sys.stderr)
+        # Initialize Playwright for screenshot service (Phase 4.5)
+        app.state.playwright = None
+        app.state.browser = None
+        try:
+            pw = await async_playwright().start()
+            app.state.playwright = pw
+            app.state.browser = await pw.chromium.launch(
+                headless=True,
+                args=[
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--disable-gpu",
+                ],
+            )
+        except Exception as e:
+            # If Playwright isn't available (e.g., in minimal test env), log and continue.
+            # The screenshot endpoints will return 503.
+            import sys
 
-    try:
-        yield
-    finally:
-        await app.state.http.aclose()
-        if app.state.browser:
-            await app.state.browser.close()
-        if app.state.playwright:
-            await app.state.playwright.stop()
+            print(f"Warning: Playwright initialization failed: {e}", file=sys.stderr)
+
+        try:
+            yield
+        finally:
+            await app.state.http.aclose()
+            if app.state.browser:
+                try:
+                    await app.state.browser.close()
+                except Exception as e:
+                    import sys
+
+                    print(f"Warning: Playwright browser.close failed: {e}", file=sys.stderr)
+            if app.state.playwright:
+                try:
+                    await app.state.playwright.stop()
+                except Exception as e:
+                    import sys
+
+                    print(f"Warning: Playwright stop failed: {e}", file=sys.stderr)
 
 
 # 1) Initialize FastAPI and MCP (single app, two interfaces)
@@ -146,7 +204,206 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
-server = FastMCP("cfpb-complaints")
+server = FastMCP(
+    "cfpb-complaints",
+    # Important for Phase 5.2: FastMCP auto-enables DNS rebinding protection
+    # (Host header allowlist) when host is localhost. When running behind a
+    # tunnel with a public hostname, preserve compatibility by matching the
+    # runtime bind host here as well.
+    host=os.getenv("CFPB_MCP_HOST", "127.0.0.1"),
+)
+
+
+def _get_allowed_api_keys() -> set[str]:
+    raw = (os.getenv("CFPB_MCP_API_KEYS") or "").strip()
+    if not raw:
+        return set()
+    return {k.strip() for k in raw.split(",") if k.strip()}
+
+
+def _hash_key_prefix(api_key: str) -> str:
+    if not api_key:
+        return "none"
+    return hashlib.sha256(api_key.encode("utf-8")).hexdigest()[:8]
+
+
+class _TokenBucket:
+    def __init__(self, *, capacity: float, refill_per_sec: float, now: float):
+        self.capacity = float(capacity)
+        self.refill_per_sec = float(refill_per_sec)
+        self.tokens = float(capacity)
+        self.last = float(now)
+
+    def consume(self, *, now: float, amount: float = 1.0) -> bool:
+        now = float(now)
+        elapsed = max(0.0, now - self.last)
+        self.last = now
+        self.tokens = min(self.capacity, self.tokens + elapsed * self.refill_per_sec)
+        if self.tokens >= amount:
+            self.tokens -= amount
+            return True
+        return False
+
+
+_RATE_LIMIT_LOCK = threading.Lock()
+_RATE_LIMIT_BUCKETS: dict[str, _TokenBucket] = {}
+
+
+def _rate_limit_allows(bucket_id: str) -> bool:
+    rps = float(os.getenv("CFPB_MCP_RATE_LIMIT_RPS", "0") or "0")
+    burst = float(os.getenv("CFPB_MCP_RATE_LIMIT_BURST", "0") or "0")
+    if rps <= 0 or burst <= 0:
+        return True
+
+    now = time.monotonic()
+    with _RATE_LIMIT_LOCK:
+        bucket = _RATE_LIMIT_BUCKETS.get(bucket_id)
+        if bucket is None:
+            bucket = _TokenBucket(capacity=burst, refill_per_sec=rps, now=now)
+            _RATE_LIMIT_BUCKETS[bucket_id] = bucket
+        return bucket.consume(now=now)
+
+
+def _audit_log(event: dict[str, Any]) -> None:
+    # Best-effort JSONL to stderr (good for container logs / cloudflared output).
+    try:
+        import sys
+
+        print(json.dumps(event, separators=(",", ":"), default=str), file=sys.stderr)
+    except Exception:
+        return
+
+
+class MCPAccessControlMiddleware:
+    """ASGI middleware enforcing auth/rate-limit/audit for /mcp/*.
+
+    This must work for the mounted FastMCP SSE sub-app, so we operate at the ASGI
+    layer (rather than FastAPI dependencies).
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") != "http":
+            await self.app(scope, receive, send)
+            return
+
+        path = scope.get("path") or ""
+        # Phase 5.3: Protect /mcp (Streamable HTTP)
+        if path != "/mcp":
+            await self.app(scope, receive, send)
+            return
+
+        method = (scope.get("method") or "").upper()
+        started_at = time.monotonic()
+        status_code: int | None = None
+
+        headers = {k.lower(): v for (k, v) in (scope.get("headers") or [])}
+        api_key = (headers.get(b"x-api-key") or b"").decode("utf-8", "replace").strip()
+
+        allowed_keys = _get_allowed_api_keys()
+        auth_enabled = bool(allowed_keys)
+        key_prefix = _hash_key_prefix(api_key)
+
+        client = scope.get("client")
+        client_host = None
+        if isinstance(client, (list, tuple)) and client:
+            client_host = client[0]
+
+        def _send_json(status: int, payload: dict[str, Any]):
+            body = json.dumps(payload, separators=(",", ":")).encode("utf-8")
+
+            async def _do_send():
+                nonlocal status_code
+                status_code = status
+                await send(
+                    {
+                        "type": "http.response.start",
+                        "status": status,
+                        "headers": [
+                            (b"content-type", b"application/json"),
+                            (b"content-length", str(len(body)).encode("ascii")),
+                        ],
+                    }
+                )
+                await send({"type": "http.response.body", "body": body})
+
+            return _do_send()
+
+        # 1) Auth
+        if auth_enabled:
+            ok = any(hmac.compare_digest(api_key, k) for k in allowed_keys)
+            if not ok:
+                await _send_json(
+                    401,
+                    {
+                        "error": {
+                            "type": "auth",
+                            "message": "Missing or invalid API key",
+                        }
+                    },
+                )
+                _audit_log(
+                    {
+                        "ts": datetime.now(timezone.utc).isoformat(),
+                        "event": "mcp_request",
+                        "path": path,
+                        "method": method,
+                        "status": 401,
+                        "duration_ms": int((time.monotonic() - started_at) * 1000),
+                        "api_key": key_prefix,
+                        "client": client_host,
+                    }
+                )
+                return
+
+        # 2) Rate limit
+        bucket_id = api_key if api_key else f"anon:{client_host or 'unknown'}"
+        if not _rate_limit_allows(bucket_id):
+            await _send_json(
+                429,
+                {"error": {"type": "rate_limit", "message": "Too many requests"}},
+            )
+            _audit_log(
+                {
+                    "ts": datetime.now(timezone.utc).isoformat(),
+                    "event": "mcp_request",
+                    "path": path,
+                    "method": method,
+                    "status": 429,
+                    "duration_ms": int((time.monotonic() - started_at) * 1000),
+                    "api_key": key_prefix,
+                    "client": client_host,
+                }
+            )
+            return
+
+        # 3) Pass-through + audit
+        async def send_wrapper(message):
+            nonlocal status_code
+            if message.get("type") == "http.response.start":
+                status_code = int(message.get("status") or 0)
+            await send(message)
+
+        try:
+            await self.app(scope, receive, send_wrapper)
+        finally:
+            _audit_log(
+                {
+                    "ts": datetime.now(timezone.utc).isoformat(),
+                    "event": "mcp_request",
+                    "path": path,
+                    "method": method,
+                    "status": status_code,
+                    "duration_ms": int((time.monotonic() - started_at) * 1000),
+                    "api_key": key_prefix,
+                    "client": client_host,
+                }
+            )
+
+
+app.add_middleware(MCPAccessControlMiddleware)
 
 
 async def _get_json(path: str, *, params: Dict[str, Any]) -> Any:
@@ -1584,60 +1841,39 @@ async def cfpb_ui_url_route(
     return {"url": url}
 
 
-# TEMPORARILY DISABLED - Screenshot functionality
-# @app.get(
-#     "/cfpb-ui/screenshot",
-#     operation_id="screenshotCFPBDashboard",
-#     summary="Screenshot CFPB Dashboard",
-#     responses={
-#         200: {
-#             "content": {"image/png": {}},
-#             "description": "PNG screenshot of the CFPB dashboard",
-#         }
-#     },
-# )
-# async def cfpb_ui_screenshot_route(
-#     search_term: Optional[str] = None,
-#     date_received_min: Optional[str] = None,
-#     date_received_max: Optional[str] = None,
-#     company: Optional[List[str]] = Query(None),
-#     product: Optional[List[str]] = Query(None),
-#     issue: Optional[List[str]] = Query(None),
-#     state: Optional[List[str]] = Query(None),
-#     has_narrative: Optional[str] = None,
-#     company_response: Optional[List[str]] = Query(None),
-#     timeout: int = Query(30000, ge=5000, le=60000),
-# ):
-#     """Capture a screenshot of the official CFPB dashboard with applied filters.
-#
-#     Returns a PNG image showing the government's official complaint visualization.
-#     Perfect for creating authoritative, branded charts for presentations or reports.
-#     """
-#     url = build_cfpb_ui_url(
-#         search_term=search_term,
-#         date_received_min=date_received_min,
-#         date_received_max=date_received_max,
-#         company=company,
-#         product=product,
-#         issue=issue,
-#         state=state,
-#         has_narrative=has_narrative,
-#         company_response=company_response,
-#     )
-#
-#     # Debug: log the URL being screenshotted
-#     import logging
-#
-#     logging.info(f"Screenshotting URL: {url}")
-#
-#     screenshot_bytes = await screenshot_cfpb_ui(
-#         app.state.browser,
-#         url,
-#         wait_for_charts=True,
-#         timeout=timeout,
-#     )
-#
-#     return Response(content=screenshot_bytes, media_type="image/png")
+@app.get(
+    "/cfpb-ui/screenshot",
+    operation_id="screenshotCFPBDashboard",
+    summary="Screenshot CFPB Dashboard",
+    responses={
+        200: {
+            "content": {"image/png": {}},
+            "description": "PNG screenshot of the CFPB dashboard",
+        },
+        503: {"description": "Screenshot functionality temporarily disabled"},
+    },
+)
+async def cfpb_ui_screenshot_route(
+    search_term: Optional[str] = None,
+    date_received_min: Optional[str] = None,
+    date_received_max: Optional[str] = None,
+    company: Optional[List[str]] = Query(None),
+    product: Optional[List[str]] = Query(None),
+    issue: Optional[List[str]] = Query(None),
+    state: Optional[List[str]] = Query(None),
+    has_narrative: Optional[str] = None,
+    company_response: Optional[List[str]] = Query(None),
+    timeout: int = Query(30000, ge=5000, le=60000),
+):
+    """Capture a screenshot of the official CFPB dashboard with applied filters.
+
+    Temporarily disabled. This route is kept to preserve the REST/OpenAPI contract.
+    """
+
+    raise HTTPException(
+        status_code=503,
+        detail="Screenshot service unavailable (Playwright disabled)",
+    )
 
 
 @app.get(
@@ -1827,11 +2063,40 @@ async def signals_company_route(
 # 5) Application Mount
 # -------------------------------------------------------------------------
 
-# Mount MCP endpoints.
-# FastMCP's SSE app exposes routes at /sse and /messages.
-# Mounting it at /mcp yields /mcp/sse (matching common Claude Desktop config).
-app.mount("/mcp", server.sse_app())
+# Phase 5.3: Streamable HTTP Only
+# We explicitly route /mcp to avoid Starlette's automatic 307 redirects
+# that occur when using app.mount("/mcp", ...) for the root path.
+
+_http_app = server.streamable_http_app()
+
+class HttpMCPHandler:
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        """Pass request to Streamable HTTP app without rewriting path (it expects /mcp)."""
+        await self.app(scope, receive, send)
+
+# Streamable HTTP: POST /mcp
+app.add_route("/mcp", HttpMCPHandler(_http_app), methods=["POST"])
+
+
+@app.get("/", include_in_schema=False)
+async def root() -> Dict[str, Any]:
+    return {
+        "name": "cfpb-mcp",
+        "message": "CFPB MCP server is running.",
+        "rest": {
+            "docs": "/docs",
+            "openapi": "/openapi.json",
+        },
+        "mcp": {
+            "http": "/mcp",
+        },
+    }
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    host = os.getenv("CFPB_MCP_HOST", "127.0.0.1")
+    port = int(os.getenv("PORT", "8000"))
+    uvicorn.run(app, host=host, port=port)

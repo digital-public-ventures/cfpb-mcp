@@ -1,0 +1,27 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: docker/server/Dockerfile
+    ports:
+      - "8002:8000"
+    environment:
+      - CFPB_MCP_HOST=0.0.0.0
+      - TEST_SERVER_URL=http://localhost:8002
+    depends_on:
+      - postgres
+
+  postgres:
+    image: pgvector/pgvector:pg17
+    ports:
+      - "5434:5432" # Use a different port than the main stack (5433)
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: cfpb_complaints_test
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+
+volumes:
+  postgres_test_data:

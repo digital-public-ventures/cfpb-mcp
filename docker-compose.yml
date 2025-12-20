@@ -24,7 +24,14 @@ services:
     environment:
       # Keep this for future phases; the current server still proxies CFPB directly.
       DATABASE_URL: postgresql://cfpb:cfpb@postgres:5432/cfpb
+      CFPB_MCP_HOST: "0.0.0.0"
       PORT: "8000"
+      # Phase 5.2 (Cloudflare Tunnel): protect /mcp/* when set.
+      # Prefer explicit allowlist if provided; otherwise default to DEV_TESTING_API_KEY
+      # to keep local tunnel runs protected without duplicating secrets.
+      CFPB_MCP_API_KEYS: "" # ${CFPB_MCP_API_KEYS:-${DEV_TESTING_API_KEY}}
+      CFPB_MCP_RATE_LIMIT_RPS: ${CFPB_MCP_RATE_LIMIT_RPS}
+      CFPB_MCP_RATE_LIMIT_BURST: ${CFPB_MCP_RATE_LIMIT_BURST}
     depends_on:
       postgres:
         condition: service_healthy
@@ -32,6 +39,15 @@ services:
       - "8002:8000"
     # Increase shared memory for Playwright browser stability
     shm_size: '2gb'
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    depends_on:
+      - server
 
 volumes:
   cfpb_postgres_data:

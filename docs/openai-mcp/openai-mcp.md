@@ -103,13 +103,13 @@ The final tool response should look like:
 
 An easy way to try out this example MCP server is using [Replit](https://replit.com/). You can configure this sample application with your own API credentials and vector store information to try it yourself.
 
-\[
+[
 
 Example MCP server on Replit
 
 Remix the server example on Replit to test live.
 
-]\(https://replit.com/@kwhinnery-oai/DeepResearchServer?v=1#README.md)
+](https://replit.com/@kwhinnery-oai/DeepResearchServer?v=1#README.md)
 
 A full implementation of both the `search` and `fetch` tools in FastMCP is below also for convenience.
 

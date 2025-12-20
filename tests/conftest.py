@@ -116,6 +116,9 @@ def server_url() -> Iterator[str]:
     # Avoid picking up a user-configured port
     env.pop("PORT", None)
 
+    # Create a log file for the server process to avoid pipe buffer deadlocks
+    log_file = open("server_test.log", "w")
+
     proc = subprocess.Popen(
         [
             sys.executable,
@@ -131,7 +134,7 @@ def server_url() -> Iterator[str]:
         ],
         cwd=os.path.dirname(os.path.dirname(__file__)),
         env=env,
-        stdout=subprocess.PIPE,
+        stdout=log_file,
         stderr=subprocess.STDOUT,
         text=True,
     )
@@ -150,9 +153,10 @@ def server_url() -> Iterator[str]:
             time.sleep(0.2)
 
         if proc.poll() is not None:
-            output = ""
-            if proc.stdout is not None:
-                output = proc.stdout.read() or ""
+            # If it failed, read the log file
+            log_file.close()
+            with open("server_test.log", "r") as f:
+                output = f.read()
             raise RuntimeError(
                 f"Server process exited early while starting on {url}. Last error: {last_err}.\nProcess output:\n{output}"
             )
@@ -174,6 +178,9 @@ def server_url() -> Iterator[str]:
             except subprocess.TimeoutExpired:
                 proc.kill()
                 proc.wait(timeout=5)
+        
+        if not log_file.closed:
+            log_file.close()
 
 
 @pytest.fixture()

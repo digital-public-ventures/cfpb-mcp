@@ -14,8 +14,10 @@ behavior.
   API calls. These validate our REST + MCP interface behavior.
 - `slow`: Any heavier tests (browser, long network hops) that should be run
   less frequently. Currently minimal, but reserved for heavier checks.
+- `extra_slow`: Long-running tests or heavier permutations that you may want
+  to skip during regular iteration.
 - `contract`: Immutable public contract tests (prompt + assertions). These
-  protect MCP tool-loop guarantees. They are also marked `fast`.
+  protect MCP tool-loop guarantees and are marked `fast`.
 
 Default `pytest` runs include everything; individual suites use markers.
 
@@ -30,7 +32,8 @@ Default `pytest` runs include everything; individual suites use markers.
 
 ## Contract Tests (Why They Exist)
 
-The contract tests verify a fixed prompt against fixed assertions. This protects
+The contract tests in `tests/contract/` verify a fixed prompt against fixed
+assertions. This protects
 the external user experience of MCP tool loops. The prompt and assertions are
 documented in `claude.md`, `AGENTS.md`, and `.github/copilot-instructions.md`.
 

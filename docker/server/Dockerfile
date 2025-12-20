@@ -33,6 +33,8 @@ RUN uv run playwright install --with-deps chromium && \
 
 # Copy the app code last.
 COPY server.py ./
+COPY citations_mapping.py ./
+COPY utils ./utils
 
 # Create non-root user and set permissions.
 RUN useradd -m appuser && \

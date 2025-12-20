@@ -5,6 +5,24 @@ One FastAPI app that serves:
 * **MCP protocol** at `/mcp` (Streamable HTTP) and `/mcp/sse` (legacy SSE for Claude Desktop)
 * **REST API** at `/search`, `/trends`, etc. (for ChatGPT Actions)
 
+## Developer docs
+
+* `docs/testing.md` — test strategy, markers, and gotchas
+* `docs/dev-cycle.md` — faster dev loop guidance for Docker + tunnel
+
+Preferred dev loop (fast rebuild + restart):
+
+```
+docker compose build server
+docker compose up -d
+```
+
+Optional BuildKit speed-up:
+
+```
+COMPOSE_BAKE=true docker compose build server
+```
+
 ## Run locally
 
 ```bash

@@ -1,6 +1,6 @@
 # Fast Dev Cycle Guide
 
-This guide documents how to keep the MCP dev URL (jimmoffet.me) updated quickly
+This guide documents how to keep the MCP dev URL (for example, https://your-dev-domain.example.com) updated quickly
 while minimizing Docker rebuild time. It captures the current baseline timing
 and recommended improvements.
 

@@ -432,20 +432,18 @@ Files to touch:
 * Discovery endpoints are reachable and consistent with the public MCP URL.
 * OAuth applies identically to both `/mcp` and `/mcp/sse`.
 
-#### Phase 5.6: Cleanup After OAuth-Only (Remove mcpb + API Keys)
+#### Phase 5.6: Cleanup (Remove mcpb + API Keys)
 
-**Goal:** Remove legacy and temporary scaffolding now that OAuth is the only supported production auth path.
+**Goal:** Remove legacy and temporary scaffolding.
 
 **Cleanup checklist:**
 
 * Delete `.mcpb`-related implementation artifacts and docs.
-  * Remove the `deployment/` directory if it only exists to support the `.mcpb` packaging approach.
 * Remove API-key auth and all related configuration/docs/tests:
   * Delete API-key middleware and rate-limit knobs that are only needed for API keys.
   * Remove `X-API-Key` references from docs.
   * Remove API-key generation instructions.
 * Replace or supersede any API-key-oriented integration tests with OAuth-oriented tests.
-  * Do not edit `tests/contract/**`; add a new OAuth contract suite instead (e.g., `tests/contract_oauth/`) if the contract changes.
 
 ### Phase 6: Local Dataset + Vector Embeddings (MiniLM on Apple Silicon)
 

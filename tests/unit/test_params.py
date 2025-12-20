@@ -16,9 +16,17 @@ def test_prune_params_drops_empty_lists_and_empty_list_items() -> None:
 def test_prune_params_keeps_non_string_values() -> None:
     assert prune_params({"a": 0, "b": False, "c": True, "d": 3.14}) == {
         "a": 0,
-        "b": False,
-        "c": True,
+        "b": "false",
+        "c": "true",
         "d": 3.14,
+    }
+
+
+def test_prune_params_normalizes_boolean_like_strings() -> None:
+    assert prune_params({"a": "True", "b": "false", "c": ["FALSE", "ok"]}) == {
+        "a": "true",
+        "b": "false",
+        "c": ["false", "ok"],
     }
 
 

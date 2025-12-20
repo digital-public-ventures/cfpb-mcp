@@ -2,10 +2,11 @@
 
 <!--
 DANGER: AGENTS MUST NOT MODIFY THIS FILE.
-This file is governed by automation and/or repository policies; manual edits will be overwritten or may cause system failures.
+This file is governed by automation and/or repository policies; manual edits will be overwritten.
 To request changes, open an issue or submit a pull request to repository maintainers.
 -->
-> NOTE: Agents DO NOT MODIFY THIS FILE.
+
+> NOTE: Agents DO NOT MODIFY THIS FILE. The hash is being tracked outside of this system.
 
 I want to build an MCP server for the CFPB api. Swagger is here: [CFPB CCDB5 API documentation](https://cfpb.github.io/ccdb5-api/documentation/).
 
@@ -43,4 +44,8 @@ The API has a lot of useful ways to search, and the database harness on GitHub i
 
 This MCP server will be private for now, so on the server side, we can actually run our own agent-assisted workflows that we know will be repeatedly useful and that we don't want to leave to chance with respect to the behavior of the agent who is calling the MCP functions.
 
-We should consider some wilder ideas, like building the MCP server out of the CFPB complaints database harness itself, so that it can return the html artifacts, like charts and graphs that the database provides, as well as all of the smart user-centered and use-case-focused design that has been baked into the UI and text copy of that product over the years.
+## CRITICAL REQUIREMENTS
+
+1. We absolutely must be able to properly cite every access we make to the database with a deeplink URL that goes directly to the complaint in the CFPB UI. This is non-negotiable. The viability of the entire project depends on humans being able to verify the complaints data (both individual complaints and aggregate data) that the MCP server returns.
+2. The above is necessary but not sufficient. The success of the MCP server will also depend on the ability of the server to act as a copilot for humans who are trying to accomplish the tasks outlined in the use cases above. This means that the MCP server must be able to intelligently combine multiple API calls, filter and sort results, and summarize findings in a way that is useful for humans while also providing the ironclad citations and traceability. Providing deeplink URLs to web views that are served at consumerfinance.gov is a key part of this, but we can do even better by using the CFPB's data visualization harness directly instead of trying to do it ourselves.
+3. A stretch goal will be to use the structure of our MCP server creatively to constrain the behavior of the calling agents in a way that makes them more reliable and predictable. For example, we might want to build a set of standard agent workflows that are known to work well for the use cases above, and then have the MCP server guide the calling agents to use those workflows instead of trying to improvise on their own. This could involve providing detailed prompts or templates for the agents to follow, perhaps something like a "suggestions" endpoint, or even returning guardrails or guidance as an additional key part of the MCP response.

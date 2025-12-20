@@ -4,3 +4,4 @@
 2. Get cloudflare tunnel going for https
 3. API to url mapping table for docs and nice utility function
 4. HTTP Streaming for remote and node for full local stdio support
+5. Create a fixed type for query params to avoid fabrication

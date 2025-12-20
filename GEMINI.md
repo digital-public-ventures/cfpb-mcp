@@ -40,7 +40,7 @@ We use `uv` for all Python environment and dependency management.
     - Changes must support *both* MCP and REST/OpenAPI interfaces.
     - Shared logic should be transport-agnostic.
 - **Testing:**
-    - **Immutable Contracts:** The `tests/e2e` suite represents public contracts. Do not modify these tests to make breaking changes pass.
+    - **Immutable Contracts:** The `tests/contract` suite represents public contracts. Do not modify these tests to make breaking changes pass.
     - **New Features:** Add new test suites for new functionality.
     - **Running Tests:** `uv run pytest`.
 

@@ -349,6 +349,17 @@ We are no longer pursuing `.mcpb` packaging. Any `.mcpb` plans and related imple
 * `tests/` (update or add unit/integration tests for `/mcp` and `/mcp/sse`; do not edit `tests/e2e/**`)
 * `scripts/` (update any harnesses that assume only `/mcp/sse`)
 
+**Testing Plan:**
+
+* **Strategy:** Split transport-specific tests into dedicated directories to verify the dual-transport architecture.
+* **New Structure:**
+    * `tests/transport/sse/`: Contains tests verifying the legacy SSE endpoint (`GET /mcp/sse`).
+    * `tests/transport/http/`: Contains *new* tests verifying the Streamable HTTP endpoint (`POST /mcp`).
+* **Regression Testing:**
+    * Existing tests in `tests/test_mcp_tools.py` and `tests/e2e/**` remain as the regression suite for the SSE transport.
+    * Use `RUN_E2E=1` to execute the immutable E2E suite, ensuring both OpenAPI (OpenAI) and SSE (Anthropic) endpoints function correctly.
+* **CI/CD:** Ensure `docker-compose.test.yml` supports running both suites.
+
 **Acceptance criteria:**
 
 * Both endpoints work concurrently (`/mcp` and `/mcp/sse`).

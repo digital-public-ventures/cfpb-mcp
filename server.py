@@ -123,51 +123,82 @@ def build_params(
     return prune_params(params)
 
 
+from contextlib import asynccontextmanager, AsyncExitStack
+from datetime import datetime, timezone
+from pathlib import Path as FilePath
+from typing import Any, Dict, List, Literal, Optional, Tuple
+from urllib.parse import urlencode
+
+import httpx
+import uvicorn
+from fastapi import FastAPI, HTTPException, Path, Query
+from fastapi.responses import Response
+from mcp.server.fastmcp import FastMCP
+from playwright.async_api import async_playwright, Browser, BrowserContext
+
+BASE_URL = (
+    "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/"
+)
+
+# ... (omitted code) ...
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # A single shared client for connection pooling.
-    app.state.http = httpx.AsyncClient(timeout=httpx.Timeout(30.0))
+    # Initialize FastMCP lifespans (critical for session management)
+    async with AsyncExitStack() as stack:
+        # We must initialize the lifecycle of the FastMCP apps we are using.
+        # This ensures internal task groups and session managers are started.
+        # We pass the sub-app itself to its lifespan context.
+        if hasattr(_http_app.router, "lifespan_context"):
+            await stack.enter_async_context(_http_app.router.lifespan_context(_http_app))
+        
+        # SSE app likely shares state or doesn't need task group, but safe to init.
+        if hasattr(_sse_app.router, "lifespan_context"):
+            await stack.enter_async_context(_sse_app.router.lifespan_context(_sse_app))
 
-    # Initialize Playwright for screenshot service (Phase 4.5)
-    app.state.playwright = None
-    app.state.browser = None
-    try:
-        pw = await async_playwright().start()
-        app.state.playwright = pw
-        app.state.browser = await pw.chromium.launch(
-            headless=True,
-            args=[
-                "--no-sandbox",
-                "--disable-setuid-sandbox",
-                "--disable-dev-shm-usage",
-                "--disable-gpu",
-            ],
-        )
-    except Exception as e:
-        # If Playwright isn't available (e.g., in minimal test env), log and continue.
-        # The screenshot endpoints will return 503.
-        import sys
+        # A single shared client for connection pooling.
+        app.state.http = httpx.AsyncClient(timeout=httpx.Timeout(30.0))
 
-        print(f"Warning: Playwright initialization failed: {e}", file=sys.stderr)
+        # Initialize Playwright for screenshot service (Phase 4.5)
+        app.state.playwright = None
+        app.state.browser = None
+        try:
+            pw = await async_playwright().start()
+            app.state.playwright = pw
+            app.state.browser = await pw.chromium.launch(
+                headless=True,
+                args=[
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-dev-shm-usage",
+                    "--disable-gpu",
+                ],
+            )
+        except Exception as e:
+            # If Playwright isn't available (e.g., in minimal test env), log and continue.
+            # The screenshot endpoints will return 503.
+            import sys
 
-    try:
-        yield
-    finally:
-        await app.state.http.aclose()
-        if app.state.browser:
-            try:
-                await app.state.browser.close()
-            except Exception as e:
-                import sys
+            print(f"Warning: Playwright initialization failed: {e}", file=sys.stderr)
 
-                print(f"Warning: Playwright browser.close failed: {e}", file=sys.stderr)
-        if app.state.playwright:
-            try:
-                await app.state.playwright.stop()
-            except Exception as e:
-                import sys
+        try:
+            yield
+        finally:
+            await app.state.http.aclose()
+            if app.state.browser:
+                try:
+                    await app.state.browser.close()
+                except Exception as e:
+                    import sys
 
-                print(f"Warning: Playwright stop failed: {e}", file=sys.stderr)
+                    print(f"Warning: Playwright browser.close failed: {e}", file=sys.stderr)
+            if app.state.playwright:
+                try:
+                    await app.state.playwright.stop()
+                except Exception as e:
+                    import sys
+
+                    print(f"Warning: Playwright stop failed: {e}", file=sys.stderr)
 
 
 # 1) Initialize FastAPI and MCP (single app, two interfaces)
@@ -263,7 +294,8 @@ class MCPAccessControlMiddleware:
             return
 
         path = scope.get("path") or ""
-        if not path.startswith("/mcp/"):
+        # Phase 5.3: Protect both /mcp (Streamable HTTP) and /mcp/* (SSE)
+        if path != "/mcp" and not path.startswith("/mcp/"):
             await self.app(scope, receive, send)
             return
 
@@ -2035,10 +2067,28 @@ async def signals_company_route(
 # 5) Application Mount
 # -------------------------------------------------------------------------
 
-# Mount MCP endpoints.
-# FastMCP's SSE app exposes routes at /sse and /messages.
-# Mounting it at /mcp yields /mcp/sse (matching common Claude Desktop config).
-app.mount("/mcp", server.sse_app())
+# Phase 5.3: Dual Transport Support
+# We explicitly route /mcp, /mcp/sse, and /mcp/messages to avoid Starlette's
+# automatic 307 redirects that occur when using app.mount("/mcp", ...) for the root path.
+
+_http_app = server.streamable_http_app()
+_sse_app = server.sse_app()
+
+class HttpMCPHandler:
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        """Pass request to Streamable HTTP app without rewriting path (it expects /mcp)."""
+        await self.app(scope, receive, send)
+
+# 1. Streamable HTTP: POST /mcp
+app.add_route("/mcp", HttpMCPHandler(_http_app), methods=["POST"])
+
+# 2. Legacy SSE: GET /mcp/sse and POST /mcp/messages
+# Use standard mount for SSE to ensure correct behavior/buffering.
+# Note: This might shadow /mcp if defined before, but we define add_route first.
+app.mount("/mcp", _sse_app)
 
 
 @app.get("/", include_in_schema=False)
@@ -2051,6 +2101,7 @@ async def root() -> Dict[str, Any]:
             "openapi": "/openapi.json",
         },
         "mcp": {
+            "http": "/mcp",
             "sse": "/mcp/sse",
         },
     }

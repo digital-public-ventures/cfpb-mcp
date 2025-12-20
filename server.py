@@ -1586,7 +1586,7 @@ app.add_route("/mcp", HttpMCPHandler(_http_app), methods=["POST"])
 async def root() -> Dict[str, Any]:
     return {
         "name": "cfpb-mcp",
-        "message": "CFPB MCP server is running.",
+        "message": "CFPB MCP server is running (dev update 2).",
         "mcp": {
             "http": "/mcp",
         },

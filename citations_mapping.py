@@ -2,8 +2,8 @@
 
 from utils.deeplink_mapping import (  # noqa: F401
     UI_BASE_URL,
-    apply_default_dates,
     api_params_to_url_params,
+    apply_default_dates,
     build_deeplink_url,
     normalize_api_params,
     url_params_to_api_params,

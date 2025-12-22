@@ -23,6 +23,15 @@ Optional BuildKit speed-up:
 COMPOSE_BAKE=true docker compose build server
 ```
 
+## Linting & Formatting
+
+We use Ruff for linting and formatting. Config lives in `ruff.toml`.
+
+```bash
+uv run ruff check .
+uv run ruff format .
+```
+
 ## Run locally
 
 ```bash

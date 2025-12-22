@@ -30,6 +30,33 @@ Default `pytest` runs include everything; individual suites use markers.
 - Slow suite: `uv run pytest -m slow`
 - Scripted helper: `python scripts/run_tests.py [unit|integration|slow|contract|full]`
 
+## Linting & Formatting
+
+We use Ruff for both linting and formatting. Configuration lives in `ruff.toml`
+and is shared by pre-commit, local editor settings, and future CI.
+
+Common commands:
+
+- Lint: `uv run ruff check .`
+- Auto-fix: `uv run ruff check . --fix`
+- Format: `uv run ruff format .`
+
+Pre-commit:
+
+- Install hooks: `uv run pre-commit install`
+- Run all hooks: `uv run pre-commit run --all-files`
+
+## Code Quality Guardrails
+
+- Keep `server.py` per-file ignores minimal and documented in `ruff.toml`.
+- Prefer narrow exceptions; only use broad `Exception` handling for best-effort cleanup.
+- For API payloads where strict typing is impractical, explain the `Any` usage with nearby comments or docstrings.
+- Run the server checks when editing `server.py`:
+  - `uv run ruff check server.py`
+  - `uv run pyright server.py`
+- For deeper diagnostics (writes to `temp/output/` and applies fixes), use:
+  - `python temp/scripts/dump_diagnostics.py server.py`
+
 ## Contract Tests (Why They Exist)
 
 The contract tests in `tests/contract/` verify a fixed prompt against fixed assertions.

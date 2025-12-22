@@ -61,3 +61,12 @@ tests/e2e/outputs/
 data/
 *.log
 temp/
+
+# LLMs
+.gemini/
+.codex/
+.claude/
+
+# mcp
+mcp.json
+**/mcp.json

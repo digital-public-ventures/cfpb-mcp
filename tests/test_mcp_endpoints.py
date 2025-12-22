@@ -1,6 +1,6 @@
 import json
 from collections.abc import Awaitable, Callable
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 
 import pytest
 from mcp.client.session import ClientSession
@@ -10,7 +10,7 @@ pytestmark = pytest.mark.anyio
 
 
 def _default_date_window() -> tuple[str, str, str]:
-    now = datetime.now(UTC)
+    now = datetime.now(timezone.utc)
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     date_received_max = month_start.strftime('%Y-%m-%d')
     date_received_min = f'{now.year - 2:04d}-{now.month:02d}-01'

@@ -10,7 +10,7 @@ import tempfile
 import threading
 import time
 from contextlib import AsyncExitStack, asynccontextmanager, suppress
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -353,7 +353,7 @@ class MCPAccessControlMiddleware:
                 )
                 _audit_log(
                     {
-                        'ts': datetime.now(UTC).isoformat(),
+                        'ts': datetime.now(timezone.utc).isoformat(),
                         'event': 'mcp_request',
                         'path': path,
                         'method': method,
@@ -374,7 +374,7 @@ class MCPAccessControlMiddleware:
             )
             _audit_log(
                 {
-                    'ts': datetime.now(UTC).isoformat(),
+                    'ts': datetime.now(timezone.utc).isoformat(),
                     'event': 'mcp_request',
                     'path': path,
                     'method': method,
@@ -398,7 +398,7 @@ class MCPAccessControlMiddleware:
         finally:
             _audit_log(
                 {
-                    'ts': datetime.now(UTC).isoformat(),
+                    'ts': datetime.now(timezone.utc).isoformat(),
                     'event': 'mcp_request',
                     'path': path,
                     'method': method,
@@ -495,7 +495,7 @@ def _stddev(values: list[float]) -> float:
 
 
 def _current_month_prefix(now: datetime | None = None) -> str:
-    n = now or datetime.now(UTC)
+    n = now or datetime.now(timezone.utc)
     return f'{n.year:04d}-{n.month:02d}-'
 
 

@@ -4,7 +4,7 @@ import asyncio
 import re
 from collections.abc import AsyncGenerator, Mapping
 from datetime import date
-from typing import Any
+from typing import Any, cast
 from urllib.parse import parse_qs, urlparse
 
 import httpx
@@ -146,7 +146,7 @@ async def _fetch_api_total(client: httpx.AsyncClient, api_params: Mapping[str, A
         total = int(total)
     if not isinstance(total, int):
         pytest.fail(f'Unexpected API total format: {total}')
-    return total
+    return cast('int', total)
 
 
 @pytest.fixture(scope='module')

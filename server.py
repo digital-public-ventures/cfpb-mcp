@@ -296,7 +296,7 @@ class MCPAccessControlMiddleware:
 
         client = scope.get('client')
         client_host = None
-        if isinstance(client, (list, tuple)) and client:
+        if isinstance(client, list | tuple) and client:
             client_host = client[0]
 
         def _send_json(status: int, payload: dict[str, Any]) -> Awaitable[None]:
@@ -497,7 +497,7 @@ def _extract_overall_points(payload: Any) -> list[tuple[str, float]]:
         key = b.get('key')
         label = b.get('key_as_string')
         count = b.get('doc_count')
-        if not isinstance(key, (int, float)) or label is None or not isinstance(count, (int, float)):
+        if not isinstance(key, int | float) or label is None or not isinstance(count, int | float):
             continue
         rows.append((int(key), str(label), float(count)))
 
@@ -513,10 +513,10 @@ def _extract_points_with_key(trend_buckets: list[dict[str, Any]]) -> list[tuple[
         label = tb.get('key_as_string')
         key = tb.get('key')
         count = tb.get('doc_count')
-        if label is None or not isinstance(count, (int, float)):
+        if label is None or not isinstance(count, int | float):
             continue
         key_num: int | None = None
-        if isinstance(key, (int, float)):
+        if isinstance(key, int | float):
             key_num = int(key)
         points_with_key.append((key_num, str(label), float(count)))
     return points_with_key
@@ -1538,7 +1538,7 @@ async def mcp_http(request: Request) -> Response:
                 response_headers = [(bytes(k), bytes(v)) for k, v in raw]
         elif msg_type == 'http.response.body':
             body_part = message.get('body', b'')
-            if isinstance(body_part, (bytes, bytearray)):
+            if isinstance(body_part, bytes | bytearray):
                 chunks.append(bytes(body_part))
 
     await _http_app(scope, receive, send)

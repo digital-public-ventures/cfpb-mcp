@@ -29,3 +29,16 @@ dev = [
     "python-dotenv>=1.2.1",
 ]
 # Keep the venv in-project as .venv
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+exclude = [
+    ".git/**",
+    ".venv/**",
+    "data/**",
+    "deployment/**",
+    "docs/**",
+    "planning/**",
+    "temp/**",
+]

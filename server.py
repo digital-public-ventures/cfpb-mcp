@@ -668,7 +668,7 @@ def build_cfpb_ui_url(
     **kwargs: Any,
 ) -> str:
     """Build a URL to the official CFPB consumer complaints UI."""
-    _ = kwargs
+    # Extra keyword arguments are accepted for forward compatibility but not used here.
     api_params: dict[str, Any] = {
         'search_term': search_term,
         'date_received_min': date_received_min,

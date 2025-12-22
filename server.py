@@ -5,151 +5,145 @@ import hashlib
 import hmac
 import json
 import os
+import sys
+import tempfile
 import threading
 import time
-from contextlib import asynccontextmanager
-from datetime import datetime, timezone
-from pathlib import Path as FilePath
-from typing import Any, Dict, List, Literal, Optional, Tuple
+from contextlib import AsyncExitStack, asynccontextmanager, suppress
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Literal
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator, Awaitable
+
+    from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 import httpx
 import uvicorn
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import Response
+from fastapi import FastAPI, HTTPException, Request
 from mcp.server.fastmcp import FastMCP
-from playwright.async_api import async_playwright, Browser, BrowserContext
+from playwright.async_api import Browser, async_playwright
+from starlette.responses import Response
 
 from utils.deeplink_mapping import build_deeplink_url
 
-BASE_URL = (
-    "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/"
-)
+BASE_URL = 'https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/'
 
-SearchField = Literal["complaint_what_happened", "company", "all"]
-SearchSort = Literal["relevance_desc", "created_date_desc"]
+SearchField = Literal['complaint_what_happened', 'company', 'all']
+SearchSort = Literal['relevance_desc', 'created_date_desc']
+
+MIN_STDDEV_SAMPLES = 2
+MIN_SIGNAL_POINTS = 2
+MIN_BASELINE_POINTS = 2
+CHART_MIN_WIDTH = 400
+CHART_MIN_HEIGHT = 300
+SCREENSHOT_UNAVAILABLE_DETAIL = 'Screenshot service unavailable (Playwright not initialized)'
+_BOOL_LITERALS = {'true', 'false'}
 
 
-def prune_params(params: Dict[str, Any]) -> Dict[str, Any]:
+def _normalize_scalar(value: Any) -> Any | None:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return 'true' if value else 'false'
+    if isinstance(value, str):
+        stripped = value.strip()
+        if not stripped:
+            return None
+        lowered = stripped.lower()
+        if lowered in _BOOL_LITERALS:
+            return lowered
+        return value
+    return value
+
+
+def _normalize_list(values: list[Any]) -> list[Any] | None:
+    normalized: list[Any] = []
+    for item in values:
+        cleaned = _normalize_scalar(item)
+        if cleaned is None:
+            continue
+        normalized.append(cleaned)
+    return normalized or None
+
+
+def prune_params(params: dict[str, Any]) -> dict[str, Any]:
     """Remove None/empty values so we don't send invalid query params upstream.
 
     This is particularly important for LLM tool calls that may pass empty strings
     or lists containing empty strings.
     """
-
-    cleaned: Dict[str, Any] = {}
+    cleaned: dict[str, Any] = {}
     for key, value in params.items():
-        if value is None:
+        normalized = _normalize_list(value) if isinstance(value, list) else _normalize_scalar(value)
+        if normalized is None:
             continue
-        if isinstance(value, bool):
-            cleaned[key] = "true" if value else "false"
-            continue
-        if isinstance(value, str):
-            if value.strip() == "":
-                continue
-            lowered = value.strip().lower()
-            if lowered in {"true", "false"}:
-                cleaned[key] = lowered
-            else:
-                cleaned[key] = value
-            continue
-        if isinstance(value, list):
-            filtered: List[Any] = []
-            for item in value:
-                if item is None:
-                    continue
-                if isinstance(item, bool):
-                    filtered.append("true" if item else "false")
-                    continue
-                if isinstance(item, str) and item.strip() == "":
-                    continue
-                if isinstance(item, str):
-                    lowered = item.strip().lower()
-                    if lowered in {"true", "false"}:
-                        filtered.append(lowered)
-                        continue
-                filtered.append(item)
-            if not filtered:
-                continue
-            cleaned[key] = filtered
-            continue
-
-        cleaned[key] = value
+        cleaned[key] = normalized
 
     return cleaned
 
 
 def build_params(
     *,
-    search_term: Optional[str] = None,
-    field: Optional[str] = None,
-    company: Optional[List[str]] = None,
-    company_public_response: Optional[List[str]] = None,
-    company_response: Optional[List[str]] = None,
-    consumer_consent_provided: Optional[List[str]] = None,
-    consumer_disputed: Optional[List[str]] = None,
-    date_received_min: Optional[str] = None,
-    date_received_max: Optional[str] = None,
-    company_received_min: Optional[str] = None,
-    company_received_max: Optional[str] = None,
-    has_narrative: Optional[List[str]] = None,
-    issue: Optional[List[str]] = None,
-    product: Optional[List[str]] = None,
-    state: Optional[List[str]] = None,
-    submitted_via: Optional[List[str]] = None,
-    tags: Optional[List[str]] = None,
-    timely: Optional[List[str]] = None,
-    zip_code: Optional[List[str]] = None,
-) -> Dict[str, Any]:
-    params: Dict[str, Any] = {
-        "search_term": search_term,
-        "field": field,
-        "company": company,
-        "company_public_response": company_public_response,
-        "company_response": company_response,
-        "consumer_consent_provided": consumer_consent_provided,
-        "consumer_disputed": consumer_disputed,
-        "date_received_min": date_received_min,
-        "date_received_max": date_received_max,
-        "company_received_min": company_received_min,
-        "company_received_max": company_received_max,
-        "has_narrative": has_narrative,
-        "issue": issue,
-        "product": product,
-        "state": state,
-        "submitted_via": submitted_via,
-        "tags": tags,
-        "timely": timely,
-        "zip_code": zip_code,
+    search_term: str | None = None,
+    field: str | None = None,
+    company: list[str] | None = None,
+    company_public_response: list[str] | None = None,
+    company_response: list[str] | None = None,
+    consumer_consent_provided: list[str] | None = None,
+    consumer_disputed: list[str] | None = None,
+    date_received_min: str | None = None,
+    date_received_max: str | None = None,
+    company_received_min: str | None = None,
+    company_received_max: str | None = None,
+    has_narrative: list[str] | None = None,
+    issue: list[str] | None = None,
+    product: list[str] | None = None,
+    state: list[str] | None = None,
+    submitted_via: list[str] | None = None,
+    tags: list[str] | None = None,
+    timely: list[str] | None = None,
+    zip_code: list[str] | None = None,
+) -> dict[str, Any]:
+    """Build CFPB search API query parameters.
+
+    This is a thin wrapper around `prune_params` that assembles the known filter
+    keys for the upstream CFPB search endpoint.
+    """
+    params: dict[str, Any] = {
+        'search_term': search_term,
+        'field': field,
+        'company': company,
+        'company_public_response': company_public_response,
+        'company_response': company_response,
+        'consumer_consent_provided': consumer_consent_provided,
+        'consumer_disputed': consumer_disputed,
+        'date_received_min': date_received_min,
+        'date_received_max': date_received_max,
+        'company_received_min': company_received_min,
+        'company_received_max': company_received_max,
+        'has_narrative': has_narrative,
+        'issue': issue,
+        'product': product,
+        'state': state,
+        'submitted_via': submitted_via,
+        'tags': tags,
+        'timely': timely,
+        'zip_code': zip_code,
     }
     return prune_params(params)
 
 
-from contextlib import asynccontextmanager, AsyncExitStack
-from datetime import datetime, timezone
-from pathlib import Path as FilePath
-from typing import Any, Dict, List, Literal, Optional, Tuple
-
-import httpx
-import uvicorn
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import Response
-from mcp.server.fastmcp import FastMCP
-from playwright.async_api import async_playwright, Browser, BrowserContext
-
-BASE_URL = (
-    "https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/"
-)
-
-# ... (omitted code) ...
-
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    """App lifespan: initialize shared HTTP client + optional Playwright."""
     # Initialize FastMCP lifespans (critical for session management)
     async with AsyncExitStack() as stack:
         # We must initialize the lifecycle of the FastMCP apps we are using.
         # This ensures internal task groups and session managers are started.
         # We pass the sub-app itself to its lifespan context.
-        if hasattr(_http_app.router, "lifespan_context"):
+        if hasattr(_http_app.router, 'lifespan_context'):
             await stack.enter_async_context(_http_app.router.lifespan_context(_http_app))
 
         # A single shared client for connection pooling.
@@ -164,18 +158,16 @@ async def lifespan(app: FastAPI):
             app.state.browser = await pw.chromium.launch(
                 headless=True,
                 args=[
-                    "--no-sandbox",
-                    "--disable-setuid-sandbox",
-                    "--disable-dev-shm-usage",
-                    "--disable-gpu",
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage',
+                    '--disable-gpu',
                 ],
             )
         except Exception as e:
             # If Playwright isn't available (e.g., in minimal test env), log and continue.
             # The screenshot endpoints will return 503.
-            import sys
-
-            print(f"Warning: Playwright initialization failed: {e}", file=sys.stderr)
+            print(f'Warning: Playwright initialization failed: {e}', file=sys.stderr)
 
         try:
             yield
@@ -185,50 +177,46 @@ async def lifespan(app: FastAPI):
                 try:
                     await app.state.browser.close()
                 except Exception as e:
-                    import sys
-
-                    print(f"Warning: Playwright browser.close failed: {e}", file=sys.stderr)
+                    print(f'Warning: Playwright browser.close failed: {e}', file=sys.stderr)
             if app.state.playwright:
                 try:
                     await app.state.playwright.stop()
                 except Exception as e:
-                    import sys
-
-                    print(f"Warning: Playwright stop failed: {e}", file=sys.stderr)
+                    print(f'Warning: Playwright stop failed: {e}', file=sys.stderr)
 
 
 # 1) Initialize FastAPI and MCP (single app, two interfaces)
 app = FastAPI(
-    title="CFPB Complaint API",
-    description="A hybrid MCP/REST server for accessing the Consumer Complaint Database.",
-    version="1.0.0",
+    title='CFPB Complaint API',
+    description='A hybrid MCP/REST server for accessing the Consumer Complaint Database.',
+    version='1.0.0',
     lifespan=lifespan,
 )
 server = FastMCP(
-    "cfpb-complaints",
+    'cfpb-complaints',
     # Important for Phase 5.2: FastMCP auto-enables DNS rebinding protection
     # (Host header allowlist) when host is localhost. When running behind a
     # tunnel with a public hostname, preserve compatibility by matching the
     # runtime bind host here as well.
-    host=os.getenv("CFPB_MCP_HOST", "127.0.0.1"),
+    host=os.getenv('CFPB_MCP_HOST', '127.0.0.1'),
 )
 
 
 def _get_allowed_api_keys() -> set[str]:
-    raw = (os.getenv("CFPB_MCP_API_KEYS") or "").strip()
+    raw = (os.getenv('CFPB_MCP_API_KEYS') or '').strip()
     if not raw:
         return set()
-    return {k.strip() for k in raw.split(",") if k.strip()}
+    return {k.strip() for k in raw.split(',') if k.strip()}
 
 
 def _hash_key_prefix(api_key: str) -> str:
     if not api_key:
-        return "none"
-    return hashlib.sha256(api_key.encode("utf-8")).hexdigest()[:8]
+        return 'none'
+    return hashlib.sha256(api_key.encode('utf-8')).hexdigest()[:8]
 
 
 class _TokenBucket:
-    def __init__(self, *, capacity: float, refill_per_sec: float, now: float):
+    def __init__(self, *, capacity: float, refill_per_sec: float, now: float) -> None:
         self.capacity = float(capacity)
         self.refill_per_sec = float(refill_per_sec)
         self.tokens = float(capacity)
@@ -250,8 +238,8 @@ _RATE_LIMIT_BUCKETS: dict[str, _TokenBucket] = {}
 
 
 def _rate_limit_allows(bucket_id: str) -> bool:
-    rps = float(os.getenv("CFPB_MCP_RATE_LIMIT_RPS", "0") or "0")
-    burst = float(os.getenv("CFPB_MCP_RATE_LIMIT_BURST", "0") or "0")
+    rps = float(os.getenv('CFPB_MCP_RATE_LIMIT_RPS', '0') or '0')
+    burst = float(os.getenv('CFPB_MCP_RATE_LIMIT_BURST', '0') or '0')
     if rps <= 0 or burst <= 0:
         return True
 
@@ -267,10 +255,8 @@ def _rate_limit_allows(bucket_id: str) -> bool:
 def _audit_log(event: dict[str, Any]) -> None:
     # Best-effort JSONL to stderr (good for container logs / cloudflared output).
     try:
-        import sys
-
-        print(json.dumps(event, separators=(",", ":"), default=str), file=sys.stderr)
-    except Exception:
+        print(json.dumps(event, separators=(',', ':'), default=str), file=sys.stderr)
+    except (TypeError, ValueError):
         return
 
 
@@ -281,53 +267,55 @@ class MCPAccessControlMiddleware:
     layer (rather than FastAPI dependencies).
     """
 
-    def __init__(self, app):
+    def __init__(self, app: ASGIApp) -> None:
+        """Store the downstream ASGI app for request handling."""
         self.app = app
 
-    async def __call__(self, scope, receive, send):
-        if scope.get("type") != "http":
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """Apply auth/rate-limit checks before dispatching to the MCP app."""
+        if scope.get('type') != 'http':
             await self.app(scope, receive, send)
             return
 
-        path = scope.get("path") or ""
+        path = scope.get('path') or ''
         # Phase 5.3: Protect /mcp (Streamable HTTP)
-        if path != "/mcp":
+        if path != '/mcp':
             await self.app(scope, receive, send)
             return
 
-        method = (scope.get("method") or "").upper()
+        method = (scope.get('method') or '').upper()
         started_at = time.monotonic()
         status_code: int | None = None
 
-        headers = {k.lower(): v for (k, v) in (scope.get("headers") or [])}
-        api_key = (headers.get(b"x-api-key") or b"").decode("utf-8", "replace").strip()
+        headers = {k.lower(): v for (k, v) in (scope.get('headers') or [])}
+        api_key = (headers.get(b'x-api-key') or b'').decode('utf-8', 'replace').strip()
 
         allowed_keys = _get_allowed_api_keys()
         auth_enabled = bool(allowed_keys)
         key_prefix = _hash_key_prefix(api_key)
 
-        client = scope.get("client")
+        client = scope.get('client')
         client_host = None
         if isinstance(client, (list, tuple)) and client:
             client_host = client[0]
 
-        def _send_json(status: int, payload: dict[str, Any]):
-            body = json.dumps(payload, separators=(",", ":")).encode("utf-8")
+        def _send_json(status: int, payload: dict[str, Any]) -> Awaitable[None]:
+            body = json.dumps(payload, separators=(',', ':')).encode('utf-8')
 
-            async def _do_send():
+            async def _do_send() -> None:
                 nonlocal status_code
                 status_code = status
                 await send(
                     {
-                        "type": "http.response.start",
-                        "status": status,
-                        "headers": [
-                            (b"content-type", b"application/json"),
-                            (b"content-length", str(len(body)).encode("ascii")),
+                        'type': 'http.response.start',
+                        'status': status,
+                        'headers': [
+                            (b'content-type', b'application/json'),
+                            (b'content-length', str(len(body)).encode('ascii')),
                         ],
                     }
                 )
-                await send({"type": "http.response.body", "body": body})
+                await send({'type': 'http.response.body', 'body': body})
 
             return _do_send()
 
@@ -338,52 +326,52 @@ class MCPAccessControlMiddleware:
                 await _send_json(
                     401,
                     {
-                        "error": {
-                            "type": "auth",
-                            "message": "Missing or invalid API key",
+                        'error': {
+                            'type': 'auth',
+                            'message': 'Missing or invalid API key',
                         }
                     },
                 )
                 _audit_log(
                     {
-                        "ts": datetime.now(timezone.utc).isoformat(),
-                        "event": "mcp_request",
-                        "path": path,
-                        "method": method,
-                        "status": 401,
-                        "duration_ms": int((time.monotonic() - started_at) * 1000),
-                        "api_key": key_prefix,
-                        "client": client_host,
+                        'ts': datetime.now(UTC).isoformat(),
+                        'event': 'mcp_request',
+                        'path': path,
+                        'method': method,
+                        'status': 401,
+                        'duration_ms': int((time.monotonic() - started_at) * 1000),
+                        'api_key': key_prefix,
+                        'client': client_host,
                     }
                 )
                 return
 
         # 2) Rate limit
-        bucket_id = api_key if api_key else f"anon:{client_host or 'unknown'}"
+        bucket_id = api_key if api_key else f'anon:{client_host or "unknown"}'
         if not _rate_limit_allows(bucket_id):
             await _send_json(
                 429,
-                {"error": {"type": "rate_limit", "message": "Too many requests"}},
+                {'error': {'type': 'rate_limit', 'message': 'Too many requests'}},
             )
             _audit_log(
                 {
-                    "ts": datetime.now(timezone.utc).isoformat(),
-                    "event": "mcp_request",
-                    "path": path,
-                    "method": method,
-                    "status": 429,
-                    "duration_ms": int((time.monotonic() - started_at) * 1000),
-                    "api_key": key_prefix,
-                    "client": client_host,
+                    'ts': datetime.now(UTC).isoformat(),
+                    'event': 'mcp_request',
+                    'path': path,
+                    'method': method,
+                    'status': 429,
+                    'duration_ms': int((time.monotonic() - started_at) * 1000),
+                    'api_key': key_prefix,
+                    'client': client_host,
                 }
             )
             return
 
         # 3) Pass-through + audit
-        async def send_wrapper(message):
+        async def send_wrapper(message: Message) -> None:
             nonlocal status_code
-            if message.get("type") == "http.response.start":
-                status_code = int(message.get("status") or 0)
+            if message.get('type') == 'http.response.start':
+                status_code = int(message.get('status') or 0)
             await send(message)
 
         try:
@@ -391,14 +379,14 @@ class MCPAccessControlMiddleware:
         finally:
             _audit_log(
                 {
-                    "ts": datetime.now(timezone.utc).isoformat(),
-                    "event": "mcp_request",
-                    "path": path,
-                    "method": method,
-                    "status": status_code,
-                    "duration_ms": int((time.monotonic() - started_at) * 1000),
-                    "api_key": key_prefix,
-                    "client": client_host,
+                    'ts': datetime.now(UTC).isoformat(),
+                    'event': 'mcp_request',
+                    'path': path,
+                    'method': method,
+                    'status': status_code,
+                    'duration_ms': int((time.monotonic() - started_at) * 1000),
+                    'api_key': key_prefix,
+                    'client': client_host,
                 }
             )
 
@@ -406,7 +394,7 @@ class MCPAccessControlMiddleware:
 app.add_middleware(MCPAccessControlMiddleware)
 
 
-async def _get_json(path: str, *, params: Dict[str, Any]) -> Any:
+async def _get_json(path: str, *, params: dict[str, Any]) -> Any:
     client: httpx.AsyncClient = app.state.http
     try:
         response = await client.get(path, params=params)
@@ -425,22 +413,24 @@ async def _get_json(path: str, *, params: Dict[str, Any]) -> Any:
 
 
 async def search_logic(
+    *,
     size: int,
     from_index: int,
     sort: str,
-    search_after: Optional[str],
+    search_after: str | None,
     no_highlight: bool,
     **filters: Any,
 ) -> Any:
+    """Execute a CFPB search query with pagination and filter params."""
     params = build_params(**filters)
     params.update(
         {
-            "size": size,
-            "frm": from_index,
-            "sort": sort,
-            "search_after": search_after,
-            "no_highlight": no_highlight,
-            "no_aggs": False,
+            'size': size,
+            'frm': from_index,
+            'sort': sort,
+            'search_after': search_after,
+            'no_highlight': no_highlight,
+            'no_aggs': False,
         }
     )
     params = prune_params(params)
@@ -451,132 +441,115 @@ async def trends_logic(
     lens: str,
     trend_interval: str,
     trend_depth: int,
-    sub_lens: Optional[str],
+    sub_lens: str | None,
     sub_lens_depth: int,
-    focus: Optional[str],
+    focus: str | None,
     **filters: Any,
 ) -> Any:
+    """Execute a CFPB trends query for the requested lens."""
     params = build_params(**filters)
     params.update(
         {
-            "lens": lens,
-            "trend_interval": trend_interval,
-            "trend_depth": trend_depth,
-            "sub_lens": sub_lens,
+            'lens': lens,
+            'trend_interval': trend_interval,
+            'trend_depth': trend_depth,
+            'sub_lens': sub_lens,
             # Upstream rejects sub_lens_depth when sub_lens is unset.
-            "sub_lens_depth": sub_lens_depth if sub_lens is not None else None,
-            "focus": focus,
+            'sub_lens_depth': sub_lens_depth if sub_lens is not None else None,
+            'focus': focus,
         }
     )
     params = prune_params(params)
-    return await _get_json(f"{BASE_URL}trends", params=params)
+    return await _get_json(f'{BASE_URL}trends', params=params)
 
 
-def _mean(values: List[float]) -> float:
+def _mean(values: list[float]) -> float:
     return sum(values) / len(values) if values else 0.0
 
 
-def _stddev(values: List[float]) -> float:
-    if len(values) < 2:
+def _stddev(values: list[float]) -> float:
+    if len(values) < MIN_STDDEV_SAMPLES:
         return 0.0
     m = _mean(values)
     var = sum((x - m) ** 2 for x in values) / (len(values) - 1)
     return var**0.5
 
 
-def _current_month_prefix(now: Optional[datetime] = None) -> str:
-    n = now or datetime.now(timezone.utc)
-    return f"{n.year:04d}-{n.month:02d}-"
+def _current_month_prefix(now: datetime | None = None) -> str:
+    n = now or datetime.now(UTC)
+    return f'{n.year:04d}-{n.month:02d}-'
 
 
-def _drop_current_month(points: List[Tuple[str, float]]) -> List[Tuple[str, float]]:
+def _drop_current_month(points: list[tuple[str, float]]) -> list[tuple[str, float]]:
     prefix = _current_month_prefix()
-    return [
-        (label, count) for (label, count) in points if not str(label).startswith(prefix)
-    ]
+    return [(label, count) for (label, count) in points if not str(label).startswith(prefix)]
 
 
-def _extract_overall_points(payload: Any) -> List[Tuple[str, float]]:
-    buckets = (
-        (payload or {})
-        .get("aggregations", {})
-        .get("dateRangeArea", {})
-        .get("dateRangeArea", {})
-        .get("buckets")
-    )
+def _extract_overall_points(payload: Any) -> list[tuple[str, float]]:
+    buckets = (payload or {}).get('aggregations', {}).get('dateRangeArea', {}).get('dateRangeArea', {}).get('buckets')
     if not isinstance(buckets, list):
         return []
 
-    rows: List[Tuple[int, str, float]] = []
+    rows: list[tuple[int, str, float]] = []
     for b in buckets:
         if not isinstance(b, dict):
             continue
-        key = b.get("key")
-        label = b.get("key_as_string")
-        count = b.get("doc_count")
-        if not isinstance(key, (int, float)) or label is None or count is None:
+        key = b.get('key')
+        label = b.get('key_as_string')
+        count = b.get('doc_count')
+        if not isinstance(key, (int, float)) or label is None or not isinstance(count, (int, float)):
             continue
-        try:
-            rows.append((int(key), str(label), float(count)))
-        except Exception:
-            continue
+        rows.append((int(key), str(label), float(count)))
 
     rows.sort(key=lambda t: t[0])
     return [(label, count) for _, label, count in rows]
 
 
-def _extract_group_series(payload: Any, group: str) -> List[Dict[str, Any]]:
-    group_buckets = (
-        (payload or {})
-        .get("aggregations", {})
-        .get(group, {})
-        .get(group, {})
-        .get("buckets")
-    )
+def _extract_points_with_key(trend_buckets: list[dict[str, Any]]) -> list[tuple[int | None, str, float]]:
+    points_with_key: list[tuple[int | None, str, float]] = []
+    for tb in trend_buckets:
+        if not isinstance(tb, dict):
+            continue
+        label = tb.get('key_as_string')
+        key = tb.get('key')
+        count = tb.get('doc_count')
+        if label is None or not isinstance(count, (int, float)):
+            continue
+        key_num: int | None = None
+        if isinstance(key, (int, float)):
+            key_num = int(key)
+        points_with_key.append((key_num, str(label), float(count)))
+    return points_with_key
+
+
+def _extract_group_series(payload: Any, group: str) -> list[dict[str, Any]]:
+    group_buckets = (payload or {}).get('aggregations', {}).get(group, {}).get(group, {}).get('buckets')
     if not isinstance(group_buckets, list):
         return []
 
-    out: List[Dict[str, Any]] = []
+    out: list[dict[str, Any]] = []
     for b in group_buckets:
         if not isinstance(b, dict):
             continue
-        group_key = b.get("key")
-        doc_count = b.get("doc_count")
-        trend_buckets = b.get("trend_period", {}).get("buckets")
+        group_key = b.get('key')
+        doc_count = b.get('doc_count')
+        trend_buckets = b.get('trend_period', {}).get('buckets')
         if group_key is None or not isinstance(trend_buckets, list):
             continue
 
         # Extract points sorted chronologically by numeric key when present.
-        points_with_key: List[Tuple[Optional[int], str, float]] = []
-        for tb in trend_buckets:
-            if not isinstance(tb, dict):
-                continue
-            label = tb.get("key_as_string")
-            key = tb.get("key")
-            count = tb.get("doc_count")
-            if label is None or count is None:
-                continue
-            key_num: Optional[int] = None
-            if isinstance(key, (int, float)):
-                key_num = int(key)
-            try:
-                points_with_key.append((key_num, str(label), float(count)))
-            except Exception:
-                continue
-
+        points_with_key = _extract_points_with_key(trend_buckets)
         if any(k is not None for k, _, _ in points_with_key):
-            points_with_key.sort(
-                key=lambda t: (t[0] is None, t[0] if t[0] is not None else 0)
-            )
+            points_with_key.sort(key=lambda t: (t[0] is None, t[0] if t[0] is not None else 0))
         else:
             points_with_key.sort(key=lambda t: t[1])
 
         points = [(label, count) for _, label, count in points_with_key]
         out.append(
             {
-                "group": str(group_key),
-                "doc_count": doc_count,
-                "points": points,
+                'group': str(group_key),
+                'doc_count': doc_count,
+                'points': points,
             }
         )
 
@@ -584,13 +557,13 @@ def _extract_group_series(payload: Any, group: str) -> List[Dict[str, Any]]:
 
 
 def _compute_simple_signals(
-    points: List[Tuple[str, float]],
+    points: list[tuple[str, float]],
     *,
     baseline_window: int = 8,
     min_baseline_mean: float = 10.0,
-) -> Dict[str, Any]:
-    if len(points) < 2:
-        return {"error": "not_enough_points", "num_points": len(points)}
+) -> dict[str, Any]:
+    if len(points) < MIN_SIGNAL_POINTS:
+        return {'error': 'not_enough_points', 'num_points': len(points)}
 
     labels = [p[0] for p in points]
     values = [p[1] for p in points]
@@ -602,55 +575,45 @@ def _compute_simple_signals(
     if prev_val > 0:
         last_vs_prev_pct = (last_val / prev_val) - 1.0
 
-    baseline_values = values[-(baseline_window + 1) : -1] if len(values) > 2 else []
+    baseline_values = values[-(baseline_window + 1) : -1] if len(values) > MIN_BASELINE_POINTS else []
     baseline_mean = _mean(baseline_values) if baseline_values else None
     baseline_sd = _stddev(baseline_values) if baseline_values else None
 
     z = None
     ratio = None
-    if (
-        baseline_mean is not None
-        and baseline_mean >= min_baseline_mean
-        and baseline_sd is not None
-    ):
+    if baseline_mean is not None and baseline_mean >= min_baseline_mean and baseline_sd is not None:
         ratio = (last_val / baseline_mean) if baseline_mean > 0 else None
         z = (last_val - baseline_mean) / baseline_sd if baseline_sd > 0 else None
 
     return {
-        "num_points": len(points),
-        "last_bucket": {"label": last_label, "count": last_val},
-        "prev_bucket": {"label": prev_label, "count": prev_val},
-        "signals": {
-            "last_vs_prev": {"abs": last_val - prev_val, "pct": last_vs_prev_pct},
-            "last_vs_baseline": {
-                "baseline_window": baseline_window,
-                "baseline_mean": baseline_mean,
-                "baseline_sd": baseline_sd,
-                "ratio": ratio,
-                "z": z,
-                "min_baseline_mean": min_baseline_mean,
+        'num_points': len(points),
+        'last_bucket': {'label': last_label, 'count': last_val},
+        'prev_bucket': {'label': prev_label, 'count': prev_val},
+        'signals': {
+            'last_vs_prev': {'abs': last_val - prev_val, 'pct': last_vs_prev_pct},
+            'last_vs_baseline': {
+                'baseline_window': baseline_window,
+                'baseline_mean': baseline_mean,
+                'baseline_sd': baseline_sd,
+                'ratio': ratio,
+                'z': z,
+                'min_baseline_mean': min_baseline_mean,
             },
         },
     }
 
 
-def _company_buckets_from_search(payload: Any) -> List[Tuple[str, int]]:
-    buckets = (
-        (payload or {})
-        .get("aggregations", {})
-        .get("company", {})
-        .get("company", {})
-        .get("buckets")
-    )
+def _company_buckets_from_search(payload: Any) -> list[tuple[str, int]]:
+    buckets = (payload or {}).get('aggregations', {}).get('company', {}).get('company', {}).get('buckets')
     if not isinstance(buckets, list):
         return []
 
-    out: List[Tuple[str, int]] = []
+    out: list[tuple[str, int]] = []
     for b in buckets:
         if not isinstance(b, dict):
             continue
-        key = b.get("key")
-        doc_count = b.get("doc_count")
+        key = b.get('key')
+        doc_count = b.get('doc_count')
         if not isinstance(key, str) or not isinstance(doc_count, int):
             continue
         out.append((key, doc_count))
@@ -660,89 +623,90 @@ def _company_buckets_from_search(payload: Any) -> List[Tuple[str, int]]:
 
 
 async def geo_logic(**filters: Any) -> Any:
+    """Execute a CFPB geo aggregation query."""
     params = build_params(**filters)
-    return await _get_json(f"{BASE_URL}geo/states", params=params)
+    return await _get_json(f'{BASE_URL}geo/states', params=params)
 
 
-async def suggest_logic(
-    field: Literal["company", "zip_code"], text: str, size: int
-) -> Any:
-    params = {"text": text, "size": size}
-    endpoint = "_suggest_company" if field == "company" else "_suggest_zip"
-    data = await _get_json(f"{BASE_URL}{endpoint}", params=params)
+async def suggest_logic(field: Literal['company', 'zip_code'], text: str, size: int) -> Any:
+    """Fetch autocomplete suggestions for company or zip_code."""
+    params = {'text': text, 'size': size}
+    endpoint = '_suggest_company' if field == 'company' else '_suggest_zip'
+    data = await _get_json(f'{BASE_URL}{endpoint}', params=params)
     if isinstance(data, list):
         return data[:size]
     return data
 
 
 async def document_logic(complaint_id: str) -> Any:
-    return await _get_json(f"{BASE_URL}{complaint_id}", params={})
+    """Fetch a single complaint document by its ID."""
+    return await _get_json(f'{BASE_URL}{complaint_id}', params={})
 
 
 def build_cfpb_ui_url(
     *,
-    search_term: Optional[str] = None,
-    date_received_min: Optional[str] = None,
-    date_received_max: Optional[str] = None,
-    company: Optional[List[str]] = None,
-    product: Optional[List[str]] = None,
-    issue: Optional[List[str]] = None,
-    state: Optional[List[str]] = None,
-    has_narrative: Optional[str] = None,
-    company_response: Optional[List[str]] = None,
-    company_public_response: Optional[List[str]] = None,
-    consumer_disputed: Optional[List[str]] = None,
-    tags: Optional[List[str]] = None,
-    submitted_via: Optional[List[str]] = None,
-    timely: Optional[List[str]] = None,
-    zip_code: Optional[List[str]] = None,
-    tab: Optional[str] = None,
-    lens: Optional[str] = None,
-    sub_lens: Optional[str] = None,
-    chart_type: Optional[str] = None,
-    date_interval: Optional[str] = None,
+    search_term: str | None = None,
+    date_received_min: str | None = None,
+    date_received_max: str | None = None,
+    company: list[str] | None = None,
+    product: list[str] | None = None,
+    issue: list[str] | None = None,
+    state: list[str] | None = None,
+    has_narrative: str | None = None,
+    company_response: list[str] | None = None,
+    company_public_response: list[str] | None = None,
+    consumer_disputed: list[str] | None = None,
+    tags: list[str] | None = None,
+    submitted_via: list[str] | None = None,
+    timely: list[str] | None = None,
+    zip_code: list[str] | None = None,
+    tab: str | None = None,
+    lens: str | None = None,
+    sub_lens: str | None = None,
+    chart_type: str | None = None,
+    date_interval: str | None = None,
     **kwargs: Any,
 ) -> str:
     """Build a URL to the official CFPB consumer complaints UI."""
-
-    api_params: Dict[str, Any] = {
-        "search_term": search_term,
-        "date_received_min": date_received_min,
-        "date_received_max": date_received_max,
-        "company": company,
-        "product": product,
-        "issue": issue,
-        "state": state,
-        "has_narrative": has_narrative,
-        "company_response": company_response,
-        "company_public_response": company_public_response,
-        "consumer_disputed": consumer_disputed,
-        "tags": tags,
-        "submitted_via": submitted_via,
-        "timely": timely,
-        "zip_code": zip_code,
+    _ = kwargs
+    api_params: dict[str, Any] = {
+        'search_term': search_term,
+        'date_received_min': date_received_min,
+        'date_received_max': date_received_max,
+        'company': company,
+        'product': product,
+        'issue': issue,
+        'state': state,
+        'has_narrative': has_narrative,
+        'company_response': company_response,
+        'company_public_response': company_public_response,
+        'consumer_disputed': consumer_disputed,
+        'tags': tags,
+        'submitted_via': submitted_via,
+        'timely': timely,
+        'zip_code': zip_code,
     }
 
     if lens:
-        api_params["lens"] = lens
+        api_params['lens'] = lens
     if sub_lens:
-        api_params["sub_lens"] = sub_lens
+        api_params['sub_lens'] = sub_lens
     if chart_type:
-        api_params["chartType"] = chart_type
+        api_params['chartType'] = chart_type
     if date_interval:
-        api_params["trend_interval"] = date_interval.lower()
+        api_params['trend_interval'] = date_interval.lower()
 
     return build_deeplink_url(api_params, tab=tab)
 
 
 def generate_citations(
     *,
-    context_type: Literal["search", "trends", "geo", "suggest", "document"],
-    total_hits: Optional[int] = None,
-    complaint_id: Optional[str] = None,
-    lens: Optional[str] = None,
+    context_type: Literal['search', 'trends', 'geo', 'suggest', 'document'],
+    total_hits: int | None = None,
+    complaint_id: str | None = None,
+    lens: str | None = None,
     **params: Any,
-) -> List[Dict[str, str]]:
+) -> list[dict[str, str]]:
     """Generate citation URLs for MCP responses (Phase 4.6).
 
     Returns a list of citation objects with type, URL, and description.
@@ -752,7 +716,7 @@ def generate_citations(
     - geo → tab=Map
     - document → direct link (if available)
     """
-    citations: List[Dict[str, str]] = []
+    citations: list[dict[str, str]] = []
 
     # Extract common filters from params
     filter_params = {
@@ -760,81 +724,79 @@ def generate_citations(
         for k, v in params.items()
         if k
         in {
-            "search_term",
-            "date_received_min",
-            "date_received_max",
-            "company",
-            "product",
-            "issue",
-            "state",
-            "has_narrative",
-            "company_response",
-            "company_public_response",
-            "consumer_disputed",
-            "tags",
-            "submitted_via",
-            "timely",
-            "zip_code",
+            'search_term',
+            'date_received_min',
+            'date_received_max',
+            'company',
+            'product',
+            'issue',
+            'state',
+            'has_narrative',
+            'company_response',
+            'company_public_response',
+            'consumer_disputed',
+            'tags',
+            'submitted_via',
+            'timely',
+            'zip_code',
         }
     }
 
-    if context_type == "search":
+    if context_type == 'search':
         # List view citation
-        url = build_deeplink_url(filter_params, tab="List")
-        desc = "View these matching complaint(s) on CFPB.gov"
+        url = build_deeplink_url(filter_params, tab='List')
+        desc = 'View these matching complaint(s) on CFPB.gov'
         if total_hits is not None and isinstance(total_hits, int):
-            desc = f"View all {total_hits:,} matching complaint(s) on CFPB.gov"
-        citations.append({"type": "search_results", "url": url, "description": desc})
+            desc = f'View all {total_hits:,} matching complaint(s) on CFPB.gov'
+        citations.append({'type': 'search_results', 'url': url, 'description': desc})
 
-    elif context_type == "trends":
+    elif context_type == 'trends':
         # Trends chart citation
         trend_params = {
             **filter_params,
-            "lens": lens or "Overview",
-            "chartType": "line",
-            "trend_interval": "month",
+            'lens': lens or 'Overview',
+            'chartType': 'line',
+            'trend_interval': 'month',
         }
-        url = build_deeplink_url(trend_params, tab="Trends")
+        url = build_deeplink_url(trend_params, tab='Trends')
         citations.append(
             {
-                "type": "trends_chart",
-                "url": url,
-                "description": "Interactive trends chart on CFPB.gov",
+                'type': 'trends_chart',
+                'url': url,
+                'description': 'Interactive trends chart on CFPB.gov',
             }
         )
 
-    elif context_type == "geo":
+    elif context_type == 'geo':
         # Map view citation
-        url = build_deeplink_url(filter_params, tab="Map")
+        url = build_deeplink_url(filter_params, tab='Map')
         citations.append(
             {
-                "type": "geographic_map",
-                "url": url,
-                "description": "Interactive geographic map on CFPB.gov",
+                'type': 'geographic_map',
+                'url': url,
+                'description': 'Interactive geographic map on CFPB.gov',
             }
         )
 
-    elif context_type == "document" and complaint_id:
+    elif context_type == 'document' and complaint_id:
         # Individual complaint (List view is best we can do without complaint-specific URLs)
-        base_url = (
-            "https://www.consumerfinance.gov/data-research/consumer-complaints/search/"
-        )
+        base_url = 'https://www.consumerfinance.gov/data-research/consumer-complaints/search/'
         citations.append(
             {
-                "type": "complaint_detail",
-                "url": f"{base_url}?tab=List",
-                "description": f"Search for complaint {complaint_id} on CFPB.gov",
+                'type': 'complaint_detail',
+                'url': f'{base_url}?tab=List',
+                'description': f'Search for complaint {complaint_id} on CFPB.gov',
             }
         )
 
     # For all contexts except document-only, add a list view if not already present
-    if context_type in {"trends", "geo"} and filter_params:
-        list_url = build_deeplink_url(filter_params, tab="List")
+    if context_type in {'trends', 'geo'} and filter_params:
+        list_url = build_deeplink_url(filter_params, tab='List')
         citations.append(
             {
-                "type": "search_results",
-                "url": list_url,
-                "description": "Browse matching complaints on CFPB.gov",
+                'type': 'search_results',
+                'url': list_url,
+                'description': 'Browse matching complaints on CFPB.gov',
             }
         )
 
@@ -842,7 +804,7 @@ def generate_citations(
 
 
 async def screenshot_cfpb_ui(
-    browser: Optional[Browser],
+    browser: Browser | None,
     url: str,
     *,
     wait_for_charts: bool = True,
@@ -853,55 +815,56 @@ async def screenshot_cfpb_ui(
     Returns PNG image bytes.
     Raises HTTPException(503) if Playwright is unavailable.
     """
-
     if browser is None:
         raise HTTPException(
             status_code=503,
-            detail="Screenshot service unavailable (Playwright not initialized)",
+            detail=SCREENSHOT_UNAVAILABLE_DETAIL,
         )
 
     context = await browser.new_context(
-        viewport={"width": 890, "height": 1080},
-        user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        viewport={'width': 890, 'height': 1080},
+        user_agent=(
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 '
+            '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        ),
     )
 
     try:
         page = await context.new_page()
-        await page.goto(url, timeout=timeout, wait_until="networkidle")
+        await page.goto(url, timeout=timeout, wait_until='networkidle')
 
         # If we expect charts, give D3/visualization time to render.
         if wait_for_charts:
             await page.wait_for_timeout(3000)
 
         # Hide the tour button that covers part of the legend
-        try:
-            await page.evaluate("""
+        with suppress(Exception):
+            await page.evaluate(
+                """
                 const tourButton = document.querySelector('button.tour-button');
                 if (tourButton) {
                     tourButton.style.display = 'none';
                 }
-            """)
-        except Exception:
-            pass  # If button doesn't exist, continue anyway
+                """
+            )
 
         # Debug: Save the page HTML to inspect structure
-        import os
-
-        if os.getenv("DEBUG_CFPB_UI"):
+        if os.getenv('DEBUG_CFPB_UI'):
             html_content = await page.content()
-            debug_path = "/tmp/cfpb_page_debug.html"
-            with open(debug_path, "w") as f:
-                f.write(html_content)
-            print(f"[DEBUG] Saved page HTML to {debug_path}")
+            with tempfile.NamedTemporaryFile(prefix='cfpb_page_debug_', suffix='.html', delete=False) as tmp:
+                debug_path = Path(tmp.name)
+
+            debug_path.write_text(html_content, encoding='utf-8')
+            print(f'[DEBUG] Saved page HTML to {debug_path}')
 
         # Try multiple possible selectors for the chart area
         # The CFPB dashboard uses Britecharts D3 library
         chart_selectors = [
-            ".layout-row:has(section.chart)",  # Parent div containing chart and legend
-            "section.chart",  # The main chart section (fallback)
-            ".chart-wrapper",  # Chart wrapper div
-            "#line-chart",  # Line chart container
-            ".trends-panel",  # The entire trends panel section (last resort)
+            '.layout-row:has(section.chart)',  # Parent div containing chart and legend
+            'section.chart',  # The main chart section (fallback)
+            '.chart-wrapper',  # Chart wrapper div
+            '#line-chart',  # Line chart container
+            '.trends-panel',  # The entire trends panel section (last resort)
         ]
 
         for selector in chart_selectors:
@@ -910,27 +873,19 @@ async def screenshot_cfpb_ui(
                 if chart_element:
                     # Check if element is visible and has reasonable dimensions
                     box = await chart_element.bounding_box()
-                    print(
-                        f"[DEBUG] Testing selector '{selector}': found={chart_element is not None}, box={box}"
-                    )
-                    if box and box["width"] > 400 and box["height"] > 300:
-                        print(
-                            f"[DEBUG] ✓ Using chart selector: {selector}, size: {box['width']}x{box['height']}"
-                        )
-                        screenshot_bytes = await chart_element.screenshot(type="png")
-                        return screenshot_bytes
-                    elif box:
-                        print(
-                            f"[DEBUG] ✗ Element too small: {box['width']}x{box['height']}"
-                        )
+                    print(f"[DEBUG] Testing selector '{selector}': found={chart_element is not None}, box={box}")
+                    if box and box['width'] > CHART_MIN_WIDTH and box['height'] > CHART_MIN_HEIGHT:
+                        print(f'[DEBUG] ✓ Using chart selector: {selector}, size: {box["width"]}x{box["height"]}')
+                        return await chart_element.screenshot(type='png')
+                    if box:
+                        print(f'[DEBUG] ✗ Element too small: {box["width"]}x{box["height"]}')
             except Exception as e:
-                print(f"[DEBUG] Selector {selector} failed: {e}")
+                print(f'[DEBUG] Selector {selector} failed: {e}')
                 continue
 
         # Fallback: Take full page screenshot
-        print("[DEBUG] No suitable chart element found, taking full page screenshot")
-        screenshot_bytes = await page.screenshot(type="png", full_page=True)
-        return screenshot_bytes
+        print('[DEBUG] No suitable chart element found, taking full page screenshot')
+        return await page.screenshot(type='png', full_page=True)
 
     finally:
         await context.close()
@@ -943,38 +898,38 @@ async def screenshot_cfpb_ui(
 
 @server.tool()
 async def search_complaints(
-    search_term: Optional[str] = None,
-    field: SearchField = "complaint_what_happened",
+    search_term: str | None = None,
+    field: SearchField = 'complaint_what_happened',
     size: int = 10,
     from_index: int = 0,
-    sort: SearchSort = "relevance_desc",
-    search_after: Optional[str] = None,
+    sort: SearchSort = 'relevance_desc',
+    search_after: str | None = None,
     no_highlight: bool = False,
-    company: Optional[List[str]] = None,
-    company_public_response: Optional[List[str]] = None,
-    company_response: Optional[List[str]] = None,
-    consumer_consent_provided: Optional[List[str]] = None,
-    consumer_disputed: Optional[List[str]] = None,
-    date_received_min: Optional[str] = None,
-    date_received_max: Optional[str] = None,
-    company_received_min: Optional[str] = None,
-    company_received_max: Optional[str] = None,
-    has_narrative: Optional[List[str]] = None,
-    issue: Optional[List[str]] = None,
-    product: Optional[List[str]] = None,
-    state: Optional[List[str]] = None,
-    submitted_via: Optional[List[str]] = None,
-    tags: Optional[List[str]] = None,
-    timely: Optional[List[str]] = None,
-    zip_code: Optional[List[str]] = None,
+    company: list[str] | None = None,
+    company_public_response: list[str] | None = None,
+    company_response: list[str] | None = None,
+    consumer_consent_provided: list[str] | None = None,
+    consumer_disputed: list[str] | None = None,
+    date_received_min: str | None = None,
+    date_received_max: str | None = None,
+    company_received_min: str | None = None,
+    company_received_max: str | None = None,
+    has_narrative: list[str] | None = None,
+    issue: list[str] | None = None,
+    product: list[str] | None = None,
+    state: list[str] | None = None,
+    submitted_via: list[str] | None = None,
+    tags: list[str] | None = None,
+    timely: list[str] | None = None,
+    zip_code: list[str] | None = None,
 ) -> Any:
     """Search the Consumer Complaint Database."""
     data = await search_logic(
-        size,
-        from_index,
-        sort,
-        search_after,
-        no_highlight,
+        size=size,
+        from_index=from_index,
+        sort=sort,
+        search_after=search_after,
+        no_highlight=no_highlight,
         search_term=search_term,
         field=field,
         company=company,
@@ -997,9 +952,9 @@ async def search_complaints(
     )
 
     # Phase 4.6: Add citation URLs
-    total_hits = data.get("hits", {}).get("total") if isinstance(data, dict) else None
+    total_hits = data.get('hits', {}).get('total') if isinstance(data, dict) else None
     citations = generate_citations(
-        context_type="search",
+        context_type='search',
         total_hits=total_hits,
         search_term=search_term,
         date_received_min=date_received_min,
@@ -1018,36 +973,36 @@ async def search_complaints(
         zip_code=zip_code,
     )
 
-    return {"data": data, "citations": citations}
+    return {'data': data, 'citations': citations}
 
 
 @server.tool()
 async def list_complaint_trends(
-    lens: str = "overview",
-    trend_interval: str = "month",
+    lens: str = 'overview',
+    trend_interval: str = 'month',
     trend_depth: int = 5,
-    sub_lens: Optional[str] = None,
+    sub_lens: str | None = None,
     sub_lens_depth: int = 5,
-    focus: Optional[str] = None,
-    search_term: Optional[str] = None,
-    field: SearchField = "complaint_what_happened",
-    company: Optional[List[str]] = None,
-    company_public_response: Optional[List[str]] = None,
-    company_response: Optional[List[str]] = None,
-    consumer_consent_provided: Optional[List[str]] = None,
-    consumer_disputed: Optional[List[str]] = None,
-    date_received_min: Optional[str] = None,
-    date_received_max: Optional[str] = None,
-    company_received_min: Optional[str] = None,
-    company_received_max: Optional[str] = None,
-    has_narrative: Optional[List[str]] = None,
-    issue: Optional[List[str]] = None,
-    product: Optional[List[str]] = None,
-    state: Optional[List[str]] = None,
-    submitted_via: Optional[List[str]] = None,
-    tags: Optional[List[str]] = None,
-    timely: Optional[List[str]] = None,
-    zip_code: Optional[List[str]] = None,
+    focus: str | None = None,
+    search_term: str | None = None,
+    field: SearchField = 'complaint_what_happened',
+    company: list[str] | None = None,
+    company_public_response: list[str] | None = None,
+    company_response: list[str] | None = None,
+    consumer_consent_provided: list[str] | None = None,
+    consumer_disputed: list[str] | None = None,
+    date_received_min: str | None = None,
+    date_received_max: str | None = None,
+    company_received_min: str | None = None,
+    company_received_max: str | None = None,
+    has_narrative: list[str] | None = None,
+    issue: list[str] | None = None,
+    product: list[str] | None = None,
+    state: list[str] | None = None,
+    submitted_via: list[str] | None = None,
+    tags: list[str] | None = None,
+    timely: list[str] | None = None,
+    zip_code: list[str] | None = None,
 ) -> Any:
     """Get aggregated trend data for complaints over time."""
     data = await trends_logic(
@@ -1080,7 +1035,7 @@ async def list_complaint_trends(
 
     # Phase 4.6: Add citation URLs
     citations = generate_citations(
-        context_type="trends",
+        context_type='trends',
         lens=lens,
         search_term=search_term,
         date_received_min=date_received_min,
@@ -1099,30 +1054,30 @@ async def list_complaint_trends(
         zip_code=zip_code,
     )
 
-    return {"data": data, "citations": citations}
+    return {'data': data, 'citations': citations}
 
 
 @server.tool()
 async def get_state_aggregations(
-    search_term: Optional[str] = None,
-    field: SearchField = "complaint_what_happened",
-    company: Optional[List[str]] = None,
-    company_public_response: Optional[List[str]] = None,
-    company_response: Optional[List[str]] = None,
-    consumer_consent_provided: Optional[List[str]] = None,
-    consumer_disputed: Optional[List[str]] = None,
-    date_received_min: Optional[str] = None,
-    date_received_max: Optional[str] = None,
-    company_received_min: Optional[str] = None,
-    company_received_max: Optional[str] = None,
-    has_narrative: Optional[List[str]] = None,
-    issue: Optional[List[str]] = None,
-    product: Optional[List[str]] = None,
-    state: Optional[List[str]] = None,
-    submitted_via: Optional[List[str]] = None,
-    tags: Optional[List[str]] = None,
-    timely: Optional[List[str]] = None,
-    zip_code: Optional[List[str]] = None,
+    search_term: str | None = None,
+    field: SearchField = 'complaint_what_happened',
+    company: list[str] | None = None,
+    company_public_response: list[str] | None = None,
+    company_response: list[str] | None = None,
+    consumer_consent_provided: list[str] | None = None,
+    consumer_disputed: list[str] | None = None,
+    date_received_min: str | None = None,
+    date_received_max: str | None = None,
+    company_received_min: str | None = None,
+    company_received_max: str | None = None,
+    has_narrative: list[str] | None = None,
+    issue: list[str] | None = None,
+    product: list[str] | None = None,
+    state: list[str] | None = None,
+    submitted_via: list[str] | None = None,
+    tags: list[str] | None = None,
+    timely: list[str] | None = None,
+    zip_code: list[str] | None = None,
 ) -> Any:
     """Get complaint counts aggregated by US State."""
     data = await geo_logic(
@@ -1149,7 +1104,7 @@ async def get_state_aggregations(
 
     # Phase 4.6: Add citation URLs
     citations = generate_citations(
-        context_type="geo",
+        context_type='geo',
         search_term=search_term,
         date_received_min=date_received_min,
         date_received_max=date_received_max,
@@ -1167,7 +1122,7 @@ async def get_state_aggregations(
         zip_code=zip_code,
     )
 
-    return {"data": data, "citations": citations}
+    return {'data': data, 'citations': citations}
 
 
 @server.tool()
@@ -1178,7 +1133,7 @@ async def get_complaint_document(complaint_id: str) -> Any:
 
 @server.tool()
 async def suggest_filter_values(
-    field: Literal["company", "zip_code"],
+    field: Literal['company', 'zip_code'],
     text: str,
     size: int = 10,
 ) -> Any:
@@ -1188,15 +1143,15 @@ async def suggest_filter_values(
 
 @server.tool()
 async def generate_cfpb_dashboard_url(
-    search_term: Optional[str] = None,
-    date_received_min: Optional[str] = None,
-    date_received_max: Optional[str] = None,
-    company: Optional[List[str]] = None,
-    product: Optional[List[str]] = None,
-    issue: Optional[List[str]] = None,
-    state: Optional[List[str]] = None,
-    has_narrative: Optional[str] = None,
-    company_response: Optional[List[str]] = None,
+    search_term: str | None = None,
+    date_received_min: str | None = None,
+    date_received_max: str | None = None,
+    company: list[str] | None = None,
+    product: list[str] | None = None,
+    issue: list[str] | None = None,
+    state: list[str] | None = None,
+    has_narrative: str | None = None,
+    company_response: list[str] | None = None,
 ) -> str:
     """Generate a deep-link URL to the official CFPB consumer complaints dashboard.
 
@@ -1224,34 +1179,34 @@ async def generate_cfpb_dashboard_url(
 
 @server.tool()
 async def capture_cfpb_chart_screenshot(
-    search_term: Optional[str] = None,
-    date_received_min: Optional[str] = None,
-    date_received_max: Optional[str] = None,
-    product: Optional[List[str]] = None,
-    issue: Optional[List[str]] = None,
-    state: Optional[List[str]] = None,
-    company: Optional[List[str]] = None,
-    lens: str = "Product",
-    chart_type: str = "line",
-    date_interval: str = "Month",
+    search_term: str | None = None,
+    date_received_min: str | None = None,
+    date_received_max: str | None = None,
+    product: list[str] | None = None,
+    issue: list[str] | None = None,
+    state: list[str] | None = None,
+    company: list[str] | None = None,
+    lens: str = 'Product',
+    chart_type: str = 'line',
+    date_interval: str = 'Month',
 ) -> str:
     """Capture a screenshot of the official CFPB trends chart as a PNG image."""
-    if not getattr(app.state, "browser", None):
-        raise RuntimeError("Playwright browser unavailable for screenshots.")
+    if not getattr(app.state, 'browser', None):
+        raise HTTPException(status_code=503, detail=SCREENSHOT_UNAVAILABLE_DETAIL)
 
-    api_params: Dict[str, Any] = {
-        "lens": lens,
-        "chartType": chart_type,
-        "trend_interval": date_interval.lower(),
-        "search_term": search_term,
-        "date_received_min": date_received_min,
-        "date_received_max": date_received_max,
-        "product": product,
-        "issue": issue,
-        "state": state,
-        "company": company,
+    api_params: dict[str, Any] = {
+        'lens': lens,
+        'chartType': chart_type,
+        'trend_interval': date_interval.lower(),
+        'search_term': search_term,
+        'date_received_min': date_received_min,
+        'date_received_max': date_received_max,
+        'product': product,
+        'issue': issue,
+        'state': state,
+        'company': company,
     }
-    url = build_deeplink_url(api_params, tab="Trends")
+    url = build_deeplink_url(api_params, tab='Trends')
 
     screenshot_bytes = await screenshot_cfpb_ui(
         app.state.browser,
@@ -1259,35 +1214,35 @@ async def capture_cfpb_chart_screenshot(
         wait_for_charts=True,
     )
 
-    return base64.b64encode(screenshot_bytes).decode("utf-8")
+    return base64.b64encode(screenshot_bytes).decode('utf-8')
 
 
 @server.tool()
 async def get_overall_trend_signals(
-    lens: str = "overview",
-    trend_interval: str = "month",
+    lens: str = 'overview',
+    trend_interval: str = 'month',
     trend_depth: int = 24,
     baseline_window: int = 8,
     min_baseline_mean: float = 10.0,
-    date_received_min: Optional[str] = None,
-    date_received_max: Optional[str] = None,
-    search_term: Optional[str] = None,
-    field: SearchField = "complaint_what_happened",
-    company: Optional[List[str]] = None,
-    company_public_response: Optional[List[str]] = None,
-    company_response: Optional[List[str]] = None,
-    consumer_consent_provided: Optional[List[str]] = None,
-    consumer_disputed: Optional[List[str]] = None,
-    company_received_min: Optional[str] = None,
-    company_received_max: Optional[str] = None,
-    has_narrative: Optional[List[str]] = None,
-    issue: Optional[List[str]] = None,
-    product: Optional[List[str]] = None,
-    state: Optional[List[str]] = None,
-    submitted_via: Optional[List[str]] = None,
-    tags: Optional[List[str]] = None,
-    timely: Optional[List[str]] = None,
-    zip_code: Optional[List[str]] = None,
+    date_received_min: str | None = None,
+    date_received_max: str | None = None,
+    search_term: str | None = None,
+    field: SearchField = 'complaint_what_happened',
+    company: list[str] | None = None,
+    company_public_response: list[str] | None = None,
+    company_response: list[str] | None = None,
+    consumer_consent_provided: list[str] | None = None,
+    consumer_disputed: list[str] | None = None,
+    company_received_min: str | None = None,
+    company_received_max: str | None = None,
+    has_narrative: list[str] | None = None,
+    issue: list[str] | None = None,
+    product: list[str] | None = None,
+    state: list[str] | None = None,
+    submitted_via: list[str] | None = None,
+    tags: list[str] | None = None,
+    timely: list[str] | None = None,
+    zip_code: list[str] | None = None,
 ) -> Any:
     """Compute simple spike/velocity signals from upstream overall trends buckets."""
     payload = await trends_logic(
@@ -1319,15 +1274,15 @@ async def get_overall_trend_signals(
     )
     points = _drop_current_month(_extract_overall_points(payload))
     return {
-        "params": {
-            "lens": lens,
-            "trend_interval": trend_interval,
-            "trend_depth": trend_depth,
-            "date_received_min": date_received_min,
-            "date_received_max": date_received_max,
+        'params': {
+            'lens': lens,
+            'trend_interval': trend_interval,
+            'trend_depth': trend_depth,
+            'date_received_min': date_received_min,
+            'date_received_max': date_received_max,
         },
-        "signals": {
-            "overall": _compute_simple_signals(
+        'signals': {
+            'overall': _compute_simple_signals(
                 points,
                 baseline_window=baseline_window,
                 min_baseline_mean=min_baseline_mean,
@@ -1338,33 +1293,33 @@ async def get_overall_trend_signals(
 
 @server.tool()
 async def rank_group_spikes(
-    group: Literal["product", "issue"],
-    lens: str = "overview",
-    trend_interval: str = "month",
+    group: Literal['product', 'issue'],
+    lens: str = 'overview',
+    trend_interval: str = 'month',
     trend_depth: int = 12,
     sub_lens_depth: int = 10,
     top_n: int = 10,
     baseline_window: int = 8,
     min_baseline_mean: float = 10.0,
-    date_received_min: Optional[str] = None,
-    date_received_max: Optional[str] = None,
-    search_term: Optional[str] = None,
-    field: SearchField = "complaint_what_happened",
-    company: Optional[List[str]] = None,
-    company_public_response: Optional[List[str]] = None,
-    company_response: Optional[List[str]] = None,
-    consumer_consent_provided: Optional[List[str]] = None,
-    consumer_disputed: Optional[List[str]] = None,
-    company_received_min: Optional[str] = None,
-    company_received_max: Optional[str] = None,
-    has_narrative: Optional[List[str]] = None,
-    issue: Optional[List[str]] = None,
-    product: Optional[List[str]] = None,
-    state: Optional[List[str]] = None,
-    submitted_via: Optional[List[str]] = None,
-    tags: Optional[List[str]] = None,
-    timely: Optional[List[str]] = None,
-    zip_code: Optional[List[str]] = None,
+    date_received_min: str | None = None,
+    date_received_max: str | None = None,
+    search_term: str | None = None,
+    field: SearchField = 'complaint_what_happened',
+    company: list[str] | None = None,
+    company_public_response: list[str] | None = None,
+    company_response: list[str] | None = None,
+    consumer_consent_provided: list[str] | None = None,
+    consumer_disputed: list[str] | None = None,
+    company_received_min: str | None = None,
+    company_received_max: str | None = None,
+    has_narrative: list[str] | None = None,
+    issue: list[str] | None = None,
+    product: list[str] | None = None,
+    state: list[str] | None = None,
+    submitted_via: list[str] | None = None,
+    tags: list[str] | None = None,
+    timely: list[str] | None = None,
+    zip_code: list[str] | None = None,
 ) -> Any:
     """Rank group values (e.g., products or issues) by latest-bucket spike."""
     payload = await trends_logic(
@@ -1396,77 +1351,75 @@ async def rank_group_spikes(
     )
 
     series = _extract_group_series(payload, group)
-    scored: List[Dict[str, Any]] = []
+    scored: list[dict[str, Any]] = []
     for s in series:
-        points = _drop_current_month(s.get("points") or [])
-        signals = _compute_simple_signals(
-            points, baseline_window=baseline_window, min_baseline_mean=min_baseline_mean
-        )
-        if "error" in signals:
+        points = _drop_current_month(s.get('points') or [])
+        signals = _compute_simple_signals(points, baseline_window=baseline_window, min_baseline_mean=min_baseline_mean)
+        if 'error' in signals:
             continue
         scored.append(
             {
-                "group": s.get("group"),
-                "doc_count": s.get("doc_count"),
+                'group': s.get('group'),
+                'doc_count': s.get('doc_count'),
                 **signals,
             }
         )
 
     scored.sort(
         key=lambda r: (
-            (r.get("signals", {}).get("last_vs_baseline", {}).get("z") is None),
-            r.get("signals", {}).get("last_vs_baseline", {}).get("z") or float("-inf"),
+            (r.get('signals', {}).get('last_vs_baseline', {}).get('z') is None),
+            r.get('signals', {}).get('last_vs_baseline', {}).get('z') or float('-inf'),
         ),
         reverse=True,
     )
 
     return {
-        "params": {
-            "group": group,
-            "lens": lens,
-            "trend_interval": trend_interval,
-            "trend_depth": trend_depth,
-            "sub_lens_depth": sub_lens_depth,
-            "top_n": top_n,
-            "date_received_min": date_received_min,
-            "date_received_max": date_received_max,
+        'params': {
+            'group': group,
+            'lens': lens,
+            'trend_interval': trend_interval,
+            'trend_depth': trend_depth,
+            'sub_lens_depth': sub_lens_depth,
+            'top_n': top_n,
+            'date_received_min': date_received_min,
+            'date_received_max': date_received_max,
         },
-        "results": scored[:top_n],
+        'results': scored[:top_n],
     }
 
 
 @server.tool()
 async def rank_company_spikes(
-    lens: str = "overview",
-    trend_interval: str = "month",
+    lens: str = 'overview',
+    trend_interval: str = 'month',
     trend_depth: int = 12,
     top_n: int = 10,
     baseline_window: int = 8,
     min_baseline_mean: float = 25.0,
-    date_received_min: Optional[str] = None,
-    date_received_max: Optional[str] = None,
-    search_term: Optional[str] = None,
-    field: SearchField = "complaint_what_happened",
-    company_public_response: Optional[List[str]] = None,
-    company_response: Optional[List[str]] = None,
-    consumer_consent_provided: Optional[List[str]] = None,
-    consumer_disputed: Optional[List[str]] = None,
-    company_received_min: Optional[str] = None,
-    company_received_max: Optional[str] = None,
-    has_narrative: Optional[List[str]] = None,
-    issue: Optional[List[str]] = None,
-    product: Optional[List[str]] = None,
-    state: Optional[List[str]] = None,
-    submitted_via: Optional[List[str]] = None,
-    tags: Optional[List[str]] = None,
-    timely: Optional[List[str]] = None,
-    zip_code: Optional[List[str]] = None,
+    date_received_min: str | None = None,
+    date_received_max: str | None = None,
+    search_term: str | None = None,
+    field: SearchField = 'complaint_what_happened',
+    company_public_response: list[str] | None = None,
+    company_response: list[str] | None = None,
+    consumer_consent_provided: list[str] | None = None,
+    consumer_disputed: list[str] | None = None,
+    company_received_min: str | None = None,
+    company_received_max: str | None = None,
+    has_narrative: list[str] | None = None,
+    issue: list[str] | None = None,
+    product: list[str] | None = None,
+    state: list[str] | None = None,
+    submitted_via: list[str] | None = None,
+    tags: list[str] | None = None,
+    timely: list[str] | None = None,
+    zip_code: list[str] | None = None,
 ) -> Any:
     """Pipeline-style company spikes: search aggs -> top companies -> trends per company -> rank."""
     search_payload = await search_logic(
         size=0,
         from_index=0,
-        sort="created_date_desc",
+        sort='created_date_desc',
         search_after=None,
         no_highlight=True,
         search_term=search_term,
@@ -1491,7 +1444,7 @@ async def rank_company_spikes(
     )
 
     top_companies = _company_buckets_from_search(search_payload)[:top_n]
-    results: List[Dict[str, Any]] = []
+    results: list[dict[str, Any]] = []
     for company, company_doc_count in top_companies:
         trends_payload = await trends_logic(
             lens,
@@ -1521,42 +1474,30 @@ async def rank_company_spikes(
             zip_code=zip_code,
         )
         points = _drop_current_month(_extract_overall_points(trends_payload))
-        signals = _compute_simple_signals(
-            points, baseline_window=baseline_window, min_baseline_mean=min_baseline_mean
-        )
+        signals = _compute_simple_signals(points, baseline_window=baseline_window, min_baseline_mean=min_baseline_mean)
         results.append(
             {
-                "company": company,
-                "company_doc_count": company_doc_count,
-                "computed": signals,
+                'company': company,
+                'company_doc_count': company_doc_count,
+                'computed': signals,
             }
         )
 
     results.sort(
         key=lambda r: (
-            (
-                r.get("computed", {})
-                .get("signals", {})
-                .get("last_vs_baseline", {})
-                .get("z")
-                is None
-            ),
-            r.get("computed", {})
-            .get("signals", {})
-            .get("last_vs_baseline", {})
-            .get("z")
-            or float("-inf"),
+            (r.get('computed', {}).get('signals', {}).get('last_vs_baseline', {}).get('z') is None),
+            r.get('computed', {}).get('signals', {}).get('last_vs_baseline', {}).get('z') or float('-inf'),
         ),
         reverse=True,
     )
 
     return {
-        "date_filters": {
-            "date_received_min": date_received_min,
-            "date_received_max": date_received_max,
+        'date_filters': {
+            'date_received_min': date_received_min,
+            'date_received_max': date_received_max,
         },
-        "ranking": "last bucket vs baseline z-score",
-        "results": results,
+        'ranking': 'last bucket vs baseline z-score',
+        'results': results,
     }
 
 
@@ -1570,30 +1511,62 @@ async def rank_company_spikes(
 
 _http_app = server.streamable_http_app()
 
-class HttpMCPHandler:
-    def __init__(self, app):
-        self.app = app
 
-    async def __call__(self, scope, receive, send):
-        """Pass request to Streamable HTTP app without rewriting path (it expects /mcp)."""
-        await self.app(scope, receive, send)
+async def mcp_http(request: Request) -> Response:
+    """Proxy requests into the FastMCP streamable HTTP app."""
+    body = await request.body()
+    scope = request.scope
+    status_code: int | None = None
+    response_headers: list[tuple[bytes, bytes]] = []
+    chunks: list[bytes] = []
+    sent_body = False
+
+    async def receive() -> Message:
+        nonlocal sent_body
+        if sent_body:
+            return {'type': 'http.request', 'body': b'', 'more_body': False}
+        sent_body = True
+        return {'type': 'http.request', 'body': body, 'more_body': False}
+
+    async def send(message: Message) -> None:
+        nonlocal status_code, response_headers
+        msg_type = message.get('type')
+        if msg_type == 'http.response.start':
+            status_code = int(message.get('status', 200))
+            raw = message.get('headers', [])
+            if isinstance(raw, list):
+                response_headers = [(bytes(k), bytes(v)) for k, v in raw]
+        elif msg_type == 'http.response.body':
+            body_part = message.get('body', b'')
+            if isinstance(body_part, (bytes, bytearray)):
+                chunks.append(bytes(body_part))
+
+    await _http_app(scope, receive, send)
+
+    return Response(
+        content=b''.join(chunks),
+        status_code=status_code or 200,
+        headers={k.decode('latin-1'): v.decode('latin-1') for k, v in response_headers},
+    )
+
 
 # Streamable HTTP: POST /mcp
-app.add_route("/mcp", HttpMCPHandler(_http_app), methods=["POST"])
+app.add_api_route('/mcp', mcp_http, methods=['POST'], include_in_schema=False)
 
 
-@app.get("/", include_in_schema=False)
-async def root() -> Dict[str, Any]:
+@app.get('/', include_in_schema=False)
+async def root() -> dict[str, Any]:
+    """Return a minimal health payload."""
     return {
-        "name": "cfpb-mcp",
-        "message": "CFPB MCP server is running (dev update 2).",
-        "mcp": {
-            "http": "/mcp",
+        'name': 'cfpb-mcp',
+        'message': 'CFPB MCP server is running (dev update 2).',
+        'mcp': {
+            'http': '/mcp',
         },
     }
 
 
-if __name__ == "__main__":
-    host = os.getenv("CFPB_MCP_HOST", "127.0.0.1")
-    port = int(os.getenv("PORT", "8000"))
+if __name__ == '__main__':
+    host = os.getenv('CFPB_MCP_HOST', '127.0.0.1')
+    port = int(os.getenv('PORT', '8000'))
     uvicorn.run(app, host=host, port=port)

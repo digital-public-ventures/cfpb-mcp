@@ -36,6 +36,8 @@
 * Python 3.10+, PEP 8, 4-space indentation.
 * Prefer explicit type hints and `Optional`/`Literal` as used in `server.py`.
 * Keep shared logic transport-agnostic; reuse helpers across REST and MCP tools.
+* Keep `server.py` per-file ignores minimal and documented in `ruff.toml`.
+* Prefer narrow exception handling; reserve broad `Exception` for best-effort cleanup.
 
 ### Testing expectations
 

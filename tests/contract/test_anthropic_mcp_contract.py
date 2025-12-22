@@ -1,5 +1,5 @@
-import os
 import json
+import os
 import re
 from typing import Any, cast
 
@@ -12,25 +12,25 @@ from anthropic.types import (
     ToolUseBlock,
 )
 from dotenv import load_dotenv
-
 from mcp.client.session import ClientSession
 from mcp.client.streamable_http import streamable_http_client
 
 load_dotenv()
 
+
 def _load_dotenv_if_present() -> None:
     """Load .env for local runs without requiring external tooling."""
-    env_path = os.path.join(os.getcwd(), ".env")
+    env_path = os.path.join(os.getcwd(), '.env')
     if not os.path.exists(env_path):
         return
 
     try:
-        with open(env_path, "r", encoding="utf-8") as f:
+        with open(env_path, encoding='utf-8') as f:
             for raw_line in f:
                 line = raw_line.strip()
-                if not line or line.startswith("#") or "=" not in line:
+                if not line or line.startswith('#') or '=' not in line:
                     continue
-                key, value = line.split("=", 1)
+                key, value = line.split('=', 1)
                 key = key.strip()
                 if not key or key in os.environ:
                     continue
@@ -42,17 +42,17 @@ def _load_dotenv_if_present() -> None:
 
 def _extract_text(blocks) -> str:
     if not isinstance(blocks, list):
-        return str(blocks or "")
+        return str(blocks or '')
     parts = []
     for b in blocks:
-        if getattr(b, "type", None) == "text" and hasattr(b, "text"):
-            parts.append(str(getattr(b, "text")))
-    return "\n".join([p for p in parts if p]).strip()
+        if getattr(b, 'type', None) == 'text' and hasattr(b, 'text'):
+            parts.append(str(b.text))
+    return '\n'.join([p for p in parts if p]).strip()
 
 
 def _tool_result_text(payload: Any) -> str:
     if payload is None:
-        return ""
+        return ''
     if isinstance(payload, str):
         return payload
     return json.dumps(payload, ensure_ascii=False, default=str)
@@ -69,25 +69,25 @@ def _coerce_json(payload: object) -> object:
 
 def _extract_company_from_document(doc: object) -> str:
     if not isinstance(doc, dict):
-        return ""
+        return ''
 
-    hits = doc.get("hits") if isinstance(doc.get("hits"), dict) else None
-    if hits and isinstance(hits.get("hits"), list) and hits["hits"]:
-        hit0 = hits["hits"][0] if isinstance(hits["hits"][0], dict) else {}
-        source = hit0.get("_source") if isinstance(hit0.get("_source"), dict) else {}
+    hits = doc.get('hits') if isinstance(doc.get('hits'), dict) else None
+    if hits and isinstance(hits.get('hits'), list) and hits['hits']:
+        hit0 = hits['hits'][0] if isinstance(hits['hits'][0], dict) else {}
+        source = hit0.get('_source') if isinstance(hit0.get('_source'), dict) else {}
     else:
-        source = doc.get("_source") if isinstance(doc.get("_source"), dict) else doc
+        source = doc.get('_source') if isinstance(doc.get('_source'), dict) else doc
 
     if not isinstance(source, dict):
-        return ""
+        return ''
 
-    company = source.get("company")
-    return str(company or "").strip()
+    company = source.get('company')
+    return str(company or '').strip()
 
 
 def _extract_complaint_id_from_text(text: str) -> tuple[int, str]:
-    matches = re.findall(r"\b\d{4,9}\b", text or "")
-    assert matches, "Expected a 4-9 digit integer token in the final response text"
+    matches = re.findall(r'\b\d{4,9}\b', text or '')
+    assert matches, 'Expected a 4-9 digit integer token in the final response text'
     token = max(matches, key=len)
     assert 4 <= len(token) <= 9
     return int(token), token
@@ -96,21 +96,21 @@ def _extract_complaint_id_from_text(text: str) -> tuple[int, str]:
 def _extract_complaint_id_from_search_payload(payload: object) -> int | None:
     if not isinstance(payload, dict):
         return None
-    data = payload.get("data") if isinstance(payload.get("data"), dict) else None
+    data = payload.get('data') if isinstance(payload.get('data'), dict) else None
     if not isinstance(data, dict):
         return None
-    hits = data.get("hits", {})
+    hits = data.get('hits', {})
     if not isinstance(hits, dict):
         return None
-    inner = hits.get("hits", [])
+    inner = hits.get('hits', [])
     if not isinstance(inner, list) or not inner:
         return None
     hit0 = inner[0] if isinstance(inner[0], dict) else None
     if not hit0:
         return None
-    cid = hit0.get("_id") or (
-        hit0.get("_source", {}) if isinstance(hit0.get("_source"), dict) else {}
-    ).get("complaint_id")
+    cid = hit0.get('_id') or (hit0.get('_source', {}) if isinstance(hit0.get('_source'), dict) else {}).get(
+        'complaint_id'
+    )
     if cid is None:
         return None
     try:
@@ -121,26 +121,27 @@ def _extract_complaint_id_from_search_payload(payload: object) -> int | None:
         return cid_int
     return None
 
+
 @pytest.mark.contract
 @pytest.mark.fast
 @pytest.mark.anyio
 async def test_anthropic_mcp_tool_loop_smoke(server_url: str) -> None:
     _load_dotenv_if_present()
 
-    api_key = os.getenv("ANTHROPIC_API_KEY")
+    api_key = os.getenv('ANTHROPIC_API_KEY')
     if not api_key:
-        pytest.skip("Missing ANTHROPIC_API_KEY")
+        pytest.skip('Missing ANTHROPIC_API_KEY')
 
     client = Anthropic(api_key=api_key)
-    model = os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5")
+    model = os.getenv('ANTHROPIC_MODEL', 'claude-haiku-4-5')
 
     # Use the Streamable HTTP endpoint
-    mcp_url = f"{server_url}/mcp"
+    mcp_url = f'{server_url}/mcp'
 
     user_prompt = (
         "I'm researching CFPB consumer complaints about loan forbearance. "
         "Please find a complaint mentioning 'forbearance' where the company name is present, then tell me the complaint id, "
-        "the company (if present), the state (if present), and a short 2-3 sentence summary grounded in the complaint. "
+        'the company (if present), the state (if present), and a short 2-3 sentence summary grounded in the complaint. '
         "If you can't use tools, say 'MCP tools unavailable'."
     )
 
@@ -158,22 +159,18 @@ async def test_anthropic_mcp_tool_loop_smoke(server_url: str) -> None:
             for t in tool_list.tools:
                 tools.append(
                     {
-                        "name": t.name,
-                        "description": t.description or "",
-                        "input_schema": t.inputSchema,
+                        'name': t.name,
+                        'description': t.description or '',
+                        'input_schema': t.inputSchema,
                     }
                 )
 
-            messages: list[MessageParam] = [{"role": "user", "content": user_prompt}]
+            messages: list[MessageParam] = [{'role': 'user', 'content': user_prompt}]
 
             for _ in range(10):
                 # Encourage at least one tool call so this behaves like a
                 # "first attempt" agent that must use MCP to answer.
-                tool_choice: ToolChoiceParam = (
-                    {"type": "any"}
-                    if complaint_id_from_tools is None
-                    else {"type": "auto"}
-                )
+                tool_choice: ToolChoiceParam = {'type': 'any'} if complaint_id_from_tools is None else {'type': 'auto'}
                 resp = client.messages.create(
                     model=model,
                     max_tokens=800,
@@ -182,14 +179,10 @@ async def test_anthropic_mcp_tool_loop_smoke(server_url: str) -> None:
                     messages=messages,
                 )
 
-                messages.append(
-                    cast(MessageParam, {"role": "assistant", "content": resp.content})
-                )
+                messages.append(cast('MessageParam', {'role': 'assistant', 'content': resp.content}))
 
                 # tool_uses = [c for c in resp.content if getattr(c, "type", None) == "tool_use"]
-                tool_uses: list[ToolUseBlock] = [
-                    c for c in resp.content if isinstance(c, ToolUseBlock)
-                ]
+                tool_uses: list[ToolUseBlock] = [c for c in resp.content if isinstance(c, ToolUseBlock)]
 
                 if not tool_uses:
                     # Some responses may contain only thinking/metadata blocks.
@@ -198,10 +191,10 @@ async def test_anthropic_mcp_tool_loop_smoke(server_url: str) -> None:
                         break
                     messages.append(
                         cast(
-                            MessageParam,
+                            'MessageParam',
                             {
-                                "role": "user",
-                                "content": "Please provide the final answer now (complaint id, company, state if present, and a 2-3 sentence grounded summary).",
+                                'role': 'user',
+                                'content': 'Please provide the final answer now (complaint id, company, state if present, and a 2-3 sentence grounded summary).',
                             },
                         )
                     )
@@ -213,48 +206,40 @@ async def test_anthropic_mcp_tool_loop_smoke(server_url: str) -> None:
                     # Capture complaint id from tool interactions, so the test doesn't
                     # depend on regex guessing from final prose.
                     if (
-                        tu.name == "get_complaint_document"
+                        tu.name == 'get_complaint_document'
                         and isinstance(tu.input, dict)
-                        and "complaint_id" in tu.input
+                        and 'complaint_id' in tu.input
                     ):
                         try:
-                            complaint_id_from_tools = int(str(tu.input["complaint_id"]))
+                            complaint_id_from_tools = int(str(tu.input['complaint_id']))
                         except ValueError:
                             complaint_id_from_tools = None
-                    elif tu.name == "search_complaints":
+                    elif tu.name == 'search_complaints':
                         payload = result.structuredContent or result.content
-                        cid = _extract_complaint_id_from_search_payload(
-                            _coerce_json(payload) or payload
-                        )
+                        cid = _extract_complaint_id_from_search_payload(_coerce_json(payload) or payload)
                         if cid is not None:
                             complaint_id_from_tools = cid
 
                     tool_payload = result.structuredContent or result.content
                     tool_block = cast(
-                        ToolResultBlockParam,
+                        'ToolResultBlockParam',
                         {
-                            "type": "tool_result",
-                            "tool_use_id": tu.id,
-                            "content": _tool_result_text(tool_payload),
+                            'type': 'tool_result',
+                            'tool_use_id': tu.id,
+                            'content': _tool_result_text(tool_payload),
                         },
                     )
-                    messages.append(
-                        cast(MessageParam, {"role": "user", "content": [tool_block]})
-                    )
+                    messages.append(cast('MessageParam', {'role': 'user', 'content': [tool_block]}))
 
-            last_assistant = next(
-                (m for m in reversed(messages) if m.get("role") == "assistant"), None
-            )
+            last_assistant = next((m for m in reversed(messages) if m.get('role') == 'assistant'), None)
             assert last_assistant is not None
-            text = _extract_text(last_assistant.get("content"))
+            text = _extract_text(last_assistant.get('content'))
             assert text
-            assert "MCP tools unavailable" not in text
+            assert 'MCP tools unavailable' not in text
 
             final_text = text
 
-            assert complaint_id_from_tools is not None, (
-                "Expected the agent to obtain a complaint id via tools"
-            )
+            assert complaint_id_from_tools is not None, 'Expected the agent to obtain a complaint id via tools'
             assert 4 <= len(str(complaint_id_from_tools)) <= 9
             assert str(complaint_id_from_tools) in text
 
@@ -264,8 +249,8 @@ async def test_anthropic_mcp_tool_loop_smoke(server_url: str) -> None:
             assert complaint_id == complaint_id_from_tools
 
             doc_result = await mcp.call_tool(
-                "get_complaint_document",
-                {"complaint_id": str(complaint_id_from_tools)},
+                'get_complaint_document',
+                {'complaint_id': str(complaint_id_from_tools)},
             )
             doc_payload = doc_result.structuredContent or doc_result.content
             complaint_doc = _coerce_json(doc_payload) or doc_payload
@@ -275,8 +260,6 @@ async def test_anthropic_mcp_tool_loop_smoke(server_url: str) -> None:
 
     company = _extract_company_from_document(complaint_doc)
     if not company:
-        pytest.skip(
-            f"Complaint {complaint_id_from_tools} document missing company field"
-        )
+        pytest.skip(f'Complaint {complaint_id_from_tools} document missing company field')
     first_word = company.split()[0].lower()
     assert first_word in final_text.lower()

@@ -1,0 +1,28 @@
+timestamp_utc: 2025-12-22T01:06:19.404355+00:00
+python: /Users/jim/cfpb-mcp/.venv/bin/python3
+target: /Users/jim/cfpb-mcp
+
+=== ruff check --fix ===
+cmd: ruff check --fix /Users/jim/cfpb-mcp
+exit_code: 0
+--- stdout ---
+All checks passed!
+
+=== ruff format ===
+cmd: ruff format /Users/jim/cfpb-mcp
+exit_code: 0
+--- stdout ---
+16 files left unchanged
+
+=== ruff check ===
+cmd: ruff check /Users/jim/cfpb-mcp
+exit_code: 0
+--- stdout ---
+All checks passed!
+
+=== pyright (pylance engine) ===
+cmd: pyright /Users/jim/cfpb-mcp
+exit_code: 0
+--- stdout ---
+0 errors, 0 warnings, 0 informations
+

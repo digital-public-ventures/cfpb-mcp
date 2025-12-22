@@ -1,0 +1,36 @@
+timestamp_utc: 2025-12-22T01:04:36.858665+00:00
+python: /Users/jim/cfpb-mcp/.venv/bin/python3
+target: /Users/jim/cfpb-mcp
+
+=== ruff check --fix ===
+cmd: ruff check --fix /Users/jim/cfpb-mcp
+exit_code: 0
+--- stdout ---
+All checks passed!
+
+=== ruff format ===
+cmd: ruff format /Users/jim/cfpb-mcp
+exit_code: 0
+--- stdout ---
+16 files left unchanged
+
+=== ruff check ===
+cmd: ruff check /Users/jim/cfpb-mcp
+exit_code: 0
+--- stdout ---
+All checks passed!
+
+=== pyright (pylance engine) ===
+cmd: pyright /Users/jim/cfpb-mcp
+exit_code: 1
+--- stdout ---
+/Users/jim/cfpb-mcp/tests/conftest.py
+  /Users/jim/cfpb-mcp/tests/conftest.py:112:13 - error: "host" is possibly unbound (reportPossiblyUnboundVariable)
+  /Users/jim/cfpb-mcp/tests/conftest.py:114:17 - error: "port" is possibly unbound (reportPossiblyUnboundVariable)
+/Users/jim/cfpb-mcp/tests/test_citations.py
+  /Users/jim/cfpb-mcp/tests/test_citations.py:153:27 - error: Return type of async generator function must be compatible with "AsyncGenerator[Any, Any]"
+    "AsyncGenerator[Any, Any, Any]" is not assignable to "AsyncClient" (reportInvalidTypeForm)
+  /Users/jim/cfpb-mcp/tests/test_citations.py:155:15 - error: Return type of async generator function must be compatible with "AsyncGenerator[AsyncClient, Any]"
+    "AsyncGenerator[AsyncClient, Unknown, Unknown]" is not assignable to "AsyncClient" (reportReturnType)
+4 errors, 0 warnings, 0 informations
+

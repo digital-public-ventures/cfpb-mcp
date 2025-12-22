@@ -1,11 +1,12 @@
 {
-    // Use the uv-managed virtual environment in this repo.
-    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
-    "python.terminal.activateEnvironment": true,
-    // Ruff extension can either ask the Python extension for an interpreter,
-    // or you can set it explicitly. Setting it here avoids the "interpreter missing" error.
-    "ruff.interpreter": [
-        "${workspaceFolder}/.venv/bin/python"
-    ],
-    "markdown.validate.enabled": true
+  "editor.codeActionsOnSave": {
+    "source.fixAll.ruff": true,
+    "source.organizeImports.ruff": true
+  },
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true
+  },
+  "ruff.configuration": "ruff.toml",
+  "ruff.fixAll": true
 }

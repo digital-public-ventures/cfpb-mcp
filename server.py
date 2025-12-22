@@ -23,7 +23,16 @@ import httpx
 import uvicorn
 from fastapi import FastAPI, HTTPException, Request
 from mcp.server.fastmcp import FastMCP
-from playwright.async_api import Browser, async_playwright
+from playwright.async_api import (
+    Browser,
+    async_playwright,
+)
+from playwright.async_api import (
+    Error as PlaywrightError,
+)
+from playwright.async_api import (
+    TimeoutError as PlaywrightTimeoutError,
+)
 from starlette.responses import Response
 
 from utils.deeplink_mapping import build_deeplink_url
@@ -54,7 +63,7 @@ def _normalize_scalar(value: Any) -> Any | None:
         lowered = stripped.lower()
         if lowered in _BOOL_LITERALS:
             return lowered
-        return value
+        return stripped
     return value
 
 
@@ -82,6 +91,16 @@ def prune_params(params: dict[str, Any]) -> dict[str, Any]:
         cleaned[key] = normalized
 
     return cleaned
+
+
+def _schedule_debug_file_cleanup(path: Path, delay_seconds: float = 300.0) -> None:
+    def _cleanup() -> None:
+        with suppress(OSError):
+            path.unlink()
+
+    timer = threading.Timer(delay_seconds, _cleanup)
+    timer.daemon = True
+    timer.start()
 
 
 def build_params(
@@ -668,7 +687,8 @@ def build_cfpb_ui_url(
     **kwargs: Any,
 ) -> str:
     """Build a URL to the official CFPB consumer complaints UI."""
-    _ = kwargs
+    # kwargs accepted for forward compatibility.
+    del kwargs
     api_params: dict[str, Any] = {
         'search_term': search_term,
         'date_received_min': date_received_min,
@@ -838,7 +858,7 @@ async def screenshot_cfpb_ui(
             await page.wait_for_timeout(3000)
 
         # Hide the tour button that covers part of the legend
-        with suppress(Exception):
+        with suppress(PlaywrightError, PlaywrightTimeoutError):
             await page.evaluate(
                 """
                 const tourButton = document.querySelector('button.tour-button');
@@ -856,6 +876,7 @@ async def screenshot_cfpb_ui(
 
             debug_path.write_text(html_content, encoding='utf-8')
             print(f'[DEBUG] Saved page HTML to {debug_path}')
+            _schedule_debug_file_cleanup(debug_path)
 
         # Try multiple possible selectors for the chart area
         # The CFPB dashboard uses Britecharts D3 library

@@ -25,10 +25,10 @@ jobs:
         run: uv sync --group dev --frozen
 
       - name: Ruff lint
-        run: uv run ruff check .
+        run: uvx ruff check .
 
       - name: Ruff format
-        run: uv run ruff format --check .
+        run: uvx ruff format --check .
 
       - name: Pyright
-        run: uv run pyright
+        run: uvx pyright

@@ -1,0 +1,30 @@
+timestamp_utc: 2025-12-21T23:21:13.211223+00:00
+python: /Users/jim/cfpb-mcp/.venv/bin/python
+target: /Users/jim/cfpb-mcp/server.py
+
+=== ruff check --fix ===
+cmd: ruff check --fix /Users/jim/cfpb-mcp/server.py
+exit_code: 0
+--- stdout ---
+All checks passed!
+
+=== ruff format ===
+cmd: ruff format /Users/jim/cfpb-mcp/server.py
+exit_code: 0
+--- stdout ---
+1 file left unchanged
+
+=== ruff check ===
+cmd: ruff check /Users/jim/cfpb-mcp/server.py
+exit_code: 0
+--- stdout ---
+All checks passed!
+
+=== pyright (pylance engine) ===
+cmd: /Users/jim/cfpb-mcp/.venv/bin/python -m pyright /Users/jim/cfpb-mcp/server.py
+exit_code: 1
+--- stderr ---
+/Users/jim/cfpb-mcp/.venv/bin/python: No module named pyright
+--- stdout ---
+(no output)
+

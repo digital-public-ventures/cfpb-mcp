@@ -21,8 +21,11 @@ dev = [
     "anyio>=4.12.0",
     "jsonschema>=4.25.1",
     "openai>=2.13.0",
+    "pyright>=1.1.392",
     "pytest>=9.0.2",
     "pytest-asyncio>=1.3.0",
+    "ruff>=0.12.5",
+    "pre-commit>=3.7.1",
     "python-dotenv>=1.2.1",
 ]
 # Keep the venv in-project as .venv

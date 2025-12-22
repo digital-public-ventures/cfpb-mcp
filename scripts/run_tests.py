@@ -28,56 +28,56 @@ def _pytest(args: list[str], *, extra_env: dict[str, str] | None = None) -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Run pytest suites for this repo (unit/integration/slow/contract/full)."
+        description='Run pytest suites for this repo (unit/integration/slow/contract/full).'
     )
     parser.add_argument(
-        "suite",
-        nargs="?",
-        default="integration",
-        choices=["unit", "integration", "slow", "contract", "full"],
-        help="Which suite to run (default: integration)",
+        'suite',
+        nargs='?',
+        default='integration',
+        choices=['unit', 'integration', 'slow', 'contract', 'full'],
+        help='Which suite to run (default: integration)',
     )
     parser.add_argument(
-        "pytest_args",
+        'pytest_args',
         nargs=argparse.REMAINDER,
         help="Additional args to pass to pytest (prefix with '--', e.g. -- -q -k search)",
     )
 
     ns = parser.parse_args()
 
-    extra = [a for a in ns.pytest_args if a != "--"]
+    extra = [a for a in ns.pytest_args if a != '--']
 
     # Default to concise output unless user overrides.
     default_args: list[str] = []
-    if not any(a in extra for a in ["-q", "-v"]):
-        default_args = ["-q"]
+    if not any(a in extra for a in ['-q', '-v']):
+        default_args = ['-q']
 
-    if ns.suite == "unit":
-        return _pytest(default_args + ["-m", "unit"] + extra)
+    if ns.suite == 'unit':
+        return _pytest(default_args + ['-m', 'unit'] + extra)
 
-    if ns.suite == "integration":
+    if ns.suite == 'integration':
         # Includes anything under tests/ except slow/unit/contract.
-        return _pytest(default_args + ["-m", "integration"] + extra)
+        return _pytest(default_args + ['-m', 'integration'] + extra)
 
-    if ns.suite == "slow":
-        return _pytest(default_args + ["-m", "slow", "-rs"] + extra)
+    if ns.suite == 'slow':
+        return _pytest(default_args + ['-m', 'slow', '-rs'] + extra)
 
-    if ns.suite == "contract":
-        return _pytest(default_args + ["-m", "contract", "-rs"] + extra)
+    if ns.suite == 'contract':
+        return _pytest(default_args + ['-m', 'contract', '-rs'] + extra)
 
-    if ns.suite == "full":
+    if ns.suite == 'full':
         # Run unit, then integration, then slow.
-        rc = _pytest(default_args + ["-m", "unit"] + extra)
+        rc = _pytest(default_args + ['-m', 'unit'] + extra)
         if rc != 0:
             return rc
 
-        rc = _pytest(default_args + ["-m", "integration"] + extra)
+        rc = _pytest(default_args + ['-m', 'integration'] + extra)
         if rc != 0:
             return rc
-        return _pytest(default_args + ["-m", "slow", "-rs"] + extra)
+        return _pytest(default_args + ['-m', 'slow', '-rs'] + extra)
 
-    _die(f"Unknown suite: {ns.suite}")
+    _die(f'Unknown suite: {ns.suite}')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     raise SystemExit(main())

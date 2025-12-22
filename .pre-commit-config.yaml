@@ -3,12 +3,15 @@ repos:
     rev: v0.12.5
     hooks:
       - id: ruff
+        args: [check, .]
+        pass_filenames: false
       - id: ruff-format
-        args: [--check]
+        args: [--check, .]
+        pass_filenames: false
   - repo: local
     hooks:
       - id: pyright
         name: pyright
-        entry: uv run pyright
+        entry: uvx pyright
         language: system
         pass_filenames: false

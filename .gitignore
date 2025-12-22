@@ -10,3 +10,5 @@ tests/e2e/outputs/*.webp
 /data
 server.log
 server_test.log
+temp/output/
+temp/scripts/

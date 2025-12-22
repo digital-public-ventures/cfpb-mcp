@@ -1,9 +1,0 @@
-{
-  "first_item": {
-    "type": "str",
-    "value_preview": "BANK OF AMERICA, NATIONAL ASSOCIATION"
-  },
-  "item_type": "str",
-  "len": 10,
-  "type": "list"
-}

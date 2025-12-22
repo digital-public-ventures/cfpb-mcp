@@ -54,7 +54,7 @@ def _normalize_scalar(value: Any) -> Any | None:
         lowered = stripped.lower()
         if lowered in _BOOL_LITERALS:
             return lowered
-        return value
+        return stripped
     return value
 
 

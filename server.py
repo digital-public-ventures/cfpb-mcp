@@ -857,6 +857,16 @@ async def screenshot_cfpb_ui(
             debug_path.write_text(html_content, encoding='utf-8')
             print(f'[DEBUG] Saved page HTML to {debug_path}')
 
+            def _schedule_debug_file_cleanup(path: Path, delay_seconds: float = 300.0) -> None:
+                def _cleanup() -> None:
+                    with suppress(OSError):
+                        path.unlink()
+
+                timer = threading.Timer(delay_seconds, _cleanup)
+                timer.daemon = True
+                timer.start()
+
+            _schedule_debug_file_cleanup(debug_path)
         # Try multiple possible selectors for the chart area
         # The CFPB dashboard uses Britecharts D3 library
         chart_selectors = [

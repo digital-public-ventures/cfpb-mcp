@@ -684,11 +684,10 @@ def build_cfpb_ui_url(
     sub_lens: str | None = None,
     chart_type: str | None = None,
     date_interval: str | None = None,
-    **kwargs: Any,
 ) -> str:
     """Build a URL to the official CFPB consumer complaints UI."""
     # kwargs accepted for forward compatibility.
-    del kwargs
+    # del kwargs
     api_params: dict[str, Any] = {
         'search_term': search_term,
         'date_received_min': date_received_min,

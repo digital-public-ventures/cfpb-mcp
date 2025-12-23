@@ -1383,6 +1383,12 @@ async def root() -> dict[str, Any]:
     }
 
 
+@app.get('/health', include_in_schema=False)
+async def health() -> dict[str, str]:
+    """Minimal health check endpoint for load balancers."""
+    return {'status': 'ok'}
+
+
 # Mount MCP after FastAPI routes to avoid shadowing them.
 app.mount('/', _http_app)
 

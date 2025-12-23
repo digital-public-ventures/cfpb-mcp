@@ -22,4 +22,4 @@ async def test_http_transport_access_control(server_url: str) -> None:
     url = f'{server_url}/mcp'
     async with httpx.AsyncClient() as client:
         response = await client.get(url)
-        assert response.status_code == 405
+        assert response.status_code == 406

@@ -12,14 +12,14 @@ One FastAPI app that serves:
 
 Preferred dev loop (fast rebuild + restart):
 
-```
+```bash
 docker compose build server
 docker compose up -d
 ```
 
 Optional BuildKit speed-up:
 
-```
+```bash
 COMPOSE_BAKE=true docker compose build server
 ```
 
@@ -153,7 +153,7 @@ It will print a public URL plus the corresponding `/openapi.json` URL.
 
 Prereqs:
 
-1. Install ngrok: https://ngrok.com/download
+1. Install ngrok: <https://ngrok.com/download>
 2. Authenticate once: `ngrok config add-authtoken <YOUR_TOKEN>`
 
 ### Manual ngrok
@@ -169,4 +169,3 @@ curl "http://localhost:8000/trends?trend_depth=3"
 curl "http://localhost:8000/geo/states"
 curl "http://localhost:8000/suggest/company?text=bank&size=5"
 ```
- 

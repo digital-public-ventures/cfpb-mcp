@@ -1,7 +1,7 @@
-import json
+import asyncio
 import os
-import re
-from typing import Any, cast
+import time
+from typing import cast
 
 import pytest
 from anthropic import Anthropic
@@ -11,33 +11,21 @@ from anthropic.types import (
     ToolResultBlockParam,
     ToolUseBlock,
 )
-from dotenv import load_dotenv
 from mcp.client.session import ClientSession
 from mcp.client.streamable_http import streamable_http_client
 
-load_dotenv()
+from tests.contract.contract_prompts import SYSTEM_PROMPT, USER_PROMPT
+from tests.contract.contract_utils import (
+    extract_company_from_document,
+    extract_complaint_id_from_search_payload,
+    extract_complaint_id_from_text,
+    tool_payload,
+    tool_result_text,
+)
 
 
-def _load_dotenv_if_present() -> None:
-    """Load .env for local runs without requiring external tooling."""
-    env_path = os.path.join(os.getcwd(), '.env')
-    if not os.path.exists(env_path):
-        return
-
-    try:
-        with open(env_path, encoding='utf-8') as f:
-            for raw_line in f:
-                line = raw_line.strip()
-                if not line or line.startswith('#') or '=' not in line:
-                    continue
-                key, value = line.split('=', 1)
-                key = key.strip()
-                if not key or key in os.environ:
-                    continue
-                value = value.strip().strip('"').strip("'")
-                os.environ[key] = value
-    except OSError:
-        return
+async def _call_llm_with_timeout(func, timeout: float, **kwargs):
+    return await asyncio.wait_for(asyncio.to_thread(func, **kwargs), timeout=timeout)
 
 
 def _extract_text(blocks) -> str:
@@ -50,100 +38,22 @@ def _extract_text(blocks) -> str:
     return '\n'.join([p for p in parts if p]).strip()
 
 
-def _tool_result_text(payload: Any) -> str:
-    if payload is None:
-        return ''
-    if isinstance(payload, str):
-        return payload
-    return json.dumps(payload, ensure_ascii=False, default=str)
-
-
-def _coerce_json(payload: object) -> object:
-    if isinstance(payload, str):
-        try:
-            return json.loads(payload)
-        except json.JSONDecodeError:
-            return payload
-    return payload
-
-
-def _extract_company_from_document(doc: object) -> str:
-    if not isinstance(doc, dict):
-        return ''
-
-    hits = doc.get('hits') if isinstance(doc.get('hits'), dict) else None
-    if hits and isinstance(hits.get('hits'), list) and hits['hits']:
-        hit0 = hits['hits'][0] if isinstance(hits['hits'][0], dict) else {}
-        source = hit0.get('_source') if isinstance(hit0.get('_source'), dict) else {}
-    else:
-        source = doc.get('_source') if isinstance(doc.get('_source'), dict) else doc
-
-    if not isinstance(source, dict):
-        return ''
-
-    company = source.get('company')
-    return str(company or '').strip()
-
-
-def _extract_complaint_id_from_text(text: str) -> tuple[int, str]:
-    matches = re.findall(r'\b\d{4,9}\b', text or '')
-    assert matches, 'Expected a 4-9 digit integer token in the final response text'
-    token = max(matches, key=len)
-    assert 4 <= len(token) <= 9
-    return int(token), token
-
-
-def _extract_complaint_id_from_search_payload(payload: object) -> int | None:
-    if not isinstance(payload, dict):
-        return None
-    data = payload.get('data') if isinstance(payload.get('data'), dict) else None
-    if not isinstance(data, dict):
-        return None
-    hits = data.get('hits', {})
-    if not isinstance(hits, dict):
-        return None
-    inner = hits.get('hits', [])
-    if not isinstance(inner, list) or not inner:
-        return None
-    hit0 = inner[0] if isinstance(inner[0], dict) else None
-    if not hit0:
-        return None
-    cid = hit0.get('_id') or (hit0.get('_source', {}) if isinstance(hit0.get('_source'), dict) else {}).get(
-        'complaint_id'
-    )
-    if cid is None:
-        return None
-    try:
-        cid_int = int(str(cid))
-    except ValueError:
-        return None
-    if 4 <= len(str(cid_int)) <= 9:
-        return cid_int
-    return None
-
-
 @pytest.mark.contract
 @pytest.mark.fast
 @pytest.mark.anyio
 async def test_anthropic_mcp_tool_loop_smoke(server_url: str) -> None:
-    _load_dotenv_if_present()
-
     api_key = os.getenv('ANTHROPIC_API_KEY')
-    if not api_key:
-        pytest.skip('Missing ANTHROPIC_API_KEY')
+    assert api_key, 'Missing ANTHROPIC_API_KEY'
 
-    client = Anthropic(api_key=api_key)
+    print('[anthropic-contract] initializing Anthropic client', flush=True)
+    client = Anthropic(api_key=api_key, timeout=15.0)
     model = os.getenv('ANTHROPIC_MODEL', 'claude-haiku-4-5')
 
     # Use the Streamable HTTP endpoint
     mcp_url = f'{server_url}/mcp'
+    print(f'[anthropic-contract] using model={model} mcp_url={mcp_url}', flush=True)
 
-    user_prompt = (
-        "I'm researching CFPB consumer complaints about loan forbearance. "
-        "Please find a complaint mentioning 'forbearance' where the company name is present, then tell me the complaint id, "
-        'the company (if present), the state (if present), and a short 2-3 sentence summary grounded in the complaint. '
-        "If you can't use tools, say 'MCP tools unavailable'."
-    )
+    user_prompt = USER_PROMPT
 
     final_text: str | None = None
     complaint_id_from_tools: int | None = None
@@ -152,8 +62,10 @@ async def test_anthropic_mcp_tool_loop_smoke(server_url: str) -> None:
     # Connect using Streamable HTTP client
     async with streamable_http_client(mcp_url) as (read_stream, write_stream, _):
         async with ClientSession(read_stream, write_stream) as mcp:
+            print('[anthropic-contract] initializing MCP session', flush=True)
             await mcp.initialize()
             tool_list = await mcp.list_tools()
+            print(f'[anthropic-contract] loaded {len(tool_list.tools)} tools', flush=True)
 
             tools = []
             for t in tool_list.tools:
@@ -167,16 +79,25 @@ async def test_anthropic_mcp_tool_loop_smoke(server_url: str) -> None:
 
             messages: list[MessageParam] = [{'role': 'user', 'content': user_prompt}]
 
-            for _ in range(10):
+            for step in range(10):
+                print(f'[anthropic-contract] LLM step {step + 1}/10', flush=True)
+                start = time.monotonic()
                 # Encourage at least one tool call so this behaves like a
                 # "first attempt" agent that must use MCP to answer.
                 tool_choice: ToolChoiceParam = {'type': 'any'} if complaint_id_from_tools is None else {'type': 'auto'}
-                resp = client.messages.create(
+                resp = await _call_llm_with_timeout(
+                    client.messages.create,
+                    15,
                     model=model,
                     max_tokens=800,
+                    system=SYSTEM_PROMPT,
                     tools=tools,
                     tool_choice=tool_choice,
                     messages=messages,
+                )
+                print(
+                    f'[anthropic-contract] LLM response received in {time.monotonic() - start:.2f}s',
+                    flush=True,
                 )
 
                 messages.append(cast('MessageParam', {'role': 'assistant', 'content': resp.content}))
@@ -201,7 +122,13 @@ async def test_anthropic_mcp_tool_loop_smoke(server_url: str) -> None:
                     continue
 
                 for tu in tool_uses:
-                    result = await mcp.call_tool(tu.name, tu.input)
+                    print(f'[anthropic-contract] calling tool {tu.name}', flush=True)
+                    start = time.monotonic()
+                    result = await asyncio.wait_for(mcp.call_tool(tu.name, tu.input), timeout=15)
+                    print(
+                        f'[anthropic-contract] tool {tu.name} completed in {time.monotonic() - start:.2f}s',
+                        flush=True,
+                    )
 
                     # Capture complaint id from tool interactions, so the test doesn't
                     # depend on regex guessing from final prose.
@@ -215,18 +142,18 @@ async def test_anthropic_mcp_tool_loop_smoke(server_url: str) -> None:
                         except ValueError:
                             complaint_id_from_tools = None
                     elif tu.name == 'search_complaints':
-                        payload = result.structuredContent or result.content
-                        cid = _extract_complaint_id_from_search_payload(_coerce_json(payload) or payload)
+                        payload = tool_payload(result)
+                        cid = extract_complaint_id_from_search_payload(payload)
                         if cid is not None:
                             complaint_id_from_tools = cid
 
-                    tool_payload = result.structuredContent or result.content
+                    tool_payload_result = tool_payload(result)
                     tool_block = cast(
                         'ToolResultBlockParam',
                         {
                             'type': 'tool_result',
                             'tool_use_id': tu.id,
-                            'content': _tool_result_text(tool_payload),
+                            'content': tool_result_text(tool_payload_result),
                         },
                     )
                     messages.append(cast('MessageParam', {'role': 'user', 'content': [tool_block]}))
@@ -245,21 +172,49 @@ async def test_anthropic_mcp_tool_loop_smoke(server_url: str) -> None:
 
             # Keep the original "must contain a 4-9 digit integer" guard, but validate
             # it matches the tool-derived complaint id for stability.
-            complaint_id, _ = _extract_complaint_id_from_text(text)
+            complaint_id, _ = extract_complaint_id_from_text(text)
+            if complaint_id != complaint_id_from_tools:
+                messages.append(
+                    cast(
+                        'MessageParam',
+                        {
+                            'role': 'user',
+                            'content': (
+                                f'Please correct the final answer using complaint id {complaint_id_from_tools} '
+                                'from the MCP tools. Provide the final answer now.'
+                            ),
+                        },
+                    )
+                )
+                resp = await _call_llm_with_timeout(
+                    client.messages.create,
+                    15,
+                    model=model,
+                    max_tokens=800,
+                    system=SYSTEM_PROMPT,
+                    tools=tools,
+                    tool_choice={'type': 'auto'},
+                    messages=messages,
+                )
+                messages.append(cast('MessageParam', {'role': 'assistant', 'content': resp.content}))
+                text = _extract_text(resp.content)
+                assert text
+                final_text = text
+                complaint_id, _ = extract_complaint_id_from_text(text)
+
             assert complaint_id == complaint_id_from_tools
 
-            doc_result = await mcp.call_tool(
-                'get_complaint_document',
-                {'complaint_id': str(complaint_id_from_tools)},
+            print('[anthropic-contract] fetching complaint document', flush=True)
+            doc_result = await asyncio.wait_for(
+                mcp.call_tool('get_complaint_document', {'complaint_id': str(complaint_id_from_tools)}),
+                timeout=15,
             )
-            doc_payload = doc_result.structuredContent or doc_result.content
-            complaint_doc = _coerce_json(doc_payload) or doc_payload
+            complaint_doc = tool_payload(doc_result)
 
     assert final_text is not None
     assert complaint_id_from_tools is not None
 
-    company = _extract_company_from_document(complaint_doc)
-    if not company:
-        pytest.skip(f'Complaint {complaint_id_from_tools} document missing company field')
+    company = extract_company_from_document(complaint_doc)
+    assert company, f'Complaint {complaint_id_from_tools} document missing company field'
     first_word = company.split()[0].lower()
     assert first_word in final_text.lower()

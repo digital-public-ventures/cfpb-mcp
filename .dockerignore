@@ -1,0 +1,15 @@
+.env
+.env.*
+.aws
+.ssh
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+*credentials*

@@ -135,6 +135,25 @@ unfixable = []
     "PTH",
     "PLR0911",
     "RUF005",
+    "PLC0415",
+    "S607",
+]
+"sidequest/**" = [
+    "ANN",
+    "D",
+    "INP001",
+    "PTH",
+    "PLR0911",
+    "PLR0912",
+    "PLR0915",
+    "PLR2004",
+    "SIM117",
+    "S101",
+    "S603",
+    "BLE001",
+    "TRY003",
+    "TRY300",
+    "EM102",
 ]
 "utils/**" = [
     "ANN",

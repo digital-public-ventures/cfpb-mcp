@@ -25,7 +25,7 @@ const buildRpc = (id, method, params) => ({
 });
 
 const logHeader = (label) => {
-	console.log("\n=== " + label + " ===");
+	console.log(`\n=== ${label} ===`);
 };
 
 const callRpc = async (url, rpc) => {

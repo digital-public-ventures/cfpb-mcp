@@ -266,7 +266,6 @@ async def test_capture_cfpb_chart_screenshot(server_url: str) -> None:
             except Exception as exc:
                 message = str(exc).lower()
                 if 'playwright' in message or 'browser unavailable' in message:
-                    skip_reason = 'Playwright not available for screenshot test'
                     return
                 raise
 

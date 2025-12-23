@@ -24,7 +24,7 @@ export const callRpc = async (
     });
 
     const text = await response.text();
-    let payload: any;
+    let payload: unknown;
     try {
       payload = JSON.parse(text);
     } catch {
@@ -38,9 +38,11 @@ export const callRpc = async (
       throw lastError;
     }
 
-    if (payload.error) {
+    if (payload && typeof payload === "object" && "error" in payload) {
+      const errorValue = (payload as { error?: { code?: unknown; message?: unknown } })
+        .error;
       lastError = new Error(
-        `${payload.error.code ?? "rpc_error"}: ${payload.error.message}`
+        `${errorValue?.code ?? "rpc_error"}: ${errorValue?.message ?? "error"}`
       );
       if (attempt < attempts && response.status >= 500) {
         await new Promise((resolve) => setTimeout(resolve, 200 * attempt));
@@ -48,7 +50,10 @@ export const callRpc = async (
       }
       throw lastError;
     }
-    return payload.result;
+    if (payload && typeof payload === "object" && "result" in payload) {
+      return (payload as { result: unknown }).result;
+    }
+    return payload;
   }
   throw lastError ?? new Error("rpc_error: exhausted retries");
 };

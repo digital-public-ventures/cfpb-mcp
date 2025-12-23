@@ -142,7 +142,10 @@ const generateCitations = (options: {
   return citations;
 };
 
-export const handlers: Record<ToolName, (args: any) => Promise<any>> = {
+type HandlerArgs = Record<string, unknown>;
+type HandlerResult = Promise<unknown>;
+
+export const handlers: Record<ToolName, (args: HandlerArgs) => HandlerResult> = {
   search_complaints: async (args) => {
     const data = await searchLogic({
       size: args.size,

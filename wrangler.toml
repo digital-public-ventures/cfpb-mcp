@@ -1,5 +1,5 @@
 name = "cfpb-mcp"
-main = "src/index.ts"
+main = "ts-mcp/src/index.ts"
 compatibility_date = "2025-12-01"
 
 [observability]

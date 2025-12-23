@@ -13,6 +13,21 @@ type Env = {
 	CFPB_MCP_RATE_LIMIT_BURST?: string;
 };
 
+const logMcpEvent = (label: string, payload: Record<string, unknown>) => {
+	console.log(`[mcp-worker] ${label} ${JSON.stringify(payload)}`);
+};
+
+const parseJson = (text: string): unknown => {
+	if (!text) {
+		return null;
+	}
+	try {
+		return JSON.parse(text);
+	} catch {
+		return null;
+	}
+};
+
 const createServer = () => {
 	const server = new McpServer({
 		name: "cfpb-mcp",
@@ -86,9 +101,33 @@ export default {
 
 		const apiKey = request.headers.get("x-api-key");
 		try {
-			return await handleMcp(request, env, apiKey);
+			const requestClone = request.clone();
+			const requestText = await requestClone.text();
+			const requestJson = parseJson(requestText);
+			logMcpEvent("request", {
+				url: request.url,
+				method: request.method,
+				api_key: hashKeyPrefix(apiKey),
+				body: requestText,
+				json: requestJson,
+			});
+
+			const response = await handleMcp(request, env, apiKey);
+			const responseClone = response.clone();
+			const responseText = await responseClone.text();
+			const responseJson = parseJson(responseText);
+			logMcpEvent("response", {
+				status: response.status,
+				body: responseText,
+				json: responseJson,
+			});
+			return response;
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
+			logMcpEvent("error", {
+				message,
+				api_key: hashKeyPrefix(apiKey),
+			});
 			return jsonResponse(
 				{ error: message, api_key: hashKeyPrefix(apiKey) },
 				500,

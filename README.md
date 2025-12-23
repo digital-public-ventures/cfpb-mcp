@@ -78,6 +78,12 @@ npx biome check .
 npx biome format --write .
 ```
 
+Cloudflare deploy (versions upload from repo root):
+
+```bash
+./scripts/wrangler_versions_upload.sh
+```
+
 ## MCP API keys and rate limits
 
 Both implementations can require API keys on `/mcp`.

@@ -2,6 +2,7 @@ import { spawn } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { config as loadEnv } from "dotenv";
+import { LOCAL_SERVER_URL, resolveServerUrl } from "./helpers/http.js";
 
 const waitForHealth = async (url: string, timeoutMs = 30000) => {
 	const deadline = Date.now() + timeoutMs;
@@ -23,7 +24,12 @@ export default async function globalSetup() {
 	const here = dirname(fileURLToPath(import.meta.url));
 	const root = resolve(here, "..");
 	loadEnv({ path: resolve(root, "..", ".env") });
-	process.env.TEST_SERVER_URL = "http://127.0.0.1:8787/mcp";
+	const target = process.env.TEST_SERVER_TARGET;
+	const serverUrl = resolveServerUrl();
+	process.env.TEST_SERVER_URL = serverUrl;
+	if (target === "remote" || serverUrl !== LOCAL_SERVER_URL) {
+		return async () => {};
+	}
 
 	const proc = spawn(
 		process.platform === "win32" ? "npx.cmd" : "npx",

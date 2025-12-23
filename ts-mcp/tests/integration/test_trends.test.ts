@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { callRpc } from "../helpers/http.js";
+import { callRpc, resolveServerUrl } from "../helpers/http.js";
 import { extractPayload } from "../helpers/mcp.js";
 
-const SERVER_URL = process.env.TEST_SERVER_URL ?? "http://127.0.0.1:8787/mcp";
+const SERVER_URL = resolveServerUrl();
 
 describe("list_complaint_trends", () => {
 	it("returns trend data and citations", async () => {

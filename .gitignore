@@ -74,3 +74,8 @@ temp/
 # mcp
 mcp.json
 **/mcp.json
+
+# linters
+.ruff_cache/
+.mypy_cache/
+.pyre/

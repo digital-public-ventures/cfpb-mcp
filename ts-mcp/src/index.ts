@@ -13,6 +13,8 @@ type Env = {
 	CFPB_MCP_RATE_LIMIT_BURST?: string;
 };
 
+const LOG_BODY_MAX = 2000;
+
 const logMcpEvent = (label: string, payload: Record<string, unknown>) => {
 	console.log(`[mcp-worker] ${label} ${JSON.stringify(payload)}`);
 };
@@ -26,6 +28,45 @@ const parseJson = (text: string): unknown => {
 	} catch {
 		return null;
 	}
+};
+
+const truncateText = (text: string, maxChars: number) => {
+	if (text.length <= maxChars) {
+		return { preview: text, truncated: false };
+	}
+	return { preview: `${text.slice(0, maxChars)}...`, truncated: true };
+};
+
+const extractRpcFields = (payload: unknown) => {
+	if (!payload || typeof payload !== "object") {
+		return {};
+	}
+	const record = payload as Record<string, unknown>;
+	const params = record.params as Record<string, unknown> | undefined;
+	const toolName =
+		params && typeof params === "object" ? params.name ?? null : null;
+	return {
+		rpc_id: record.id ?? null,
+		rpc_method: record.method ?? null,
+		tool_name: toolName,
+	};
+};
+
+const extractResponseFields = (payload: unknown) => {
+	if (!payload || typeof payload !== "object") {
+		return {};
+	}
+	const record = payload as Record<string, unknown>;
+	const result = record.result as Record<string, unknown> | undefined;
+	const resultKeys = result ? Object.keys(result) : [];
+	const isError =
+		typeof record.error !== "undefined" ||
+		(result && typeof result.isError === "boolean" ? result.isError : false);
+	return {
+		rpc_id: record.id ?? null,
+		result_keys: resultKeys,
+		is_error: isError,
+	};
 };
 
 const createServer = () => {
@@ -104,22 +145,28 @@ export default {
 			const requestClone = request.clone();
 			const requestText = await requestClone.text();
 			const requestJson = parseJson(requestText);
+			const requestPreview = truncateText(requestText, LOG_BODY_MAX);
 			logMcpEvent("request", {
 				url: request.url,
 				method: request.method,
 				api_key: hashKeyPrefix(apiKey),
-				body: requestText,
-				json: requestJson,
+				body_preview: requestPreview.preview,
+				body_length: requestText.length,
+				body_truncated: requestPreview.truncated,
+				...extractRpcFields(requestJson),
 			});
 
 			const response = await handleMcp(request, env, apiKey);
 			const responseClone = response.clone();
 			const responseText = await responseClone.text();
 			const responseJson = parseJson(responseText);
+			const responsePreview = truncateText(responseText, LOG_BODY_MAX);
 			logMcpEvent("response", {
 				status: response.status,
-				body: responseText,
-				json: responseJson,
+				body_preview: responsePreview.preview,
+				body_length: responseText.length,
+				body_truncated: responsePreview.truncated,
+				...extractResponseFields(responseJson),
 			});
 			return response;
 		} catch (error) {

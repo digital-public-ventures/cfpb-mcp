@@ -7,13 +7,12 @@ import os
 import sys
 import threading
 import time
-from contextlib import AsyncExitStack, asynccontextmanager, suppress
+from contextlib import AsyncExitStack, asynccontextmanager
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Awaitable
-    from pathlib import Path
 
     from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
@@ -22,16 +21,6 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from mcp.server.fastmcp import FastMCP
 
-# from playwright.async_api import (
-#     Browser,
-#     async_playwright,
-# )
-# from playwright.async_api import (
-#     Error as PlaywrightError,
-# )
-# from playwright.async_api import (
-#     TimeoutError as PlaywrightTimeoutError,
-# )
 from utils.deeplink_mapping import build_deeplink_url
 
 BASE_URL = 'https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/'
@@ -42,9 +31,6 @@ SearchSort = Literal['relevance_desc', 'created_date_desc']
 MIN_STDDEV_SAMPLES = 2
 MIN_SIGNAL_POINTS = 2
 MIN_BASELINE_POINTS = 2
-CHART_MIN_WIDTH = 400
-CHART_MIN_HEIGHT = 300
-SCREENSHOT_UNAVAILABLE_DETAIL = 'Screenshot service unavailable (Playwright not initialized)'
 _BOOL_LITERALS = {'true', 'false'}
 
 
@@ -88,16 +74,6 @@ def prune_params(params: dict[str, Any]) -> dict[str, Any]:
         cleaned[key] = normalized
 
     return cleaned
-
-
-def _schedule_debug_file_cleanup(path: Path, delay_seconds: float = 300.0) -> None:
-    def _cleanup() -> None:
-        with suppress(OSError):
-            path.unlink()
-
-    timer = threading.Timer(delay_seconds, _cleanup)
-    timer.daemon = True
-    timer.start()
 
 
 def build_params(
@@ -153,7 +129,7 @@ def build_params(
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """App lifespan: initialize shared HTTP client + optional Playwright."""
+    """App lifespan: initialize shared HTTP client."""
     # Initialize FastMCP lifespans (critical for session management)
     async with AsyncExitStack() as stack:
         # We must initialize the lifecycle of the FastMCP apps we are using.
@@ -165,40 +141,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         # A single shared client for connection pooling.
         app.state.http = httpx.AsyncClient(timeout=httpx.Timeout(30.0))
 
-        # # Initialize Playwright for screenshot service (Phase 4.5)
-        # app.state.playwright = None
-        # app.state.browser = None
-        # try:
-        #     pw = await async_playwright().start()
-        #     app.state.playwright = pw
-        #     app.state.browser = await pw.chromium.launch(
-        #         headless=True,
-        #         args=[
-        #             '--no-sandbox',
-        #             '--disable-setuid-sandbox',
-        #             '--disable-dev-shm-usage',
-        #             '--disable-gpu',
-        #         ],
-        #     )
-        # except Exception as e:
-        #     # If Playwright isn't available (e.g., in minimal test env), log and continue.
-        #     # The screenshot endpoints will return 503.
-        #     print(f'Warning: Playwright initialization failed: {e}', file=sys.stderr)
-
         try:
             yield
         finally:
             await app.state.http.aclose()
-            # if app.state.browser:
-            #     try:
-            #         await app.state.browser.close()
-            #     except Exception as e:
-            #         print(f'Warning: Playwright browser.close failed: {e}', file=sys.stderr)
-            # if app.state.playwright:
-            #     try:
-            #         await app.state.playwright.stop()
-            #     except Exception as e:
-            #         print(f'Warning: Playwright stop failed: {e}', file=sys.stderr)
 
 
 # 1) Initialize FastAPI and MCP (single app, two interfaces)
@@ -845,103 +791,6 @@ def generate_citations(
 
     return citations
 
-    # async def screenshot_cfpb_ui(
-    #     browser: Browser | None,
-    #     url: str,
-    #     *,
-    #     wait_for_charts: bool = True,
-    #     timeout: int = 30000,
-    # ) -> bytes:
-    #     """Capture a screenshot of the official CFPB UI at the given URL.
-
-    #     Returns PNG image bytes.
-    #     Raises HTTPException(503) if Playwright is unavailable.
-    #     """
-    #     if browser is None:
-    #         raise HTTPException(
-    #             status_code=503,
-    #             detail=SCREENSHOT_UNAVAILABLE_DETAIL,
-    #         )
-
-    #     context = await browser.new_context(
-    #         viewport={'width': 890, 'height': 1080},
-    #         user_agent=(
-    #             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 '
-    #             '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    #         ),
-    #     )
-
-    # try:
-    #     page = await context.new_page()
-    #     await page.goto(url, timeout=timeout, wait_until='networkidle')
-
-    #     # If we expect charts, give D3/visualization time to render.
-    #     if wait_for_charts:
-    #         await page.wait_for_timeout(3000)
-
-    #     # Hide the tour button that covers part of the legend
-    #     with suppress(PlaywrightError, PlaywrightTimeoutError):
-    #         await page.evaluate(
-    #             """
-    #             const tourButton = document.querySelector('button.tour-button');
-    #             if (tourButton) {
-    #                 tourButton.style.display = 'none';
-    #             }
-    #             """
-    #         )
-
-    #     # Debug: Save the page HTML to inspect structure
-    #     if os.getenv('DEBUG_CFPB_UI'):
-    #         html_content = await page.content()
-    #         with tempfile.NamedTemporaryFile(prefix='cfpb_page_debug_', suffix='.html', delete=False) as tmp:
-    #             debug_path = Path(tmp.name)
-
-    #         debug_path.write_text(html_content, encoding='utf-8')
-    #         print(f'[DEBUG] Saved page HTML to {debug_path}')
-
-    #         def _schedule_debug_file_cleanup(path: Path, delay_seconds: float = 300.0) -> None:
-    #             def _cleanup() -> None:
-    #                 with suppress(OSError):
-    #                     path.unlink()
-
-    #             timer = threading.Timer(delay_seconds, _cleanup)
-    #             timer.daemon = True
-    #             timer.start()
-
-    #         _schedule_debug_file_cleanup(debug_path)
-    #     # Try multiple possible selectors for the chart area
-    #     # The CFPB dashboard uses Britecharts D3 library
-    #     chart_selectors = [
-    #         '.layout-row:has(section.chart)',  # Parent div containing chart and legend
-    #         'section.chart',  # The main chart section (fallback)
-    #         '.chart-wrapper',  # Chart wrapper div
-    #         '#line-chart',  # Line chart container
-    #         '.trends-panel',  # The entire trends panel section (last resort)
-    #     ]
-
-    #     for selector in chart_selectors:
-    #         try:
-    #             chart_element = await page.query_selector(selector)
-    #             if chart_element:
-    #                 # Check if element is visible and has reasonable dimensions
-    #                 box = await chart_element.bounding_box()
-    #                 print(f"[DEBUG] Testing selector '{selector}': found={chart_element is not None}, box={box}")
-    #                 if box and box['width'] > CHART_MIN_WIDTH and box['height'] > CHART_MIN_HEIGHT:
-    #                     print(f'[DEBUG] ✓ Using chart selector: {selector}, size: {box["width"]}x{box["height"]}')
-    #                     return await chart_element.screenshot(type='png')
-    #                 if box:
-    #                     print(f'[DEBUG] ✗ Element too small: {box["width"]}x{box["height"]}')
-    #         except Exception as e:
-    #             print(f'[DEBUG] Selector {selector} failed: {e}')
-    #             continue
-
-    #     # Fallback: Take full page screenshot
-    #     print('[DEBUG] No suitable chart element found, taking full page screenshot')
-    #     return await page.screenshot(type='png', full_page=True)
-
-    # finally:
-    #     await context.close()
-
 
 # -------------------------------------------------------------------------
 # 3) Interface A: MCP Tools (for Claude Desktop)
@@ -1227,46 +1076,6 @@ async def generate_cfpb_dashboard_url(
         has_narrative=has_narrative,
         company_response=company_response,
     )
-
-
-# @server.tool()
-# async def capture_cfpb_chart_screenshot(
-#     search_term: str | None = None,
-#     date_received_min: str | None = None,
-#     date_received_max: str | None = None,
-#     product: list[str] | None = None,
-#     issue: list[str] | None = None,
-#     state: list[str] | None = None,
-#     company: list[str] | None = None,
-#     lens: str = 'Product',
-#     chart_type: str = 'line',
-#     date_interval: str = 'Month',
-# ) -> str:
-#     """Capture a screenshot of the official CFPB trends chart as a PNG image."""
-#     if not getattr(app.state, 'browser', None):
-#         raise HTTPException(status_code=503, detail=SCREENSHOT_UNAVAILABLE_DETAIL)
-
-#     api_params: dict[str, Any] = {
-#         'lens': lens,
-#         'chartType': chart_type,
-#         'trend_interval': date_interval.lower(),
-#         'search_term': search_term,
-#         'date_received_min': date_received_min,
-#         'date_received_max': date_received_max,
-#         'product': product,
-#         'issue': issue,
-#         'state': state,
-#         'company': company,
-#     }
-#     url = build_deeplink_url(api_params, tab='Trends')
-
-#     screenshot_bytes = await screenshot_cfpb_ui(
-#         app.state.browser,
-#         url,
-#         wait_for_charts=True,
-#     )
-
-#     return base64.b64encode(screenshot_bytes).decode('utf-8')
 
 
 @server.tool()

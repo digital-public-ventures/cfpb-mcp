@@ -100,7 +100,6 @@ unfixable = []
     "FBT001",  # MCP tool signatures are positional for compatibility.
     "FBT002",
     "PLR0913", # Tool signatures mirror CFPB API parameters.
-    "ERA001", # TODO: implement playwright for cloudflare
 ]
 "tests/**" = [
     "S101",

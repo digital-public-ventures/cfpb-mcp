@@ -44,7 +44,7 @@ const extractRpcFields = (payload: unknown) => {
 	const record = payload as Record<string, unknown>;
 	const params = record.params as Record<string, unknown> | undefined;
 	const toolName =
-		params && typeof params === "object" ? params.name ?? null : null;
+		params && typeof params === "object" ? (params.name ?? null) : null;
 	return {
 		rpc_id: record.id ?? null,
 		rpc_method: record.method ?? null,

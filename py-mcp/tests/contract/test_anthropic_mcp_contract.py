@@ -54,6 +54,7 @@ async def test_anthropic_mcp_tool_loop_smoke(server_url: str) -> None:
     print(f'[anthropic-contract] using model={model} mcp_url={mcp_url}', flush=True)
 
     user_prompt = USER_PROMPT
+    should_log = os.getenv('CONTRACT_LOG') == '1'
 
     final_text: str | None = None
     complaint_id_from_tools: int | None = None
@@ -203,6 +204,8 @@ async def test_anthropic_mcp_tool_loop_smoke(server_url: str) -> None:
                 complaint_id, _ = extract_complaint_id_from_text(text)
 
             assert complaint_id == complaint_id_from_tools
+            if should_log and final_text:
+                print(f'[py-anthropic] final_response={final_text}', flush=True)
 
             print('[anthropic-contract] fetching complaint document', flush=True)
             doc_result = await asyncio.wait_for(

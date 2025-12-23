@@ -51,6 +51,7 @@ const isTextBlock = (part: unknown): part is TextBlock => {
 
 describe("Anthropic MCP contract", () => {
 	it("returns a complaint id and includes company in response", async () => {
+		const shouldLog = process.env.CONTRACT_LOG === "1";
 		const apiKey = process.env.ANTHROPIC_API_KEY;
 		expect(apiKey).toBeTruthy();
 		const model = process.env.ANTHROPIC_MODEL ?? "claude-haiku-4-5";
@@ -141,6 +142,9 @@ describe("Anthropic MCP contract", () => {
 		}
 
 		expect(finalText).toBeTruthy();
+		if (shouldLog) {
+			console.log("[ts-anthropic] final_response", finalText);
+		}
 		expect(finalText.includes("MCP tools unavailable")).toBe(false);
 
 		if (!complaintIdFromTools) {

@@ -1,51 +1,99 @@
-# Gemini Agent Best Practices
+# Agent Handbook
 
-This document outlines the operational best practices for Gemini agents working on the `cfpb-mcp` project. Adherence to these guidelines ensures consistency, stability, and alignment with the project's roadmap.
+## CLI guardrails
 
-## 1. Project Context & Roadmap
+* Avoid terminal heredocs (`cat <<EOF`, `python - <<'PY'`); they crash this shell.
+* Write helper scripts under `temp/` and run them normally (e.g., `bash temp/diagnose.sh`).
+* Prefer simple pipelines/one-liners for quick commands.
 
-- **Current Phase:** Phase 5.3 (FastMCP Standardization).
-- **Core Goal:** Build a semantic bridge to the CFPB complaint database, prioritizing intelligence over simple API wrapping.
-- **Architecture:** The server supports dual transports:
-    - **MCP:** For AI assistants (Claude, etc.).
-    - **REST/OpenAPI:** `POST /mcp` (Streamable HTTP) and `GET /mcp/sse` (Legacy SSE).
-- **Roadmap:** Consult `planning/ROADMAP.md` before starting any major task. Future work includes OAuth (Phase 5.4) and Vector Search (Phase 6).
+## Repository map
 
-## 2. Environment & Dependency Management
+* `server.py`: FastAPI app exposing REST + MCP; shared logic lives near the top.
+* `tests/`: Pytest suite that boots uvicorn in-process for REST/MCP flows (`test_rest_*`, `test_mcp_*`).
+* `scripts/`: Local harnesses for MCP/OpenAPI clients and dev helpers.
+* `docs/`: Integration notes and examples; keep in sync with interface changes.
+* `deployment/`: Packaging for MCP extensions (e.g., `.mcpb`) and deployment assets.
+* `planning/`: Design notes and task planning artifacts.
+* `README.md` / `IDEA.md`: Quickstart + design context; update when workflows change.
 
-We use `uv` for all Python environment and dependency management.
+## Roadmap snapshot (see `planning/ROADMAP.md`)
 
-- **Virtual Environment:** Ensure `uv` manages the `.venv`.
-- **Sync Dependencies:** Run `uv sync` to ensure your environment matches `uv.lock`.
-- **Run Commands:** Use `uv run <command>` (e.g., `uv run pytest`, `uv run python server.py`).
-- **Add Dependencies:** Use `uv add <package>` to update `pyproject.toml` and `uv.lock`.
+* Complete: Phase 1 (REST+MCP wrapper), Phase 2 (Docker Compose stack), Phase 4 (proxy analytics helpers), Phase 5.2 (Cloudflare tunnel for remote MCP).
+* In flight/next: Phase 3 proxy hardening, Phase 5.3 FastMCP migration with dual transports, Phase 5.4 OAuth for Claude connectors, Phase 5.5 cleanup of legacy `.mcpb`/API key paths, Phase 6 local dataset + vector search.
 
-## 3. Git Workflow
+## Dev commands
 
-- **Branching Strategy:**
-    - Create a new branch for each specific task or phase of work.
-    - Naming convention: `feat/phase-x-y-description` or `fix/issue-description`.
-    - Example: `feat/phase-5-3-fastmcp-migration`.
-- **Commits:**
-    - Use Conventional Commits (e.g., `feat: ...`, `fix: ...`, `docs: ...`).
-    - Keep commits atomic and focused.
-- **Pull Requests/Merging:**
-    - Do not merge your own branches without explicit user approval.
-    - Wait for instruction before merging into `main`.
+* Create env & install: `uv venv && uv sync`
+* Run server locally: `uv run python server.py` (listens on `http://localhost:8000`)
+* REST smoke checks: `curl "http://localhost:8000/search?size=3"` (see README for more)
+* Run all tests: `uv run pytest`
+* Focused test: `uv run pytest tests/test_rest_endpoints.py -k search_smoke`
+* MCP harness: `uv run python scripts/anthropic_mcp_harness.py`
+* MCP endpoints: Streamable HTTP at `/mcp`, legacy SSE at `/mcp/sse`
 
-## 4. Coding Standards
+## Coding style
 
-- **Defensive Coding:** The upstream CFPB API is sensitive to `null` or empty string parameters. Always prune these from dictionaries before making requests to avoid 400 errors.
-- **Architectural Invariants:**
-    - Changes must support *both* MCP and REST/OpenAPI interfaces.
-    - Shared logic should be transport-agnostic.
-- **Testing:**
-    - **Immutable Contracts:** The `tests/contract` suite represents public contracts. Do not modify these tests to make breaking changes pass.
-    - **New Features:** Add new test suites for new functionality.
-    - **Running Tests:** `uv run pytest`.
+* Python 3.10+, PEP 8, 4-space indentation.
+* Prefer explicit type hints and `Optional`/`Literal` as used in `server.py`.
+* Keep shared logic transport-agnostic; reuse helpers across REST and MCP tools.
+* Keep `server.py` per-file ignores minimal and documented in `ruff.toml`.
+* Prefer narrow exception handling; reserve broad `Exception` for best-effort cleanup.
 
-## 5. Documentation
+## Testing expectations
 
-- **Update Docs:** Keep `docs/` up-to-date with code changes.
-- **URL Construction:** Refer to `docs/CFPB_UI_URL_CONSTRUCTION.md` when working on citation logic.
-- **Public Contracts:** Respect definitions in `docs/public-contracts.md`.
+* Pytest + pytest-asyncio; fixtures spin up uvicorn (`client`, `server_url`).
+* Favor small payload sizes (e.g., `size=1`) to limit API load.
+* Live CFPB API dependency means data can vary; keep assertions resilient.
+* Run `uv run pytest` (plus targeted cases) before merging.
+
+## Contract tests (prompt + assertions only)
+
+The files under `tests/contract/` represent a **long-term compatibility contract** with downstream users and third-party agents.
+
+The only sacred parts of the contract are:
+
+User prompt (quoted exactly):
+"I'm researching CFPB consumer complaints about loan forbearance. Please find a complaint mentioning 'forbearance' where the company name is present, then tell me the complaint id, the company (if present), the state (if present), and a short 2-3 sentence summary grounded in the complaint. If you can't use tools, say 'MCP tools unavailable'."
+
+Assertions (quoted exactly):
+
+Anthropic contract assertions:
+
+* "Final response text is non-empty."
+* ""MCP tools unavailable" is not present in the final response text."
+* "A complaint id is obtained via tools."
+* "The complaint id is 4-9 digits long."
+* "The tool-derived complaint id appears in the final response text."
+* "The complaint id parsed from text matches the tool-derived complaint id."
+* "The first word of the complaint company appears in the final response text (case-insensitive)."
+
+OpenAI contract assertions:
+
+* "Final response text is non-empty."
+* ""MCP tools unavailable" is not present in the final response text."
+* "A complaint id is obtained via tools."
+* "The complaint id is 4-9 digits long."
+* "A 4-9 digit complaint id token can be extracted from the final response text."
+* "If the tool-derived complaint id appears in the final response text, it matches the extracted complaint id."
+* "The first word of the complaint company appears in the final response text (case-insensitive)."
+
+We may add another user prompt and its own assertions to the contract in the future.
+
+## Git workflow
+
+* Work on feature branches, not `main` (e.g., `phase5.2/mcp-auth`).
+* Keep PRs small and focused; include concise summaries and test output.
+* Use concise, imperative commits (e.g., "Add trends parameter validation").
+
+## Security & operations
+
+* Do not commit secrets; rely only on public CFPB endpoints.
+* Prefer env vars for tunables (e.g., alternate base URLs); avoid hardcoded local paths.
+* Keep long-running clients within the shared `httpx.AsyncClient` and clean up resources.
+
+## Cloudflare tunnel (Phase 5.2)
+
+Two supported approaches:
+
+1. Token-based (default): set `TUNNEL_TOKEN` in `.env`; config managed in Cloudflare dashboard.
+2. File-based: set `TUNNEL_ID` in `.env` and mount `./cloudflared/` with `credentials.json` and `config.yml`.

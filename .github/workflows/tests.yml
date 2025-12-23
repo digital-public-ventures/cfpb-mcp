@@ -7,37 +7,6 @@ on:
       - main
 
 jobs:
-  # python-tests:
-  #   runs-on: ubuntu-latest
-  #   defaults:
-  #     run:
-  #       working-directory: py-mcp
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v5
-  #       with:
-  #         python-version: "3.12"
-
-  #     - name: Set up uv
-  #       uses: astral-sh/setup-uv@v3
-
-  #     - name: Install dependencies
-  #       run: uv sync --group dev --frozen
-
-  #     - name: Install Playwright browsers
-  #       run: uv run python -m playwright install --with-deps
-
-  #     - name: Run test suite
-  #       env:
-  #         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-  #         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-  #         OPENAI_MODEL: gpt-5-mini
-  #         ANTHROPIC_MODEL: claude-haiku-4-5
-  #       run: uv run pytest -rs
-
   ts-tests:
     runs-on: ubuntu-latest
     defaults:

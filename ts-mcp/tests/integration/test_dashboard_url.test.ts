@@ -4,16 +4,18 @@ import { callRpc } from "../helpers/http.js";
 const SERVER_URL = process.env.TEST_SERVER_URL ?? "http://127.0.0.1:8787/mcp";
 
 describe("generate_cfpb_dashboard_url", () => {
-  it("returns a CFPB dashboard URL", async () => {
-    const result = await callRpc(SERVER_URL, "tools/call", {
-      name: "generate_cfpb_dashboard_url",
-      arguments: {
-        search_term: "forbearance",
-        product: ["Student loan"],
-        state: ["CA"],
-      },
-    });
-    expect(typeof result?.url).toBe("string");
-    expect(result.url).toContain("consumerfinance.gov/data-research/consumer-complaints/search");
-  });
+	it("returns a CFPB dashboard URL", async () => {
+		const result = await callRpc(SERVER_URL, "tools/call", {
+			name: "generate_cfpb_dashboard_url",
+			arguments: {
+				search_term: "forbearance",
+				product: ["Student loan"],
+				state: ["CA"],
+			},
+		});
+		expect(typeof result?.url).toBe("string");
+		expect(result.url).toContain(
+			"consumerfinance.gov/data-research/consumer-complaints/search",
+		);
+	});
 });

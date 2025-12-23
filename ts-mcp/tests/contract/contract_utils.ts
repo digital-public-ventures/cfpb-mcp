@@ -1,0 +1,42 @@
+export const extractComplaintIdFromSearch = (payload: any): number | null => {
+  const hits = payload?.data?.hits?.hits;
+  if (!Array.isArray(hits) || !hits.length) {
+    return null;
+  }
+  const hit0 = hits[0];
+  const raw =
+    hit0?._id ?? (hit0?._source && hit0._source.complaint_id) ?? null;
+  if (!raw) {
+    return null;
+  }
+  const id = Number.parseInt(String(raw), 10);
+  if (!Number.isFinite(id)) {
+    return null;
+  }
+  const len = String(id).length;
+  return len >= 4 && len <= 9 ? id : null;
+};
+
+export const extractCompanyFromDocument = (payload: any): string => {
+  const hits = payload?.hits?.hits;
+  let source = payload;
+  if (Array.isArray(hits) && hits.length) {
+    source = hits[0]?._source ?? payload;
+  }
+  const company = source?.company;
+  return String(company ?? "").trim();
+};
+
+export const extractComplaintIdFromText = (text: string): number | null => {
+  const matches = text.match(/\b\d{4,9}\b/g);
+  if (!matches || !matches.length) {
+    return null;
+  }
+  const token = matches.sort((a, b) => b.length - a.length)[0];
+  const id = Number.parseInt(token, 10);
+  if (!Number.isFinite(id)) {
+    return null;
+  }
+  const len = String(id).length;
+  return len >= 4 && len <= 9 ? id : null;
+};

@@ -1,27 +1,28 @@
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.5
+  - repo: local
     hooks:
       - id: ruff-format
-        args: [.]
-        pass_filenames: false
-  - repo: local
-    hooks:
-      - id: ruff-fix-nonblocking
-        name: ruff-fix-nonblocking
-        entry: sh -c 'uvx ruff check --fix . || true'
+        name: ruff-format
+        entry: sh -c 'uvx ruff format py-mcp'
         language: system
         pass_filenames: false
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.5
-    hooks:
-      - id: ruff-check
-        args: [.]
+      - id: ruff-fix-nonblocking
+        name: ruff-fix-nonblocking
+        entry: sh -c 'uvx ruff check --fix py-mcp || true'
+        language: system
         pass_filenames: false
-  - repo: local
-    hooks:
+      - id: ruff-check
+        name: ruff-check
+        entry: sh -c 'uvx ruff check py-mcp'
+        language: system
+        pass_filenames: false
       - id: pyright
         name: pyright
-        entry: uvx pyright
+        entry: sh -c 'cd py-mcp && uvx pyright'
+        language: system
+        pass_filenames: false
+      - id: biome-check
+        name: biome-check
+        entry: sh -c 'cd ts-mcp && npx biome check .'
         language: system
         pass_filenames: false

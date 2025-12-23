@@ -1,0 +1,7 @@
+{
+  "name": "cfpb-mcp-root",
+  "private": true,
+  "workspaces": [
+    "ts-mcp"
+  ]
+}

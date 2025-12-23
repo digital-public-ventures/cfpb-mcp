@@ -21,6 +21,27 @@ import { type ToolName, toolDefinitions } from "./definitions.js";
 
 type Citation = { type: string; url: string; description: string };
 
+const CONTENT_MAX_CHARS = 8000;
+
+const buildContentSummary = (payload: unknown): string => {
+	let text = "";
+	try {
+		text = JSON.stringify(payload);
+	} catch {
+		text = String(payload);
+	}
+	if (text.length <= CONTENT_MAX_CHARS) {
+		return text;
+	}
+	return `${text.slice(0, CONTENT_MAX_CHARS)}...`;
+};
+
+const withContent = <T extends Record<string, unknown>>(payload: T) => ({
+	...payload,
+	structuredContent: payload,
+	content: [{ type: "text", text: buildContentSummary(payload) }],
+});
+
 const buildCfpbUiUrl = (params: Record<string, unknown>): string => {
 	const apiParams: Record<string, unknown> = {
 		search_term: params.search_term,
@@ -243,7 +264,7 @@ export const handlers: Record<ToolName, (args: HandlerArgs) => HandlerResult> =
 				params: args,
 			});
 
-			return { data: dataWithLinks, citations };
+			return withContent({ data, citations });
 		},
 
 		list_complaint_trends: async (args) => {
@@ -263,7 +284,7 @@ export const handlers: Record<ToolName, (args: HandlerArgs) => HandlerResult> =
 				params: args,
 			});
 
-			return { data, citations };
+			return withContent({ data, citations });
 		},
 
 		get_state_aggregations: async (args) => {
@@ -272,19 +293,26 @@ export const handlers: Record<ToolName, (args: HandlerArgs) => HandlerResult> =
 				context_type: "geo",
 				params: args,
 			});
-			return { data, citations };
+			return withContent({ data, citations });
 		},
 
-		get_complaint_document: async (args) =>
-			attachComplaintDeeplinks(await documentLogic(args.complaint_id)),
+		get_complaint_document: async (args) => {
+			const data = await documentLogic(args.complaint_id);
+			if (!data || typeof data !== "object") {
+				return withContent({ value: data });
+			}
+			return withContent(data as Record<string, unknown>);
+		},
 
-		suggest_filter_values: async (args) => ({
-			values: await suggestLogic(args.field, args.text, args.size),
-		}),
+		suggest_filter_values: async (args) =>
+			withContent({
+				values: await suggestLogic(args.field, args.text, args.size),
+			}),
 
-		generate_cfpb_dashboard_url: async (args) => ({
-			url: buildCfpbUiUrl(args),
-		}),
+		generate_cfpb_dashboard_url: async (args) =>
+			withContent({
+				url: buildCfpbUiUrl(args),
+			}),
 
 		get_overall_trend_signals: async (args) => {
 			const payload = await trendsLogic({
@@ -297,7 +325,7 @@ export const handlers: Record<ToolName, (args: HandlerArgs) => HandlerResult> =
 				filters: args,
 			});
 			const points = dropCurrentMonth(extractOverallPoints(payload));
-			return {
+			return withContent({
 				params: {
 					lens: args.lens,
 					trend_interval: args.trend_interval,
@@ -312,7 +340,7 @@ export const handlers: Record<ToolName, (args: HandlerArgs) => HandlerResult> =
 						args.min_baseline_mean,
 					),
 				},
-			};
+			});
 		},
 
 		rank_group_spikes: async (args) => {
@@ -357,7 +385,7 @@ export const handlers: Record<ToolName, (args: HandlerArgs) => HandlerResult> =
 				return bZ - aZ;
 			});
 
-			return {
+			return withContent({
 				params: {
 					group: args.group,
 					lens: args.lens,
@@ -369,7 +397,7 @@ export const handlers: Record<ToolName, (args: HandlerArgs) => HandlerResult> =
 					date_received_max: args.date_received_max,
 				},
 				results: scored.slice(0, args.top_n),
-			};
+			});
 		},
 
 		rank_company_spikes: async (args) => {
@@ -423,14 +451,14 @@ export const handlers: Record<ToolName, (args: HandlerArgs) => HandlerResult> =
 				return (bZ as number) - (aZ as number);
 			});
 
-			return {
+			return withContent({
 				date_filters: {
 					date_received_min: args.date_received_min,
 					date_received_max: args.date_received_max,
 				},
 				ranking: "last bucket vs baseline z-score",
 				results,
-			};
+			});
 		},
 	};
 

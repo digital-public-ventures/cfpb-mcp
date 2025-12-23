@@ -1,5 +1,21 @@
 let rpcId = 0;
 
+export const LOCAL_SERVER_URL = "http://127.0.0.1:8787/mcp";
+export const REMOTE_SERVER_URL = "https://cfpb-mcp.jimmoffet.workers.dev/mcp";
+
+export const resolveServerUrl = (): string => {
+	if (process.env.TEST_SERVER_TARGET === "local") {
+		return LOCAL_SERVER_URL;
+	}
+	if (process.env.TEST_SERVER_TARGET === "remote") {
+		return REMOTE_SERVER_URL;
+	}
+	if (process.env.TEST_SERVER_URL) {
+		return process.env.TEST_SERVER_URL;
+	}
+	return LOCAL_SERVER_URL;
+};
+
 export const callRpc = async (
 	serverUrl: string,
 	method: string,

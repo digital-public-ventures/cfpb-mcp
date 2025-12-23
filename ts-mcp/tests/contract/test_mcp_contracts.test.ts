@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { callRpc } from "../helpers/http.js";
+import { callRpc, resolveServerUrl } from "../helpers/http.js";
 import { extractPayload } from "../helpers/mcp.js";
 import {
 	extractCompanyFromDocument,
 	extractComplaintIdFromSearch,
 } from "./contract_utils.js";
 
-const SERVER_URL = process.env.TEST_SERVER_URL ?? "http://127.0.0.1:8787/mcp";
+const SERVER_URL = resolveServerUrl();
 
 describe("MCP contracts", () => {
 	it("search tool returns a complaint id and document includes company", async () => {

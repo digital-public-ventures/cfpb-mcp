@@ -1,29 +1,9 @@
 repos:
   - repo: local
     hooks:
-      # - id: ruff-format
-      #   name: ruff-format
-      #   entry: sh -c 'uvx ruff format py-mcp'
-      #   language: system
-      #   pass_filenames: false
-      # - id: ruff-fix-nonblocking
-      #   name: ruff-fix-nonblocking
-      #   entry: sh -c 'uvx ruff check --fix py-mcp || true'
-      #   language: system
-      #   pass_filenames: false
-      # - id: ruff-check
-      #   name: ruff-check
-      #   entry: sh -c 'uvx ruff check py-mcp'
-      #   language: system
-      #   pass_filenames: false
-      # - id: pyright
-      #   name: pyright
-      #   entry: sh -c 'cd py-mcp && uvx pyright'
-      #   language: system
-      #   pass_filenames: false
       - id: biome-check
         name: biome-check
-        entry: sh -c 'cd ts-mcp && npx biome check .'
+        entry: sh -c 'cd ts-mcp && npx biome check --write . || true && npx biome check .'
         language: system
         pass_filenames: false
       - id: vitest

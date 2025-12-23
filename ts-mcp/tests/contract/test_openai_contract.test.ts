@@ -38,6 +38,7 @@ const isFunctionCallItem = (item: unknown): item is FunctionCallItem => {
 
 describe("OpenAI MCP contract", () => {
 	it("returns a complaint id and includes company in response", async () => {
+		const shouldLog = process.env.CONTRACT_LOG === "1";
 		const apiKey = process.env.OPENAI_API_KEY;
 		expect(apiKey).toBeTruthy();
 		const model = process.env.OPENAI_MODEL ?? "gpt-5-mini";
@@ -109,6 +110,9 @@ describe("OpenAI MCP contract", () => {
 		finalText = (response.output_text ?? "").trim();
 		expect(finalText).toBeTruthy();
 		const hasToolUnavailable = finalText.includes("MCP tools unavailable");
+		if (shouldLog) {
+			console.log("[ts-openai] final_response:before_patch", finalText);
+		}
 
 		if (!complaintIdFromTools) {
 			const fallback = await callRpc(SERVER_URL, "tools/call", {
@@ -131,6 +135,9 @@ describe("OpenAI MCP contract", () => {
 		if (hasToolUnavailable || complaintIdFromText !== complaintIdFromTools) {
 			finalText = `Complaint ID: ${complaintIdFromTools}\nCompany: ${company}\nSummary: Tool-derived complaint from CFPB data.`;
 			complaintIdFromText = extractComplaintIdFromText(finalText);
+		}
+		if (shouldLog) {
+			console.log("[ts-openai] final_response:after_patch", finalText);
 		}
 		expect(finalText.includes("MCP tools unavailable")).toBe(false);
 		expect(finalText.toLowerCase()).toContain(

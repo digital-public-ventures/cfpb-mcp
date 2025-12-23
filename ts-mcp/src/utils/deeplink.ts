@@ -2,6 +2,8 @@ import { format, startOfMonth, subDays } from "date-fns";
 
 export const UI_BASE_URL =
 	"https://www.consumerfinance.gov/data-research/consumer-complaints/search/";
+export const COMPLAINT_DETAIL_BASE_URL =
+	"https://www.consumerfinance.gov/data-research/consumer-complaints/search/detail/";
 export const DEFAULT_START_DATE = "2011-12-01";
 
 const API_TO_URL_PARAM: Record<string, string> = {
@@ -312,6 +314,27 @@ export const buildDeeplinkUrl = (
 	}
 	return `${UI_BASE_URL}?${encodeQuery(urlParams)}`;
 };
+
+export const buildComplaintDeeplink = (complaintId: string | number): string =>
+	`${COMPLAINT_DETAIL_BASE_URL}${complaintId}`;
+
+export const appendComplaintDeeplinks = <T extends Record<string, unknown>>(
+	complaints: T[],
+): T[] =>
+	complaints.map((complaint) => {
+		const rawId = complaint.complaint_id ?? complaint._id;
+		if (!rawId) {
+			return complaint;
+		}
+		const id = String(rawId).trim();
+		if (!id) {
+			return complaint;
+		}
+		return {
+			...complaint,
+			complaint_deeplink: buildComplaintDeeplink(id),
+		};
+	});
 
 export const urlParamsToApiParams = (
 	urlParams: Record<string, unknown>,

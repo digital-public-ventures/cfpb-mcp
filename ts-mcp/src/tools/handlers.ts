@@ -5,7 +5,11 @@ import {
 	suggestLogic,
 	trendsLogic,
 } from "../utils/api.js";
-import { buildDeeplinkUrl } from "../utils/deeplink.js";
+import {
+	appendComplaintDeeplinks,
+	buildComplaintDeeplink,
+	buildDeeplinkUrl,
+} from "../utils/deeplink.js";
 import {
 	companyBucketsFromSearch,
 	computeSimpleSignals,
@@ -71,6 +75,66 @@ const buildCfpbUiUrl = (params: Record<string, unknown>): string => {
 	}
 
 	return buildDeeplinkUrl(apiParams, params.tab as string | undefined);
+};
+
+const attachComplaintDeeplinks = (payload: unknown): unknown => {
+	if (!payload || typeof payload !== "object") {
+		return payload;
+	}
+	const applyToRecord = (record: Record<string, unknown>) => {
+		const hitsRecord = record.hits as Record<string, unknown> | undefined;
+		const hits = hitsRecord?.hits;
+		if (!Array.isArray(hits)) {
+			return record;
+		}
+		const updatedHits = hits.map((hit) => {
+			if (!hit || typeof hit !== "object") {
+				return hit;
+			}
+			const hitRecord = hit as Record<string, unknown>;
+			const source = hitRecord._source;
+			if (source && typeof source === "object") {
+				const [updatedSource] = appendComplaintDeeplinks([
+					source as Record<string, unknown>,
+				]);
+				return { ...hitRecord, _source: updatedSource };
+			}
+			const fallbackId = hitRecord._id;
+			if (fallbackId) {
+				return {
+					...hitRecord,
+					complaint_deeplink: buildComplaintDeeplink(String(fallbackId)),
+				};
+			}
+			return hitRecord;
+		});
+		return {
+			...record,
+			hits: {
+				...hitsRecord,
+				hits: updatedHits,
+			},
+		};
+	};
+
+	const record = payload as Record<string, unknown>;
+	const dataRecord =
+		record.data && typeof record.data === "object"
+			? (record.data as Record<string, unknown>)
+			: null;
+	if (dataRecord) {
+		return {
+			...record,
+			data: applyToRecord(dataRecord),
+		};
+	}
+
+	const updated = applyToRecord(record);
+	if (updated !== record) {
+		return updated;
+	}
+
+	return payload;
 };
 
 const extractFilterParams = (params: Record<string, unknown>) => {
@@ -211,8 +275,9 @@ export const handlers: Record<ToolName, (args: HandlerArgs) => HandlerResult> =
 				no_highlight: args.no_highlight,
 				filters: args,
 			});
+			const dataWithLinks = attachComplaintDeeplinks(data);
 
-			const totalHits = getTotalHits(data);
+			const totalHits = getTotalHits(dataWithLinks);
 			const citations = generateCitations({
 				context_type: "search",
 				total_hits: totalHits,

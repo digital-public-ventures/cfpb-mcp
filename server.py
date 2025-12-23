@@ -1,40 +1,37 @@
 from __future__ import annotations
 
-import base64
 import hashlib
 import hmac
 import json
 import os
 import sys
-import tempfile
 import threading
 import time
 from contextlib import AsyncExitStack, asynccontextmanager, suppress
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator, Awaitable
+    from pathlib import Path
 
     from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 import httpx
 import uvicorn
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from mcp.server.fastmcp import FastMCP
-from playwright.async_api import (
-    Browser,
-    async_playwright,
-)
-from playwright.async_api import (
-    Error as PlaywrightError,
-)
-from playwright.async_api import (
-    TimeoutError as PlaywrightTimeoutError,
-)
-from starlette.responses import Response
 
+# from playwright.async_api import (
+#     Browser,
+#     async_playwright,
+# )
+# from playwright.async_api import (
+#     Error as PlaywrightError,
+# )
+# from playwright.async_api import (
+#     TimeoutError as PlaywrightTimeoutError,
+# )
 from utils.deeplink_mapping import build_deeplink_url
 
 BASE_URL = 'https://www.consumerfinance.gov/data-research/consumer-complaints/search/api/v1/'
@@ -168,40 +165,40 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         # A single shared client for connection pooling.
         app.state.http = httpx.AsyncClient(timeout=httpx.Timeout(30.0))
 
-        # Initialize Playwright for screenshot service (Phase 4.5)
-        app.state.playwright = None
-        app.state.browser = None
-        try:
-            pw = await async_playwright().start()
-            app.state.playwright = pw
-            app.state.browser = await pw.chromium.launch(
-                headless=True,
-                args=[
-                    '--no-sandbox',
-                    '--disable-setuid-sandbox',
-                    '--disable-dev-shm-usage',
-                    '--disable-gpu',
-                ],
-            )
-        except Exception as e:
-            # If Playwright isn't available (e.g., in minimal test env), log and continue.
-            # The screenshot endpoints will return 503.
-            print(f'Warning: Playwright initialization failed: {e}', file=sys.stderr)
+        # # Initialize Playwright for screenshot service (Phase 4.5)
+        # app.state.playwright = None
+        # app.state.browser = None
+        # try:
+        #     pw = await async_playwright().start()
+        #     app.state.playwright = pw
+        #     app.state.browser = await pw.chromium.launch(
+        #         headless=True,
+        #         args=[
+        #             '--no-sandbox',
+        #             '--disable-setuid-sandbox',
+        #             '--disable-dev-shm-usage',
+        #             '--disable-gpu',
+        #         ],
+        #     )
+        # except Exception as e:
+        #     # If Playwright isn't available (e.g., in minimal test env), log and continue.
+        #     # The screenshot endpoints will return 503.
+        #     print(f'Warning: Playwright initialization failed: {e}', file=sys.stderr)
 
         try:
             yield
         finally:
             await app.state.http.aclose()
-            if app.state.browser:
-                try:
-                    await app.state.browser.close()
-                except Exception as e:
-                    print(f'Warning: Playwright browser.close failed: {e}', file=sys.stderr)
-            if app.state.playwright:
-                try:
-                    await app.state.playwright.stop()
-                except Exception as e:
-                    print(f'Warning: Playwright stop failed: {e}', file=sys.stderr)
+            # if app.state.browser:
+            #     try:
+            #         await app.state.browser.close()
+            #     except Exception as e:
+            #         print(f'Warning: Playwright browser.close failed: {e}', file=sys.stderr)
+            # if app.state.playwright:
+            #     try:
+            #         await app.state.playwright.stop()
+            #     except Exception as e:
+            #         print(f'Warning: Playwright stop failed: {e}', file=sys.stderr)
 
 
 # 1) Initialize FastAPI and MCP (single app, two interfaces)
@@ -298,7 +295,7 @@ class MCPAccessControlMiddleware:
 
         path = scope.get('path') or ''
         # Phase 5.3: Protect /mcp (Streamable HTTP)
-        if path != '/mcp':
+        if path not in {'/mcp', '/mcp/'}:
             await self.app(scope, receive, send)
             return
 
@@ -659,7 +656,36 @@ async def suggest_logic(field: Literal['company', 'zip_code'], text: str, size: 
 
 async def document_logic(complaint_id: str) -> Any:
     """Fetch a single complaint document by its ID."""
-    return await _get_json(f'{BASE_URL}{complaint_id}', params={})
+    data = await _get_json(f'{BASE_URL}{complaint_id}', params={})
+    if isinstance(data, dict):
+        hits = data.get('hits', {})
+        first_hit = None
+        if isinstance(hits, dict):
+            hit_list = hits.get('hits', [])
+            if isinstance(hit_list, list) and hit_list:
+                first_hit = hit_list[0] if isinstance(hit_list[0], dict) else None
+        source = first_hit.get('_source') if isinstance(first_hit, dict) else None
+        company = source.get('company') if isinstance(source, dict) else None
+        _audit_log(
+            {
+                'ts': datetime.now(timezone.utc).isoformat(),
+                'event': 'cfpb_document',
+                'complaint_id': complaint_id,
+                'data_keys': list(data.keys()),
+                'hit_count': len(hits.get('hits', [])) if isinstance(hits, dict) else None,
+                'company_present': bool(company),
+            }
+        )
+    else:
+        _audit_log(
+            {
+                'ts': datetime.now(timezone.utc).isoformat(),
+                'event': 'cfpb_document',
+                'complaint_id': complaint_id,
+                'data_type': type(data).__name__,
+            }
+        )
+    return data
 
 
 def build_cfpb_ui_url(
@@ -819,103 +845,102 @@ def generate_citations(
 
     return citations
 
+    # async def screenshot_cfpb_ui(
+    #     browser: Browser | None,
+    #     url: str,
+    #     *,
+    #     wait_for_charts: bool = True,
+    #     timeout: int = 30000,
+    # ) -> bytes:
+    #     """Capture a screenshot of the official CFPB UI at the given URL.
 
-async def screenshot_cfpb_ui(
-    browser: Browser | None,
-    url: str,
-    *,
-    wait_for_charts: bool = True,
-    timeout: int = 30000,
-) -> bytes:
-    """Capture a screenshot of the official CFPB UI at the given URL.
+    #     Returns PNG image bytes.
+    #     Raises HTTPException(503) if Playwright is unavailable.
+    #     """
+    #     if browser is None:
+    #         raise HTTPException(
+    #             status_code=503,
+    #             detail=SCREENSHOT_UNAVAILABLE_DETAIL,
+    #         )
 
-    Returns PNG image bytes.
-    Raises HTTPException(503) if Playwright is unavailable.
-    """
-    if browser is None:
-        raise HTTPException(
-            status_code=503,
-            detail=SCREENSHOT_UNAVAILABLE_DETAIL,
-        )
+    #     context = await browser.new_context(
+    #         viewport={'width': 890, 'height': 1080},
+    #         user_agent=(
+    #             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 '
+    #             '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    #         ),
+    #     )
 
-    context = await browser.new_context(
-        viewport={'width': 890, 'height': 1080},
-        user_agent=(
-            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 '
-            '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        ),
-    )
+    # try:
+    #     page = await context.new_page()
+    #     await page.goto(url, timeout=timeout, wait_until='networkidle')
 
-    try:
-        page = await context.new_page()
-        await page.goto(url, timeout=timeout, wait_until='networkidle')
+    #     # If we expect charts, give D3/visualization time to render.
+    #     if wait_for_charts:
+    #         await page.wait_for_timeout(3000)
 
-        # If we expect charts, give D3/visualization time to render.
-        if wait_for_charts:
-            await page.wait_for_timeout(3000)
+    #     # Hide the tour button that covers part of the legend
+    #     with suppress(PlaywrightError, PlaywrightTimeoutError):
+    #         await page.evaluate(
+    #             """
+    #             const tourButton = document.querySelector('button.tour-button');
+    #             if (tourButton) {
+    #                 tourButton.style.display = 'none';
+    #             }
+    #             """
+    #         )
 
-        # Hide the tour button that covers part of the legend
-        with suppress(PlaywrightError, PlaywrightTimeoutError):
-            await page.evaluate(
-                """
-                const tourButton = document.querySelector('button.tour-button');
-                if (tourButton) {
-                    tourButton.style.display = 'none';
-                }
-                """
-            )
+    #     # Debug: Save the page HTML to inspect structure
+    #     if os.getenv('DEBUG_CFPB_UI'):
+    #         html_content = await page.content()
+    #         with tempfile.NamedTemporaryFile(prefix='cfpb_page_debug_', suffix='.html', delete=False) as tmp:
+    #             debug_path = Path(tmp.name)
 
-        # Debug: Save the page HTML to inspect structure
-        if os.getenv('DEBUG_CFPB_UI'):
-            html_content = await page.content()
-            with tempfile.NamedTemporaryFile(prefix='cfpb_page_debug_', suffix='.html', delete=False) as tmp:
-                debug_path = Path(tmp.name)
+    #         debug_path.write_text(html_content, encoding='utf-8')
+    #         print(f'[DEBUG] Saved page HTML to {debug_path}')
 
-            debug_path.write_text(html_content, encoding='utf-8')
-            print(f'[DEBUG] Saved page HTML to {debug_path}')
+    #         def _schedule_debug_file_cleanup(path: Path, delay_seconds: float = 300.0) -> None:
+    #             def _cleanup() -> None:
+    #                 with suppress(OSError):
+    #                     path.unlink()
 
-            def _schedule_debug_file_cleanup(path: Path, delay_seconds: float = 300.0) -> None:
-                def _cleanup() -> None:
-                    with suppress(OSError):
-                        path.unlink()
+    #             timer = threading.Timer(delay_seconds, _cleanup)
+    #             timer.daemon = True
+    #             timer.start()
 
-                timer = threading.Timer(delay_seconds, _cleanup)
-                timer.daemon = True
-                timer.start()
+    #         _schedule_debug_file_cleanup(debug_path)
+    #     # Try multiple possible selectors for the chart area
+    #     # The CFPB dashboard uses Britecharts D3 library
+    #     chart_selectors = [
+    #         '.layout-row:has(section.chart)',  # Parent div containing chart and legend
+    #         'section.chart',  # The main chart section (fallback)
+    #         '.chart-wrapper',  # Chart wrapper div
+    #         '#line-chart',  # Line chart container
+    #         '.trends-panel',  # The entire trends panel section (last resort)
+    #     ]
 
-            _schedule_debug_file_cleanup(debug_path)
-        # Try multiple possible selectors for the chart area
-        # The CFPB dashboard uses Britecharts D3 library
-        chart_selectors = [
-            '.layout-row:has(section.chart)',  # Parent div containing chart and legend
-            'section.chart',  # The main chart section (fallback)
-            '.chart-wrapper',  # Chart wrapper div
-            '#line-chart',  # Line chart container
-            '.trends-panel',  # The entire trends panel section (last resort)
-        ]
+    #     for selector in chart_selectors:
+    #         try:
+    #             chart_element = await page.query_selector(selector)
+    #             if chart_element:
+    #                 # Check if element is visible and has reasonable dimensions
+    #                 box = await chart_element.bounding_box()
+    #                 print(f"[DEBUG] Testing selector '{selector}': found={chart_element is not None}, box={box}")
+    #                 if box and box['width'] > CHART_MIN_WIDTH and box['height'] > CHART_MIN_HEIGHT:
+    #                     print(f'[DEBUG] ✓ Using chart selector: {selector}, size: {box["width"]}x{box["height"]}')
+    #                     return await chart_element.screenshot(type='png')
+    #                 if box:
+    #                     print(f'[DEBUG] ✗ Element too small: {box["width"]}x{box["height"]}')
+    #         except Exception as e:
+    #             print(f'[DEBUG] Selector {selector} failed: {e}')
+    #             continue
 
-        for selector in chart_selectors:
-            try:
-                chart_element = await page.query_selector(selector)
-                if chart_element:
-                    # Check if element is visible and has reasonable dimensions
-                    box = await chart_element.bounding_box()
-                    print(f"[DEBUG] Testing selector '{selector}': found={chart_element is not None}, box={box}")
-                    if box and box['width'] > CHART_MIN_WIDTH and box['height'] > CHART_MIN_HEIGHT:
-                        print(f'[DEBUG] ✓ Using chart selector: {selector}, size: {box["width"]}x{box["height"]}')
-                        return await chart_element.screenshot(type='png')
-                    if box:
-                        print(f'[DEBUG] ✗ Element too small: {box["width"]}x{box["height"]}')
-            except Exception as e:
-                print(f'[DEBUG] Selector {selector} failed: {e}')
-                continue
+    #     # Fallback: Take full page screenshot
+    #     print('[DEBUG] No suitable chart element found, taking full page screenshot')
+    #     return await page.screenshot(type='png', full_page=True)
 
-        # Fallback: Take full page screenshot
-        print('[DEBUG] No suitable chart element found, taking full page screenshot')
-        return await page.screenshot(type='png', full_page=True)
-
-    finally:
-        await context.close()
+    # finally:
+    #     await context.close()
 
 
 # -------------------------------------------------------------------------
@@ -1204,44 +1229,44 @@ async def generate_cfpb_dashboard_url(
     )
 
 
-@server.tool()
-async def capture_cfpb_chart_screenshot(
-    search_term: str | None = None,
-    date_received_min: str | None = None,
-    date_received_max: str | None = None,
-    product: list[str] | None = None,
-    issue: list[str] | None = None,
-    state: list[str] | None = None,
-    company: list[str] | None = None,
-    lens: str = 'Product',
-    chart_type: str = 'line',
-    date_interval: str = 'Month',
-) -> str:
-    """Capture a screenshot of the official CFPB trends chart as a PNG image."""
-    if not getattr(app.state, 'browser', None):
-        raise HTTPException(status_code=503, detail=SCREENSHOT_UNAVAILABLE_DETAIL)
+# @server.tool()
+# async def capture_cfpb_chart_screenshot(
+#     search_term: str | None = None,
+#     date_received_min: str | None = None,
+#     date_received_max: str | None = None,
+#     product: list[str] | None = None,
+#     issue: list[str] | None = None,
+#     state: list[str] | None = None,
+#     company: list[str] | None = None,
+#     lens: str = 'Product',
+#     chart_type: str = 'line',
+#     date_interval: str = 'Month',
+# ) -> str:
+#     """Capture a screenshot of the official CFPB trends chart as a PNG image."""
+#     if not getattr(app.state, 'browser', None):
+#         raise HTTPException(status_code=503, detail=SCREENSHOT_UNAVAILABLE_DETAIL)
 
-    api_params: dict[str, Any] = {
-        'lens': lens,
-        'chartType': chart_type,
-        'trend_interval': date_interval.lower(),
-        'search_term': search_term,
-        'date_received_min': date_received_min,
-        'date_received_max': date_received_max,
-        'product': product,
-        'issue': issue,
-        'state': state,
-        'company': company,
-    }
-    url = build_deeplink_url(api_params, tab='Trends')
+#     api_params: dict[str, Any] = {
+#         'lens': lens,
+#         'chartType': chart_type,
+#         'trend_interval': date_interval.lower(),
+#         'search_term': search_term,
+#         'date_received_min': date_received_min,
+#         'date_received_max': date_received_max,
+#         'product': product,
+#         'issue': issue,
+#         'state': state,
+#         'company': company,
+#     }
+#     url = build_deeplink_url(api_params, tab='Trends')
 
-    screenshot_bytes = await screenshot_cfpb_ui(
-        app.state.browser,
-        url,
-        wait_for_charts=True,
-    )
+#     screenshot_bytes = await screenshot_cfpb_ui(
+#         app.state.browser,
+#         url,
+#         wait_for_charts=True,
+#     )
 
-    return base64.b64encode(screenshot_bytes).decode('utf-8')
+#     return base64.b64encode(screenshot_bytes).decode('utf-8')
 
 
 @server.tool()
@@ -1533,52 +1558,8 @@ async def rank_company_spikes(
 # -------------------------------------------------------------------------
 
 # Phase 5.3: Streamable HTTP Only
-# We explicitly route /mcp to avoid Starlette's automatic 307 redirects
-# that occur when using app.mount("/mcp", ...) for the root path.
-
+# Build the MCP ASGI app once; mount it after defining FastAPI routes.
 _http_app = server.streamable_http_app()
-
-
-async def mcp_http(request: Request) -> Response:
-    """Proxy requests into the FastMCP streamable HTTP app."""
-    body = await request.body()
-    scope = request.scope
-    status_code: int | None = None
-    response_headers: list[tuple[bytes, bytes]] = []
-    chunks: list[bytes] = []
-    sent_body = False
-
-    async def receive() -> Message:
-        nonlocal sent_body
-        if sent_body:
-            return {'type': 'http.request', 'body': b'', 'more_body': False}
-        sent_body = True
-        return {'type': 'http.request', 'body': body, 'more_body': False}
-
-    async def send(message: Message) -> None:
-        nonlocal status_code, response_headers
-        msg_type = message.get('type')
-        if msg_type == 'http.response.start':
-            status_code = int(message.get('status', 200))
-            raw = message.get('headers', [])
-            if isinstance(raw, list):
-                response_headers = [(bytes(k), bytes(v)) for k, v in raw]
-        elif msg_type == 'http.response.body':
-            body_part = message.get('body', b'')
-            if isinstance(body_part, bytes | bytearray):
-                chunks.append(bytes(body_part))
-
-    await _http_app(scope, receive, send)
-
-    return Response(
-        content=b''.join(chunks),
-        status_code=status_code or 200,
-        headers={k.decode('latin-1'): v.decode('latin-1') for k, v in response_headers},
-    )
-
-
-# Streamable HTTP: POST /mcp
-app.add_api_route('/mcp', mcp_http, methods=['POST'], include_in_schema=False)
 
 
 @app.get('/', include_in_schema=False)
@@ -1591,6 +1572,10 @@ async def root() -> dict[str, Any]:
             'http': '/mcp',
         },
     }
+
+
+# Mount MCP after FastAPI routes to avoid shadowing them.
+app.mount('/', _http_app)
 
 
 if __name__ == '__main__':

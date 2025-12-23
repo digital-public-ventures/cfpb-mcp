@@ -6,10 +6,16 @@ import sys
 import time
 from collections.abc import Iterator
 from contextlib import closing
+from pathlib import Path
 from urllib.parse import urlparse
 
 import httpx
 import pytest
+from dotenv import load_dotenv
+
+# Load .env from project root
+env_path = Path(__file__).parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
@@ -40,6 +46,16 @@ def _pick_free_port() -> int:
         return int(sock.getsockname()[1])
 
 
+def _is_port_free(host: str, port: int) -> bool:
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as sock:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            sock.bind((host, port))
+        except OSError:
+            return False
+        return True
+
+
 def _is_server_ready(url: str) -> bool:
     try:
         r = httpx.get(f'{url}/', timeout=5)
@@ -64,8 +80,10 @@ def _parse_host_port(url: str) -> tuple[str, int]:
 def server_url() -> Iterator[str]:
     """Start uvicorn in a subprocess and return the base URL."""
     configured_url = os.environ.get('TEST_SERVER_URL')
-    host = '127.0.0.1'
-    port = _pick_free_port()
+    fallback_host = '127.0.0.1'
+    fallback_port = _pick_free_port()
+    host = fallback_host
+    port = fallback_port
     url = f'http://{host}:{port}'
     if configured_url:
         url = configured_url.rstrip('/')
@@ -77,9 +95,6 @@ def server_url() -> Iterator[str]:
         # If the server is running but doesn't match the current contract, fall back to
         # starting a subprocess server on a free port so integration tests validate
         # the checked-out code rather than an older external process.
-        if _is_server_ready(url):
-            configured_url = None
-
         # If it's not running, only auto-start when it's a local address we can bind.
         if configured_url:
             host, port = _parse_host_port(url)
@@ -88,6 +103,10 @@ def server_url() -> Iterator[str]:
                     f'TEST_SERVER_URL was set to {url} but it is not reachable, and the host is not local; '
                     'refusing to auto-start uvicorn.'
                 )
+            if not _is_port_free(host, port):
+                configured_url = None
+                host = fallback_host
+                port = fallback_port
     if not configured_url:
         url = f'http://{host}:{port}'
 

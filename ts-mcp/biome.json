@@ -2,9 +2,6 @@
   "formatter": {
     "enabled": true
   },
-  "organizeImports": {
-    "enabled": true
-  },
   "linter": {
     "enabled": true
   }

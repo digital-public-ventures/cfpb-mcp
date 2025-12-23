@@ -1,0 +1,5 @@
+name = "fastmcp-server"
+main = "src/server.py"
+compatibility_date = "2025-12-01"
+compatibility_flags = ["python_workers"]
+account_id = "${CLOUDFLARE_ACCOUNT_ID}"

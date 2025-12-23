@@ -37,6 +37,7 @@ env/
 
 # Environment variables
 .env
+wrangler.toml
 
 # Database
 app_data.db

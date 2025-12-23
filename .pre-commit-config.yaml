@@ -8,6 +8,6 @@ repos:
         pass_filenames: false
       - id: vitest
         name: vitest
-        entry: sh -c 'cd ts-mcp && npx vitest run'
+        entry: sh -c 'cd ts-mcp && TEST_SERVER_TARGET=local TEST_SERVER_URL=http://127.0.0.1:8787/mcp npx vitest run'
         language: system
         pass_filenames: false

@@ -1,0 +1,11 @@
+{
+	"files": {
+		"includes": ["**/*", "!!**/node_modules", "!!**/.wrangler"]
+	},
+	"formatter": {
+		"enabled": true
+	},
+	"linter": {
+		"enabled": true
+	}
+}

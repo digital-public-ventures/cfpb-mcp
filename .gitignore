@@ -47,6 +47,10 @@ app_data.db-wal
 .DS_Store
 Thumbs.db
 
+# Node
+node_modules/
+.wrangler/
+
 # Virtual environments
 .venv
 
